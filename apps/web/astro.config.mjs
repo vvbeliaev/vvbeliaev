@@ -10,6 +10,12 @@ export default defineConfig({
   // TODO: заменить на финальный домен (нужно для sitemap и canonical-ссылок)
   site: "https://vbeliaev.dev",
   output: "static",
+  // Bilingual: English at the root, Russian under /ru.
+  i18n: {
+    locales: ["en", "ru"],
+    defaultLocale: "en",
+    routing: { prefixDefaultLocale: false },
+  },
   integrations: [svelte(), mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],

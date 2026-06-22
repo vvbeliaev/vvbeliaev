@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BlogIndexView from "../../../components/BlogIndexView.astro";
+import { SITE_I18N } from "$lib/config";
+import { ui } from "$i18n/ui";
+
+const meta = SITE_I18N.ru;
+---
+
+<BaseLayout title={ui.ru["blog.title"]} description={meta.description}>
+  <BlogIndexView />
+</BaseLayout>

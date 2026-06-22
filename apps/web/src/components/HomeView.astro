@@ -1,0 +1,65 @@
+---
+import { getCollection } from "astro:content";
+import { SITE_I18N } from "$lib/config";
+import { getLangFromUrl, useTranslations, localizePath } from "$i18n/utils";
+import Constellation from "./Constellation.astro";
+import Follow from "./Follow.astro";
+import Work from "./Work.astro";
+import Channels from "./Channels.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const meta = SITE_I18N[lang];
+
+const posts = (
+  await getCollection("blog", ({ data }) => !data.draft && data.lang === lang)
+)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+
+<Constellation avatar="/avatar.jpg" />
+
+<p class="mt-2 text-center font-mono text-xs tracking-wide text-muted-foreground">
+  <span class="led-indicator align-middle text-primary"></span>
+  <span class="align-middle uppercase tracking-[0.2em] text-foreground/80">
+    {t("home.now")}:
+  </span>
+  <span class="align-middle"> {meta.now}</span>
+</p>
+
+<Follow />
+
+<Work />
+
+{
+  posts.length > 0 && (
+    <section class="mt-14">
+      <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">
+        {t("home.latest")}
+      </h2>
+      <ul class="mt-4 space-y-4">
+        {posts.map((post) => (
+          <li>
+            <a
+              href={localizePath(`/blog/${post.id}`, lang)}
+              class="group block rounded-lg border border-border bg-card/40 p-4 transition-colors hover:border-primary/40 hover:bg-card"
+            >
+              <span class="font-medium group-hover:underline">
+                {post.data.articleNumber
+                  ? `${t("article.prefix")} #${post.data.articleNumber}. `
+                  : ""}
+                {post.data.title}
+              </span>
+              <span class="mt-1 block text-sm text-muted-foreground">
+                {post.data.description}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<Channels />

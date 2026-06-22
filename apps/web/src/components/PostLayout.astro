@@ -1,0 +1,119 @@
+---
+import type { CollectionEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Cover from "./Cover.astro";
+import { formatDate } from "$lib/date";
+import { useTranslations, localizePath } from "$i18n/utils";
+import type { Lang } from "$i18n/ui";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+  prevPost?: CollectionEntry<"blog">;
+  nextPost?: CollectionEntry<"blog">;
+  lang: Lang;
+}
+
+const { post, prevPost, nextPost, lang } = Astro.props;
+const t = useTranslations(lang);
+
+// Reading time — 200 words/minute.
+const words = post.body ? post.body.split(/\s+/).filter(Boolean).length : 0;
+const readTime = Math.max(1, Math.ceil(words / 200));
+
+const notePrefix = post.data.articleNumber
+  ? `${t("article.prefix")} #${post.data.articleNumber}.`
+  : "";
+---
+
+<div id="read-progress" class="glow-primary fixed inset-x-0 top-0 z-50 h-0.5 origin-left scale-x-0 bg-primary">
+</div>
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="mx-auto max-w-2xl">
+    <header class="mb-12">
+      <a
+        href={localizePath("/blog", lang)}
+        class="font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground transition-colors hover:text-primary"
+      >
+        {notePrefix ? notePrefix.replace(/\.$/, "") : t("post.back")}
+      </a>
+      <h1 class="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-balance sm:text-[2.6rem]">
+        {post.data.title}
+      </h1>
+      <div class="mt-4 flex items-center gap-2 font-mono text-xs text-muted-foreground">
+        <time datetime={post.data.pubDate.toISOString()}>
+          {formatDate(post.data.pubDate, lang)}
+        </time>
+        <span class="opacity-40">·</span>
+        <span>{readTime} {t("post.min")}</span>
+      </div>
+    </header>
+
+    <div class="relative mb-12 aspect-2/1 overflow-hidden rounded-xl border border-border">
+      <Cover
+        cover={post.data.cover}
+        articleNumber={post.data.articleNumber}
+        alt={post.data.title}
+      />
+      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent">
+      </div>
+    </div>
+
+    <div
+      class="article-body prose max-w-none prose-headings:font-display prose-headings:tracking-tight"
+    >
+      <slot />
+    </div>
+
+    <footer class="mt-16 flex items-center justify-between gap-4 border-t border-border pt-8 text-sm">
+      {
+        prevPost ? (
+          <a
+            href={localizePath(`/blog/${prevPost.id}`, lang)}
+            class="group max-w-[45%] text-muted-foreground transition-colors hover:text-primary"
+          >
+            <span class="font-mono text-[10px] uppercase tracking-[0.2em] opacity-60">
+              ← {t("post.prev")}
+            </span>
+            <span class="mt-0.5 block truncate font-medium">
+              {prevPost.data.title}
+            </span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        nextPost && (
+          <a
+            href={localizePath(`/blog/${nextPost.id}`, lang)}
+            class="group max-w-[45%] text-right text-muted-foreground transition-colors hover:text-primary"
+          >
+            <span class="font-mono text-[10px] uppercase tracking-[0.2em] opacity-60">
+              {t("post.next")} →
+            </span>
+            <span class="mt-0.5 block truncate font-medium">
+              {nextPost.data.title}
+            </span>
+          </a>
+        )
+      }
+    </footer>
+  </article>
+</BaseLayout>
+
+<script>
+  // Reading-progress bar: scale a coral hairline with scroll depth.
+  const bar = document.getElementById("read-progress");
+  if (bar) {
+    const update = () => {
+      const el = document.documentElement;
+      const max = el.scrollHeight - el.clientHeight;
+      const pct = max > 0 ? el.scrollTop / max : 0;
+      bar.style.transform = `scaleX(${pct})`;
+    };
+    document.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update, { passive: true });
+    update();
+  }
+</script>

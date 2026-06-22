@@ -1,0 +1,235 @@
+---
+/*
+  Constellation.astro — the signature "star chart of one operator" hero.
+  A large warm avatar core (the person) connected to three cool facet stars
+  (Engineer / Product / Analytics). The facets are one connected constellation,
+  not three separate jobs — that's the persona, packaged.
+
+  The center is an avatar disc: pass `avatar` (image URL) to use a real picture
+  (face / mascot animal — TBD); without it, a monogram placeholder is shown.
+  This avatar is meant to become the cross-channel mark.
+
+  NOTE: strawman copy below is placeholder (English). Final copy will be routed
+  through src/i18n once the concept/wording is locked.
+*/
+import { SITE } from "$lib/config";
+import { Button } from "$lib/components/ui/button/index.js";
+import { getLangFromUrl, localizePath } from "$i18n/utils";
+
+interface Props {
+  avatar?: string;
+}
+const { avatar } = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+
+const core = { x: 300, y: 180 };
+const R = 38; // avatar radius
+const facets = [
+  { x: 96, y: 70, name: "Engineer", caption: "ship AI products end-to-end" },
+  { x: 506, y: 64, name: "Product", caption: "decide what's worth building" },
+  { x: 430, y: 300, name: "Analytics", caption: "read the market with data" },
+];
+
+// a few ambient dim stars for depth (hand-placed so nothing crowds the labels)
+const ambient = [
+  [50, 40], [250, 44], [566, 150], [548, 304], [70, 256], [368, 120], [186, 312],
+];
+const monogram = SITE.title
+  .split(" ")
+  .map((w) => w[0])
+  .join("")
+  .slice(0, 2)
+  .toUpperCase();
+---
+
+<section class="pt-4 pb-2">
+  <figure class="constellation" aria-label="A constellation of one operator: Engineer, Product, Analytics">
+    <svg viewBox="0 0 600 360" role="img" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <clipPath id="avatarClip">
+          <circle cx={core.x} cy={core.y} r={R} />
+        </clipPath>
+      </defs>
+
+      <g class="ambient">
+        {ambient.map(([x, y]) => <circle cx={x} cy={y} r="1" />)}
+      </g>
+
+      {
+        facets.map((f) => (
+          <g class="facet">
+            <line class="facet-link" x1={core.x} y1={core.y} x2={f.x} y2={f.y} />
+            <line class="base-link" x1={core.x} y1={core.y} x2={f.x} y2={f.y} />
+            <circle class="facet-star" cx={f.x} cy={f.y} r="4" />
+            <text class="facet-name" x={f.x} y={f.y - 14} text-anchor="middle">
+              {f.name}
+            </text>
+            <text class="facet-cap" x={f.x} y={f.y + 22} text-anchor="middle">
+              {f.caption}
+            </text>
+          </g>
+        ))
+      }
+
+      <circle class="core-halo" cx={core.x} cy={core.y} r={R + 18} />
+      {
+        avatar ? (
+          <>
+            <image
+              class="avatar-img"
+              href={avatar}
+              x={core.x - R}
+              y={core.y - R}
+              width={R * 2}
+              height={R * 2}
+              clip-path="url(#avatarClip)"
+              preserveAspectRatio="xMidYMid slice"
+            />
+            <circle class="avatar-tint" cx={core.x} cy={core.y} r={R} clip-path="url(#avatarClip)" />
+          </>
+        ) : (
+          <>
+            <circle class="avatar-bg" cx={core.x} cy={core.y} r={R} />
+            <text class="avatar-mono" x={core.x} y={core.y} text-anchor="middle" dominant-baseline="central">
+              {monogram}
+            </text>
+          </>
+        )
+      }
+      <circle class="avatar-ring" cx={core.x} cy={core.y} r={R} />
+    </svg>
+  </figure>
+
+  <div class="mt-2 text-center">
+    <h1 class="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+      {SITE.title}
+    </h1>
+    <p class="mx-auto mt-4 max-w-xl text-balance leading-relaxed text-muted-foreground">
+      An engineer mapping the space between code, product, and market.
+    </p>
+    <div class="mt-6">
+      <Button href={localizePath("/blog", lang)} class="glow-primary">
+        Enter the field log
+      </Button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .constellation svg {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    margin: 0 auto;
+    overflow: visible;
+  }
+
+  .ambient circle {
+    fill: #d8e0f5;
+    opacity: 0.28;
+  }
+
+  /* base links sit faint behind everything */
+  .base-link {
+    stroke: color-mix(in oklch, var(--primary) 45%, transparent);
+    stroke-width: 0.6;
+    opacity: 0.4;
+  }
+
+  .facet-link {
+    stroke: var(--accent);
+    stroke-width: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .facet-star {
+    fill: var(--accent);
+    transition: filter 0.3s ease;
+  }
+
+  .facet-name {
+    fill: var(--foreground);
+    font-family: var(--ff-display);
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .facet-cap {
+    fill: var(--muted-foreground);
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  /* hover/focus a facet → brighten its star, reveal its link + caption */
+  .facet:hover .facet-star,
+  .facet:focus-within .facet-star {
+    filter: drop-shadow(0 0 6px var(--accent));
+  }
+  .facet:hover .facet-cap,
+  .facet:hover .facet-link,
+  .facet:focus-within .facet-cap,
+  .facet:focus-within .facet-link {
+    opacity: 1;
+  }
+
+  /* avatar core */
+  .avatar-img {
+    /* B&W portrait → settle it into the warm cosmic palette: a touch of warmth,
+       slightly lifted contrast, and dimmed so the coral ring/halo stay dominant */
+    filter: contrast(1.06) brightness(0.92) sepia(0.22) saturate(1.1) hue-rotate(-8deg);
+  }
+  .avatar-tint {
+    /* coral wash, multiply-blended into the photo for cohesion with the očag */
+    fill: var(--primary);
+    opacity: 0.16;
+    mix-blend-mode: soft-light;
+  }
+  .avatar-bg {
+    fill: #0a0c14;
+  }
+  .avatar-mono {
+    fill: var(--foreground);
+    font-family: var(--ff-display);
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: 0.02em;
+  }
+  .avatar-ring {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 1.5;
+    opacity: 0.95;
+    filter: drop-shadow(0 0 10px var(--primary));
+  }
+
+  .core-halo {
+    fill: color-mix(in oklch, var(--primary) 26%, transparent);
+    animation: breathe 6s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.18);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .core-halo {
+      animation: none;
+    }
+  }
+</style>
