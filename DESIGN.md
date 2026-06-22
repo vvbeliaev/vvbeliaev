@@ -1,9 +1,10 @@
 ---
 name: Corona Bloom
 description: >-
-  High-contrast cold cosmic-chthonic dark theme with luminous pink + blue
-  accents. A painterly "skybox" atmosphere (concentrated warm/cool очаг, sparse
-  silver constellation lines) under a disciplined typographic "HUD". Single fixed
+  Deep, somber cold cosmic-chthonic dark theme with a luminous coral-clay core
+  and a steel-blue counterpoint. A painterly "skybox" atmosphere (depth
+  gradients, a schematic star field with faint constellations in the margins,
+  cosmos↔chthonic polarity) under a disciplined typographic "HUD". Single fixed
   dark theme — no runtime toggle.
 mode: dark
 color-scheme: dark
@@ -13,76 +14,82 @@ fonts:
   body: "Hanken Grotesk"     # long-form reading
   mono: "JetBrains Mono"     # field-log readouts, code, labels
 colors:
-  background: "#050711"      # deep cold cosmic-chthonic base
-  foreground: "#eef0f6"
-  card: "#0c0f1a"
-  card-foreground: "#eef0f6"
-  popover: "#0c0f1a"
-  popover-foreground: "#eef0f6"
-  primary: "#f48ab6"         # luminous pink — the action / warm "event"
-  primary-foreground: "#1d0a13"
-  secondary: "#161a28"
-  secondary-foreground: "#eef0f6"
-  muted: "#11141f"
-  muted-foreground: "#8b91a4"
-  accent: "#74bdf0"          # luminous blue — the cool counterpoint
-  accent-foreground: "#04131f"
-  destructive: "#f0688c"
-  border: "#1f2640"
-  input: "#1f2640"
-  ring: "#f48ab6"
-  chart-1: "#f48ab6"         # pink
-  chart-2: "#74bdf0"         # blue
-  chart-3: "#f0c08a"         # gold
-  chart-4: "#b59cf0"         # violet
-  chart-5: "#6fd0c0"         # teal
+  background: "#04050b"      # deep, somber cosmic-chthonic base
+  foreground: "#e3e5ee"
+  card: "#0a0c14"
+  card-foreground: "#e3e5ee"
+  popover: "#0a0c14"
+  popover-foreground: "#e3e5ee"
+  primary: "#f08a72"         # luminous coral-clay — the action / warm core
+  primary-foreground: "#1a0d07"
+  secondary: "#13161f"
+  secondary-foreground: "#e3e5ee"
+  muted: "#0e1018"
+  muted-foreground: "#7d8294"
+  accent: "#5f95c2"          # muted steel-blue — the cool counterpoint
+  accent-foreground: "#060f18"
+  destructive: "#cf6178"
+  border: "#1a2034"
+  input: "#1a2034"
+  ring: "#f08a72"
+  chart-1: "#f08a72"         # coral-clay
+  chart-2: "#5f95c2"         # steel blue
+  chart-3: "#cfa878"         # muted gold
+  chart-4: "#9a86c4"         # muted violet
+  chart-5: "#5fb0a4"         # muted teal
 glow:
-  blur: 26px
-  spread: -8px
+  blur: 24px                 # luminous halo — alive, not faded; still not neon
+  spread: -6px
 ---
 
 # Corona Bloom
 
-A personal blog / field log. The aesthetic: **a deep, cold cosmos with a warm
-luminous core** — pink and blue accents that *emit light* against a near-black
-blue field. Inspired by the sun's corona: a bright halo in the dark.
+A personal blog / field log. The aesthetic: **a deep, somber cosmos with a
+luminous warm core** — a coral-clay accent that glows like an ember against a
+near-black field, with steel-blue as the cold counterpoint. Inspired by the
+sun's corona seen in deep space: a living halo in the dark, not a neon sign.
 
 ## 1. Aesthetic DNA
 
-- **Cold cosmic-chthonic base.** Deep blue-black (`#050711`), high contrast.
-  Sky/void above, earth/depth below — the cosmos↔chthonic polarity is the
+- **Somber cosmic-chthonic base.** Deep near-black (`#04050b`), low ambient
+  light. Sky/void above, earth/depth below — the cosmos↔chthonic polarity is the
   recurring conceptual motif, not just decoration.
-- **Luminous accents.** Pink (`#f48ab6`) is the action and the warm "event";
-  blue (`#74bdf0`) is the cool counterpoint. Both *glow* (soft outer halo).
-  They are distinct hues — never blended into a muddy lavender/purple.
-- **No neon / electric-blue as a flat fill.** Brightness comes from the *glow*,
-  not from max saturation. Accents are bright but slightly soft.
-- **Restraint.** Accent is used sparingly as a focused source ("очаг"), not as
-  an ambient wash. Most of the surface is dark and quiet.
+- **Luminous warm core, cold counterpoint.** Coral-clay (`#f08a72`) is the
+  action and the warm core — it should *glow*, alive, not faded; steel-blue
+  (`#5f95c2`) is the cool counterpoint. Distinct hues — never blended into a
+  muddy lavender/purple.
+- **Luminous, not neon.** The accent carries real chroma and a soft halo so it
+  reads as a living ember against the dark — but the base stays deep and quiet,
+  the cold is carried by the atmosphere, not by dulling the accent.
+- **Restraint.** The warm accent is used sparingly as a focused source ("очаг"),
+  not as an ambient wash. Most of the surface is dark and still.
 
 ## 2. Two-layer construction
 
 The signature: a soft painterly **skybox** under a crisp **HUD**.
 
-- **Skybox (atmosphere).** A fixed background layer carrying mood, kept
-  deliberately clean: a concentrated warm pink glow (top), a cooler blue haze
-  (lower), very faint star-dust masked to the top, subtle terminal scanlines,
-  and a subtle grain. No schematic constellation linework on the base — it read
-  as noise behind text. Implemented as `.atmosphere` (see `global.css`).
+- **Skybox (atmosphere).** A fixed background layer carrying mood, rendered as
+  deep space — not a screen: a small warm coral очаг (top), a diffuse cold
+  nebula haze, a vertical cosmos↔chthonic gradient (cool void above, denser
+  black welling up below), a schematic **star field** (irregular stars, biased
+  to the top, twinkling) with faint **constellation lines kept to the side
+  margins** so they never cross the reading column, and a subtle grain. No
+  terminal scanlines — the mood is cosmos, not CRT. Implemented as
+  `Atmosphere.astro`.
 - **HUD (foreground).** Disciplined typography and iconography that stays
   invariant and legible at any size. Whatever happens in the skybox, text and
   previews must read.
 
 ## 3. Color
 
-- Base: deep cold blue-black; cards one step lifted (`#0c0f1a`).
-- Warm event: **pink** `#f48ab6` (primary). Cool structure: **blue** `#74bdf0`
-  (accent). Secondary warm hues available in charts: gold, violet, teal.
-- `destructive` is a cool-leaning rose (`#f0688c`), never a hot fire-red.
-- Borders/inputs are low-contrast cool slate (`#1f2640`).
-- **Glow**: luminous elements use the `glow-primary` / `glow-accent` utilities,
-  driven by `--glow-blur` / `--glow-spread`. Apply to the primary CTA and the
-  accent block — not to everything.
+- Base: deep somber near-black; cards one step lifted (`#0a0c14`).
+- Warm core: **coral-clay** `#f08a72` (primary). Cool structure: **steel-blue**
+  `#5f95c2` (accent). Muted secondary hues in charts: gold, violet, teal.
+- `destructive` is a muted rose (`#cf6178`), never a hot fire-red.
+- Borders/inputs are low-contrast cool slate (`#1a2034`).
+- **Glow**: a luminous halo via `glow-primary` / `glow-accent`, driven by
+  `--glow-blur` (24px) / `--glow-spread` (-6px). Apply to the primary CTA and
+  the accent block only — it should glow like an ember, alive but not neon.
 
 ## 4. Typography
 
@@ -95,25 +102,32 @@ The signature: a soft painterly **skybox** under a crisp **HUD**.
 
 ## 5. Atmosphere (skybox) recipe
 
-Kept clean — glow does the work, texture stays minimal. Back to front:
-1. Solid base `#050711`.
-2. Cool blue haze — `radial-gradient` lower-right, ~10% alpha.
-3. Warm pink очаг — small `radial-gradient` at top-center, ~22% alpha
-   (concentrated, not a wash).
-4. Subtle terminal scanlines — faint `repeating-linear-gradient`, ~1.6% alpha.
-5. Very faint star-dust (`::before`, ~22% opacity), masked to the top only;
-   set `--stardust: none` for a fully plain backdrop.
-6. Fractal-noise grain (`::after`, ~3%, `mix-blend-overlay`).
+Rendered as deep space, not a screen. All of this lives in `Atmosphere.astro`.
+Back to front:
+1. Vertical polarity base — `linear-gradient` cool void `#06070f` (top) →
+   `#04050b` → deep earth `#020308` (bottom): the cosmos↔chthonic axis.
+2. Chthonic floor — a dark `radial-gradient` welling up from the bottom.
+3. Cold nebula depth — large, diffuse, low-saturation indigo/steel
+   `radial-gradient`s (~8–10% alpha) — reads as distance, not as an accent.
+4. Warm coral очаг — small `radial-gradient` at top-center, ~12% alpha.
+5. Schematic **star field** (inline SVG): ~88 irregular stars, seeded so the
+   field is stable across builds, biased to the top and thinning toward the
+   chthonic floor; the layer is masked to fade before the lower content. Bright
+   stars twinkle slowly (staggered).
+6. **Constellation lines** between the larger stars, restricted to the side
+   bands (`cx < 300 || cx > 700`) with short segments — a faint silver sketch in
+   the margins that never crosses the reading column; they twinkle too.
+7. Fractal-noise grain (`::after`, ~2.5%, `mix-blend-overlay`) to kill banding.
 
-Removed as too noisy behind text: the schematic constellation linework.
-(Reintroduce locally per-section if ever needed, never site-wide.)
+No terminal scanlines — they read as "screen", and the goal is cosmos.
+All motion respects `prefers-reduced-motion`.
 
 ## 6. Components
 
 - **Cards** = the HUD panels: `bg-card`, 1px `border`, `--radius` corners,
   optional `backdrop-blur` so the skybox glows through faintly.
-- **Buttons**: primary = solid pink with glow; secondary/outline/ghost stay
-  quiet. Links use `primary`.
+- **Buttons**: primary = solid coral-clay with a luminous glow;
+  secondary/outline/ghost stay quiet. Links use `primary`.
 - **LED indicator** (`led-indicator`): a glowing status dot (borrowed from the
   legacy cogisoft "instrument panel" language).
 - **Blinking cursor** (`animate-blink`): a terminal `_` after key headings.
@@ -129,7 +143,7 @@ Removed as too noisy behind text: the schematic constellation linework.
 
 ## 8. Accessibility & discipline
 
-- Body/headings (`#eef0f6`) on base/card clear AA+ contrast.
+- Body/headings (`#e3e5ee`) on base/card clear AA+ contrast.
 - Long-form prose is explicitly themed for dark (see `.prose` overrides).
 - Readability beats atmosphere: the skybox never compromises text legibility.
 - Glow and motion are subtle; respect `prefers-reduced-motion` for any future
@@ -139,5 +153,6 @@ Removed as too noisy behind text: the schematic constellation linework.
 
 - Tokens live in `:root` in `apps/web/src/styles/global.css`, mapped to Tailwind
   v4 via `@theme inline`. Fonts self-hosted via `@fontsource-variable/*`.
-- The atmosphere is a single `<div class="atmosphere">` rendered once in
-  `BaseLayout`. The site is a fixed dark theme (`<html class="dark">`).
+- The atmosphere is a single `<Atmosphere />` component rendered once in
+  `BaseLayout` (depth gradients + seeded SVG star field/constellations + grain).
+  The site is a fixed dark theme (`<html class="dark">`).

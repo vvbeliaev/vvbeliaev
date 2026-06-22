@@ -1,27 +1,35 @@
 ---
 import "../styles/global.css";
-import { SITE } from "$lib/config";
+import { SITE, SITE_I18N } from "$lib/config";
+import { getLangFromUrl, getAlternatePath, otherLang } from "$i18n/utils";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import Atmosphere from "../components/Atmosphere.astro";
 
 interface Props {
   title?: string;
   description?: string;
+  wide?: boolean;
 }
 
-const { title, description = SITE.description } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const meta = SITE_I18N[lang];
+const { title, description = meta.description, wide = false } = Astro.props;
 const pageTitle = title ? `${title} — ${SITE.title}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const alternateHref = new URL(getAlternatePath(Astro.url, otherLang(lang)), Astro.site);
 ---
 
 <!doctype html>
-<html lang="en" class="dark scroll-smooth">
+<html lang={lang} class="dark scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang={otherLang(lang)} href={alternateHref} />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={pageTitle} />
@@ -31,9 +39,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="generator" content={Astro.generator} />
   </head>
   <body class="min-h-screen antialiased">
-    <div class="atmosphere"></div>
+    <Atmosphere />
     <Header />
-    <main class="mx-auto max-w-3xl px-4 py-10">
+    <main class:list={["mx-auto px-4 py-10", wide ? "max-w-5xl" : "max-w-3xl"]}>
       <slot />
     </main>
     <Footer />

@@ -1,8 +1,8 @@
 ---
 title: Why this blog exists
-description: An engineer's field log — why I keep long-form notes and what goes here.
+description: An engineer's field log — why I keep long-form articles and what goes here.
 pubDate: 2026-06-22
-noteNumber: 1
+articleNumber: 1
 tags: ["meta", "process"]
 ---
 
@@ -12,7 +12,7 @@ looked while I was making them.
 
 ## The format
 
-Every note is numbered. Sometimes it's a post-mortem, sometimes a by-the-numbers
+Every article is numbered. Sometimes it's a post-mortem, sometimes a by-the-numbers
 recap of an experiment. The goal is to capture the line of reasoning, not just
 the result.
 

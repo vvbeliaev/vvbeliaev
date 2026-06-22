@@ -1,0 +1,60 @@
+---
+/*
+  Channels.astro — the "Connect" block (how to reach out, secondary). Telegram DM
+  is the preferred channel (accent tile, quieter than Follow). Handles truncate
+  so long values (e.g. email) never break the row.
+*/
+import { CONNECT } from "$lib/config";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const primary = CONNECT.find((c) => c.primary);
+const rest = CONNECT.filter((c) => !c.primary);
+---
+
+<section class="mt-14">
+  <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">
+    {t("home.connect")}
+  </h2>
+
+  {
+    primary && (
+      <a
+        href={primary.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group mt-4 flex items-center justify-between gap-4 rounded-lg border border-primary/30 bg-card/40 px-4 py-3.5 transition-colors hover:border-primary/60 hover:bg-card"
+      >
+        <span class="flex items-center gap-2.5">
+          <span class="led-indicator text-primary" />
+          <span class="font-medium">{primary.label}</span>
+        </span>
+        <span class="font-mono text-sm text-muted-foreground group-hover:text-foreground">
+          {primary.handle}
+        </span>
+      </a>
+    )
+  }
+
+  <ul class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+    {
+      rest.map((c) => (
+        <li class="min-w-0">
+          <a
+            href={c.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group flex min-w-0 flex-col rounded-lg border border-border bg-card/40 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-card"
+          >
+            <span class="font-medium">{c.label}</span>
+            <span class="mt-0.5 truncate font-mono text-xs text-muted-foreground group-hover:text-foreground">
+              {c.handle}
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>

@@ -1,0 +1,38 @@
+---
+/*
+  Follow.astro — where to consume the content: YouTube + the Telegram channel.
+  Calm/neutral treatment (no coral fill); the primary channel keeps only a small
+  LED to mark it as the priority.
+*/
+import { FOLLOW } from "$lib/config";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section class="mt-12">
+  <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground">
+    {t("home.follow")}
+  </h2>
+  <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+    {
+      FOLLOW.map((c) => (
+        <li>
+          <a
+            href={c.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group flex items-center justify-between gap-4 rounded-lg border border-border bg-card/40 px-4 py-3.5 transition-colors hover:border-primary/40 hover:bg-card"
+          >
+            <span class="flex items-center gap-2.5">
+              {c.primary && <span class="led-indicator text-primary" />}
+              <span class="font-medium">{c.label}</span>
+            </span>
+            <span class="font-mono text-sm text-muted-foreground group-hover:text-foreground">{c.handle}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>

@@ -1,0 +1,57 @@
+---
+import { getCollection } from "astro:content";
+import Cover from "./Cover.astro";
+import { formatDate } from "$lib/date";
+import { getLangFromUrl, useTranslations, localizePath } from "$i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const posts = (
+  await getCollection("blog", ({ data }) => !data.draft && data.lang === lang)
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<h1 class="font-display text-3xl font-bold tracking-tight">{t("blog.title")}</h1>
+<p class="mt-2 text-muted-foreground">{t("blog.subtitle")}</p>
+
+{
+  posts.length === 0 ? (
+    <p class="mt-10 text-muted-foreground">{t("blog.empty")}</p>
+  ) : (
+    <ul class="mt-10 space-y-10">
+      {posts.map((post) => (
+        <li>
+          <a
+            href={localizePath(`/blog/${post.id}`, lang)}
+            class="group grid gap-5 sm:grid-cols-[220px_1fr]"
+          >
+            <div class="aspect-2/1 overflow-hidden rounded-lg border border-border transition-colors group-hover:border-primary/40">
+              <Cover
+                cover={post.data.cover}
+                articleNumber={post.data.articleNumber}
+                alt={post.data.title}
+                class="transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+            <div class="sm:pt-1">
+              <time
+                datetime={post.data.pubDate.toISOString()}
+                class="font-mono text-xs text-muted-foreground"
+              >
+                {formatDate(post.data.pubDate, lang)}
+              </time>
+              <h2 class="mt-1.5 font-display text-xl font-semibold tracking-tight transition-colors group-hover:text-primary">
+                {post.data.articleNumber
+                  ? `${t("article.prefix")} #${post.data.articleNumber}. `
+                  : ""}
+                {post.data.title}
+              </h2>
+              <p class="mt-2 text-muted-foreground">{post.data.description}</p>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}

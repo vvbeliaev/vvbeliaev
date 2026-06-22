@@ -10,64 +10,61 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Site theme — "Corona Bloom": a high-contrast cold cosmic-chthonic base with
-  luminous pink + blue accents. Single fixed dark theme (no runtime toggle).
-  Full design system: see /DESIGN.md.
+  Site theme — "Corona Bloom": a deep, somber cosmic-chthonic base with a
+  luminous coral-clay core and a steel-blue counterpoint. Single fixed dark
+  theme (no runtime toggle). Full design system: see /DESIGN.md.
 */
 :root {
   --radius: 0.5rem;
 
-  /* deep cold cosmic base */
-  --background: #050711;
-  --foreground: #eef0f6;
-  --card: #0c0f1a;
-  --card-foreground: #eef0f6;
-  --popover: #0c0f1a;
-  --popover-foreground: #eef0f6;
+  /* deep, somber cosmic base */
+  --background: #04050b;
+  --foreground: #e3e5ee;
+  --card: #0a0c14;
+  --card-foreground: #e3e5ee;
+  --popover: #0a0c14;
+  --popover-foreground: #e3e5ee;
 
-  /* luminous accents: pink action + blue counterpoint */
-  --primary: #f48ab6;
-  --primary-foreground: #1d0a13;
-  --secondary: #161a28;
-  --secondary-foreground: #eef0f6;
-  --muted: #11141f;
-  --muted-foreground: #8b91a4;
-  --accent: #74bdf0;
-  --accent-foreground: #04131f;
-  --destructive: #f0688c;
+  /* luminous coral-clay action + steel-blue counterpoint */
+  --primary: #f08a72;
+  --primary-foreground: #1a0d07;
+  --secondary: #13161f;
+  --secondary-foreground: #e3e5ee;
+  --muted: #0e1018;
+  --muted-foreground: #7d8294;
+  --accent: #5f95c2;
+  --accent-foreground: #060f18;
+  --destructive: #cf6178;
 
-  --border: #1f2640;
-  --input: #1f2640;
-  --ring: #f48ab6;
+  --border: #1a2034;
+  --input: #1a2034;
+  --ring: #f08a72;
 
-  /* charts / data-viz palette (cosmic) */
-  --chart-1: #f48ab6;
-  --chart-2: #74bdf0;
-  --chart-3: #f0c08a;
-  --chart-4: #b59cf0;
-  --chart-5: #6fd0c0;
+  /* charts / data-viz palette (muted cosmic) */
+  --chart-1: #f08a72;
+  --chart-2: #5f95c2;
+  --chart-3: #cfa878;
+  --chart-4: #9a86c4;
+  --chart-5: #5fb0a4;
 
   /* sidebar (shadcn completeness) */
-  --sidebar: #0c0f1a;
-  --sidebar-foreground: #eef0f6;
-  --sidebar-primary: #f48ab6;
-  --sidebar-primary-foreground: #1d0a13;
-  --sidebar-accent: #161a28;
-  --sidebar-accent-foreground: #eef0f6;
-  --sidebar-border: #1f2640;
-  --sidebar-ring: #f48ab6;
+  --sidebar: #0a0c14;
+  --sidebar-foreground: #e3e5ee;
+  --sidebar-primary: #f08a72;
+  --sidebar-primary-foreground: #1a0d07;
+  --sidebar-accent: #13161f;
+  --sidebar-accent-foreground: #e3e5ee;
+  --sidebar-border: #1a2034;
+  --sidebar-ring: #f08a72;
 
-  /* luminous glow strength (used by glow-* utilities) */
-  --glow-blur: 26px;
-  --glow-spread: -8px;
+  /* luminous halo (used by glow-* utilities) — alive, not faded */
+  --glow-blur: 24px;
+  --glow-spread: -6px;
 
   /* fonts */
   --ff-display: "Sora Variable", "Sora", sans-serif;
   --ff-body: "Hanken Grotesk Variable", "Hanken Grotesk", sans-serif;
   --ff-mono: "JetBrains Mono Variable", "JetBrains Mono", monospace;
-
-  /* atmosphere star-dust (kept faint; set to none for a fully clean backdrop) */
-  --stardust: radial-gradient(circle, rgba(216, 224, 245, 0.4) 1px, transparent 1.5px);
 }
 
 @theme inline {
@@ -127,42 +124,7 @@
   }
 }
 
-/* ─────────────── Atmosphere (the painterly "skybox") ─────────────── */
-.atmosphere {
-  position: fixed;
-  inset: 0;
-  z-index: -10;
-  pointer-events: none;
-  background:
-    /* terminal scanlines (subtle) */
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.016) 0 1px,
-      transparent 1px 6px
-    ),
-    radial-gradient(34% 26% at 50% 0%, rgba(244, 138, 182, 0.22), transparent 64%),
-    radial-gradient(50% 36% at 86% 78%, rgba(116, 189, 240, 0.1), transparent 62%),
-    #050711;
-}
-/* Faint star-dust, masked to the top only (set --stardust: none to remove). */
-.atmosphere::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: var(--stardust);
-  background-size: 72px 72px;
-  opacity: 0.22;
-  -webkit-mask-image: radial-gradient(120% 75% at 50% 0%, black, transparent 72%);
-  mask-image: radial-gradient(120% 75% at 50% 0%, black, transparent 72%);
-}
-.atmosphere::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-  mix-blend-mode: overlay;
-}
+/* The cosmic skybox lives in Atmosphere.astro (depth gradients + star field). */
 
 /* ─────────────── Utilities ─────────────── */
 @utility font-display {
@@ -222,4 +184,51 @@
   --tw-prose-pre-bg: var(--muted);
   --tw-prose-th-borders: var(--border);
   --tw-prose-td-borders: var(--border);
+}
+
+/* ─────────── Article reading layout (editorial polish) ─────────── */
+.article-body {
+  font-size: 1.075rem;
+  line-height: 1.75;
+}
+
+/* Coral drop cap on the opening paragraph */
+.article-body > p:first-of-type::first-letter {
+  font-family: var(--ff-display);
+  font-weight: 800;
+  font-size: 3.4em;
+  line-height: 0.78;
+  float: left;
+  margin: 0.04em 0.12em 0 0;
+  color: var(--primary);
+}
+
+/* A small coral "field-log" tick above each H2 */
+.article-body :where(h2) {
+  margin-top: 2.75rem;
+}
+.article-body :where(h2)::before {
+  content: "";
+  display: block;
+  width: 2rem;
+  height: 2px;
+  margin-bottom: 0.85rem;
+  background: var(--primary);
+  opacity: 0.85;
+}
+
+/* Quieter, refined links */
+.article-body :where(a) {
+  text-decoration-color: color-mix(in oklch, var(--primary) 45%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
+}
+.article-body :where(a):hover {
+  text-decoration-color: var(--primary);
+}
+
+/* Pull-quote presence */
+.article-body :where(blockquote) {
+  font-style: italic;
+  font-size: 1.2rem;
 }

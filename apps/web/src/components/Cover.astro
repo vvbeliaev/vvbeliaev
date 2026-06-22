@@ -1,0 +1,40 @@
+---
+/*
+  Cover.astro — a post cover. Shows the image when present; otherwise a quiet
+  on-theme gradient panel (coral core ↔ steel) with the note number, so the
+  layout stays composed even before art exists.
+*/
+interface Props {
+  cover?: string;
+  articleNumber?: number;
+  alt?: string;
+  class?: string;
+}
+const { cover, articleNumber, alt = "", class: className = "" } = Astro.props;
+const fallbackBg =
+  "radial-gradient(120% 100% at 25% 20%, color-mix(in oklch, var(--primary) 22%, transparent), transparent 60%)," +
+  "radial-gradient(120% 100% at 85% 90%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 62%)," +
+  "var(--card)";
+---
+
+{
+  cover ? (
+    <img
+      src={cover}
+      alt={alt}
+      loading="lazy"
+      class:list={["h-full w-full object-cover", className]}
+    />
+  ) : (
+    <div
+      class:list={["flex h-full w-full items-center justify-center", className]}
+      style={`background:${fallbackBg}`}
+    >
+      {articleNumber && (
+        <span class="font-mono text-2xl font-bold text-foreground/30">
+          {String(articleNumber).padStart(2, "0")}
+        </span>
+      )}
+    </div>
+  )
+}

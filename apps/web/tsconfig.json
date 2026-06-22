@@ -6,7 +6,9 @@
     "baseUrl": ".",
     "paths": {
       "$lib": ["./src/lib"],
-      "$lib/*": ["./src/lib/*"]
+      "$lib/*": ["./src/lib/*"],
+      "$i18n": ["./src/i18n"],
+      "$i18n/*": ["./src/i18n/*"]
     },
     "jsx": "preserve",
     "verbatimModuleSyntax": true
