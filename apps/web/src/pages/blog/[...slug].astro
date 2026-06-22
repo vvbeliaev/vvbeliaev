@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatDate } from "$lib/date";
+
+export const getStaticPaths = (async () => {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article>
+    <header class="mb-8">
+      <time
+        datetime={post.data.pubDate.toISOString()}
+        class="text-sm text-muted-foreground"
+      >
+        {formatDate(post.data.pubDate)}
+      </time>
+      <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+        {post.data.noteNumber ? `Note #${post.data.noteNumber}. ` : ""}
+        {post.data.title}
+      </h1>
+      {
+        post.data.tags.length > 0 && (
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {post.data.tags.map((tag) => (
+              <li class="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-secondary-foreground">
+                {tag}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    <div
+      class="prose max-w-none prose-headings:font-display prose-headings:tracking-tight"
+    >
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

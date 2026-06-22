@@ -1,0 +1,349 @@
+{
+  "basics": {
+    "name": "Vladimir Beliaev",
+    "headline": "DevOps Engineer / Platform Engineer",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Moscow / Remote",
+    "url": {
+      "label": "Portfolio",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Website",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "Summary",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "DevOps Engineer with strong Software Development background (Python/Full Stack). Experienced in building scalable infrastructure using Kubernetes, Terraform, and GitOps practices. Specialized in deploying AI/ML workloads. Automation enthusiast."
+    },
+    "awards": {
+      "name": "Awards",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": []
+    },
+    "certifications": {
+      "name": "Certifications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Education",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Minor",
+          "area": "Data Science & Machine Learning",
+          "score": "GPA 9.5/10",
+          "date": "Sep 2021 - May 2024",
+          "summary": "Strong foundation in ML enabling effective deployment and optimization of AI/ML workloads.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        },
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Degree",
+          "area": "Marketing and Market Analytics",
+          "score": "GPA 8/10",
+          "date": "Sep 2021 - Present (Academic Leave)",
+          "summary": "",
+          "url": {
+            "label": "HSE University",
+            "href": "https://www.hse.ru/en/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Experience",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "cogito-software",
+          "visible": true,
+          "company": "Cogito Software / Freelance",
+          "position": "DevOps / Platform Engineer",
+          "location": "Remote",
+          "date": "Nov 2024 - Present",
+          "summary": "Designed and implemented infrastructure for AI-driven web applications and micro-SaaS products.\n\n• Designed and implemented CI/CD pipelines using GitHub Actions, reducing deployment time by 40%.\n• Migrated legacy monolithic applications to Docker containers and orchestrated deployments.\n• Managed cloud infrastructure (Hetzner) using Infrastructure as Code principles.\n• Configured Coolify for self-hosted PaaS deployments with automatic SSL and monitoring.\n• Built optimized Docker images with multistage builds for Python and Node.js applications.\n\nStack: Docker, GitHub Actions, Coolify, Hetzner, Linux, Nginx.",
+          "url": {
+            "label": "Portfolio",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "DevOps / Backend Engineer",
+          "location": "Moscow",
+          "date": "Jan 2023 - Nov 2024",
+          "summary": "Built and maintained infrastructure for self-hosted LLM platform.\n\n• Deployed self-hosted LLM models using Docker and GPU-passthrough technologies.\n• Managed Elastic and Qdrant clusters for vector search infrastructure.\n• Implemented monitoring and logging for production services.\n• Optimized container images and deployment pipelines for ML workloads.\n\nStack: Docker, Linux, Elastic, Qdrant, Python, FastAPI.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Volunteering",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Interests",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "self-hosting",
+          "visible": true,
+          "name": "Self-hosting & Homelab",
+          "keywords": [
+            "raspberry-pi",
+            "proxmox",
+            "home-automation",
+            "networking"
+          ]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Languages",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "english",
+          "visible": true,
+          "name": "English",
+          "description": "Professional Working Proficiency",
+          "level": 4
+        },
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Russian",
+          "description": "Native",
+          "level": 5
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Profiles",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Projects",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "mlops-platform",
+          "visible": true,
+          "name": "End-to-End MLOps Platform on K8s",
+          "date": "2024",
+          "description": "GitOps deployment pipeline for AI applications",
+          "summary": "Production Kubernetes deployment with GitOps practices:\n\n• Infrastructure as Code with Terraform for cluster provisioning\n• Helm charts for application deployment\n• Ingress Controller (Nginx) + Cert-Manager for automatic HTTPS\n• HPA (Horizontal Pod Autoscaler) for auto-scaling\n• CI/CD with GitHub Actions and ArgoCD\n• Monitoring with Prometheus + Grafana dashboards\n\nStack: Kubernetes, Helm, ArgoCD, Terraform, Prometheus, Grafana.",
+          "url": {
+            "label": "GitHub",
+            "href": "https://github.com/vvbeliaev"
+          }
+        },
+        {
+          "id": "multi-service",
+          "visible": true,
+          "name": "Multi-Service Deployment Platform",
+          "date": "2024",
+          "description": "Self-hosted PaaS for micro-SaaS products",
+          "summary": "Deployed multiple production services on Hetzner using Coolify:\n\n• Automated deployments from GitHub with zero-downtime updates\n• Centralized logging and monitoring\n• Automatic SSL certificate management\n• Database backups and disaster recovery setup\n\nStack: Coolify, Docker, Nginx, PostgreSQL, Redis.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Publications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "References",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Skills",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "clouds",
+          "visible": true,
+          "name": "Cloud Platforms",
+          "description": "Cloud infrastructure management",
+          "level": 4,
+          "keywords": ["Hetzner", "DigitalOcean", "AWS (basic)", "Yandex Cloud"]
+        },
+        {
+          "id": "containerization",
+          "visible": true,
+          "name": "Containerization & Orchestration",
+          "description": "Container management",
+          "level": 5,
+          "keywords": [
+            "Docker",
+            "Kubernetes (K8s)",
+            "Helm",
+            "ArgoCD",
+            "Docker Compose"
+          ]
+        },
+        {
+          "id": "iac",
+          "visible": true,
+          "name": "Infrastructure as Code",
+          "description": "IaC and configuration management",
+          "level": 4,
+          "keywords": [
+            "Terraform",
+            "Ansible",
+            "GitHub Actions",
+            "CI/CD Pipelines"
+          ]
+        },
+        {
+          "id": "monitoring",
+          "visible": true,
+          "name": "Monitoring & Observability",
+          "description": "System monitoring and logging",
+          "level": 4,
+          "keywords": [
+            "Prometheus",
+            "Grafana",
+            "ELK Stack",
+            "Coolify Monitoring"
+          ]
+        },
+        {
+          "id": "scripting",
+          "visible": true,
+          "name": "Scripting & Development",
+          "description": "Automation and backend development",
+          "level": 5,
+          "keywords": ["Python", "Bash", "Go", "FastAPI", "Node.js"]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        ["profiles", "summary", "experience", "projects", "education"],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "latin",
+        "variants": ["regular"],
+        "size": 14
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "en-devops"
+  }
+}

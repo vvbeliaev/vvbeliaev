@@ -1,0 +1,38 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatDate } from "$lib/date";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title="Blog" description="Long-form posts and notes.">
+  <h1 class="text-3xl font-semibold tracking-tight">Blog</h1>
+  <p class="mt-2 text-muted-foreground">
+    Long-form posts, breakdowns and field notes.
+  </p>
+
+  <ul class="mt-8 space-y-6">
+    {
+      posts.map((post) => (
+        <li class="border-b border-border pb-6 last:border-0">
+          <a href={`/blog/${post.id}`} class="group block">
+            <time
+              datetime={post.data.pubDate.toISOString()}
+              class="text-sm text-muted-foreground"
+            >
+              {formatDate(post.data.pubDate)}
+            </time>
+            <h2 class="mt-1 text-xl font-medium group-hover:underline">
+              {post.data.noteNumber ? `Note #${post.data.noteNumber}. ` : ""}
+              {post.data.title}
+            </h2>
+            <p class="mt-1 text-muted-foreground">{post.data.description}</p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

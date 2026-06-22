@@ -1,0 +1,395 @@
+{
+  "basics": {
+    "name": "Владимир Беляев",
+    "headline": "Technical Product Manager / Product Owner",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Москва / Удаленно",
+    "url": {
+      "label": "Портфолио",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Сайт",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "О себе",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "Product Manager с сильным инженерным бэкграундом (CS & Data Science) и образованием в маркетинге. Успешно запустил и управлял 4+ цифровыми продуктами от идеи до рынка. Опыт анализа рынков (US/EU), customer development и руководства техническими командами. Я соединяю бизнес-цели и инженерное исполнение."
+    },
+    "awards": {
+      "name": "Награды",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": [
+        {
+          "id": "kept-case-championship",
+          "visible": true,
+          "title": "Победитель кейс-чемпионата — Kept",
+          "awarder": "Kept Consulting",
+          "date": "2022",
+          "summary": "Разработка антикризисной стратегии для российской логистической компании в условиях санкций.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "certifications": {
+      "name": "Сертификаты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Образование",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Major)",
+          "area": "Маркетинг и Рыночная Аналитика",
+          "score": "GPA 8/10",
+          "date": "Сен 2021 - Настоящее время (Академический отпуск)",
+          "summary": "Фокус на data-driven маркетинге, поведении потребителей и аналитике. Сочетание количественного мышления с пониманием продукта и бизнеса.",
+          "url": {
+            "label": "НИУ ВШЭ",
+            "href": "https://www.hse.ru/"
+          }
+        },
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Minor)",
+          "area": "Data Science & Machine Learning",
+          "score": "GPA 9.5/10",
+          "date": "Сен 2021 - Май 2024",
+          "summary": "Техническая база для эффективной коммуникации с инженерными командами и hands-on прототипирования.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Опыт работы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "cogito-software",
+          "visible": true,
+          "company": "Cogito Software",
+          "position": "Founder & Product Lead",
+          "location": "Удаленно",
+          "date": "Ноя 2024 - Настоящее время",
+          "summary": "Запуск 3 micro-SaaS продуктов (EdTech, Аналитика), управление полным циклом: валидация гипотез, прототипирование (MVP), GTM стратегия.\n\n• Проведение customer interviews и исследования рынка для определения product roadmap.\n• Самостоятельная разработка MVP для снижения затрат и быстрой валидации идей.\n• Управление инфраструктурой и пайплайнами деплоя для быстрых итераций.\n\nПродукты: Quizbee.academy, HackSeeker, YouStory.nl",
+          "url": {
+            "label": "Портфолио",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "Product Developer",
+          "location": "Москва",
+          "date": "Янв 2023 - Ноя 2024",
+          "summary": "Работа со стейкхолдерами для определения требований B2B Knowledge Base систем.\n\n• Перевод бизнес-требований в технические спецификации.\n• Управление продуктовым бэклогом и приоритизация фич для интеграции с Битрикс24.\n• Руководство разработкой self-hosted RAG системы для корпоративных клиентов.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        },
+        {
+          "id": "business-analyst",
+          "visible": true,
+          "company": "Дистрибьютор продуктов питания",
+          "position": "Бизнес-аналитик",
+          "location": "Москва",
+          "date": "Фев 2022 - Янв 2023",
+          "summary": "Работа в B2B дистрибьюторе продуктов питания, анализ операций и построение финансовых моделей.\n\n• Построение операционных моделей для управления запасами.\n• Автоматизация отчетности на SQL и Python.\n• Анализ эффективности цепочки поставок и предложения по оптимизации.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Волонтерство",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Интересы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "product-strategy",
+          "visible": true,
+          "name": "Продуктовая стратегия и Стартапы",
+          "keywords": [
+            "unit-economics",
+            "customer-development",
+            "lean-startup",
+            "growth"
+          ]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Языки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Русский",
+          "description": "Родной",
+          "level": 5
+        },
+        {
+          "id": "english",
+          "visible": true,
+          "name": "Английский",
+          "description": "Профессиональный рабочий",
+          "level": 4
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Профили",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Консалтинговые проекты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "ai-disraeli",
+          "visible": true,
+          "name": "AI Disraeli — Стратегия выхода на рынок США",
+          "date": "2023",
+          "description": "GTM стратегия для российского AI стартапа",
+          "summary": "Разработка go-to-market стратегии для AI стартапа, выходящего на западный рынок США. Конкурентный анализ и рекомендации по позиционированию.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "askona",
+          "visible": true,
+          "name": "Аскона FoodTech — Финансовое моделирование",
+          "date": "2023",
+          "description": "Разработка финансовой и операционной модели",
+          "summary": "Разработка финансовой и операционной модели для расширения российского food tech стартапа. Создание фреймворка unit economics и прогнозов роста.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "kept-logistics",
+          "visible": true,
+          "name": "Кейс Kept — Логистическая стратегия",
+          "date": "2022",
+          "description": "Антикризисная стратегия в условиях санкций",
+          "summary": "Победа в кейс-чемпионате со стратегией для российской логистической компании в условиях санкций. Анализ рисков и разработка планов действий.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Публикации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "Рекомендации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Навыки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "product-management",
+          "visible": true,
+          "name": "Product Management",
+          "description": "Полный цикл управления продуктом",
+          "level": 5,
+          "keywords": [
+            "Product Roadmap",
+            "User Research",
+            "Customer Development",
+            "A/B Testing",
+            "Agile/Scrum"
+          ]
+        },
+        {
+          "id": "business-strategy",
+          "visible": true,
+          "name": "Бизнес и Стратегия",
+          "description": "Анализ рынка и планирование",
+          "level": 5,
+          "keywords": [
+            "Unit Economics",
+            "Анализ рынка",
+            "GTM Стратегия",
+            "Финансовое моделирование",
+            "Конкурентный анализ"
+          ]
+        },
+        {
+          "id": "technical",
+          "visible": true,
+          "name": "Технические навыки",
+          "description": "Hands-on разработка",
+          "level": 4,
+          "keywords": [
+            "Python",
+            "TypeScript",
+            "SQL",
+            "FastAPI",
+            "SvelteKit",
+            "Docker"
+          ]
+        },
+        {
+          "id": "tools",
+          "visible": true,
+          "name": "Инструменты",
+          "description": "Продуктовые и аналитические инструменты",
+          "level": 4,
+          "keywords": [
+            "Jira",
+            "Figma",
+            "Notion",
+            "Google Analytics",
+            "Metabase"
+          ]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        [
+          "profiles",
+          "summary",
+          "experience",
+          "projects",
+          "education",
+          "awards"
+        ],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "cyrillic",
+        "variants": ["regular"],
+        "size": 14
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "ru-tpm"
+  }
+}

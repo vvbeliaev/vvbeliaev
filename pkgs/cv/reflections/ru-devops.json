@@ -1,0 +1,354 @@
+{
+  "basics": {
+    "name": "Владимир Беляев",
+    "headline": "DevOps Engineer / Platform Engineer",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Москва / Удаленно",
+    "url": {
+      "label": "Портфолио",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Сайт",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "О себе",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "DevOps инженер с сильным бэкграундом в разработке ПО (Python/Full Stack). Опыт построения масштабируемой инфраструктуры на Kubernetes, Terraform и GitOps практиках. Специализация на деплое AI/ML workloads. Энтузиаст автоматизации."
+    },
+    "awards": {
+      "name": "Награды",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": []
+    },
+    "certifications": {
+      "name": "Сертификаты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Образование",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Minor)",
+          "area": "Data Science & Machine Learning",
+          "score": "GPA 9.5/10",
+          "date": "Сен 2021 - Май 2024",
+          "summary": "Сильная база в ML для эффективного деплоя и оптимизации AI/ML workloads.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        },
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Major)",
+          "area": "Маркетинг и Рыночная Аналитика",
+          "score": "GPA 8/10",
+          "date": "Сен 2021 - Настоящее время (Академический отпуск)",
+          "summary": "",
+          "url": {
+            "label": "НИУ ВШЭ",
+            "href": "https://www.hse.ru/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Опыт работы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "cogito-software",
+          "visible": true,
+          "company": "Cogito Software / Фриланс",
+          "position": "DevOps / Platform Engineer",
+          "location": "Удаленно",
+          "date": "Ноя 2024 - Настоящее время",
+          "summary": "Проектирование и реализация инфраструктуры для AI-driven веб-приложений и micro-SaaS продуктов.\n\n• Проектирование и реализация CI/CD пайплайнов на GitHub Actions, сокращение времени деплоя на 40%.\n• Миграция legacy монолитных приложений в Docker контейнеры и оркестрация деплоев.\n• Управление облачной инфраструктурой (Hetzner) с принципами Infrastructure as Code.\n• Настройка Coolify для self-hosted PaaS деплоев с автоматическим SSL и мониторингом.\n• Создание оптимизированных Docker образов с multistage builds для Python и Node.js приложений.\n\nСтек: Docker, GitHub Actions, Coolify, Hetzner, Linux, Nginx.",
+          "url": {
+            "label": "Портфолио",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "DevOps / Backend Engineer",
+          "location": "Москва",
+          "date": "Янв 2023 - Ноя 2024",
+          "summary": "Построение и поддержка инфраструктуры для self-hosted LLM платформы.\n\n• Деплой self-hosted LLM моделей с использованием Docker и GPU-passthrough технологий.\n• Управление кластерами Elastic и Qdrant для инфраструктуры векторного поиска.\n• Реализация мониторинга и логирования для production сервисов.\n• Оптимизация контейнерных образов и пайплайнов деплоя для ML workloads.\n\nСтек: Docker, Linux, Elastic, Qdrant, Python, FastAPI.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Волонтерство",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Интересы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "self-hosting",
+          "visible": true,
+          "name": "Self-hosting и Homelab",
+          "keywords": [
+            "raspberry-pi",
+            "proxmox",
+            "домашняя-автоматизация",
+            "сети"
+          ]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Языки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Русский",
+          "description": "Родной",
+          "level": 5
+        },
+        {
+          "id": "english",
+          "visible": true,
+          "name": "Английский",
+          "description": "Профессиональный рабочий",
+          "level": 4
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Профили",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Проекты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "mlops-platform",
+          "visible": true,
+          "name": "End-to-End MLOps Платформа на K8s",
+          "date": "2024",
+          "description": "GitOps пайплайн деплоя для AI приложений",
+          "summary": "Production Kubernetes деплой с GitOps практиками:\n\n• Infrastructure as Code на Terraform для провижининга кластера\n• Helm charts для деплоя приложений\n• Ingress Controller (Nginx) + Cert-Manager для автоматического HTTPS\n• HPA (Horizontal Pod Autoscaler) для автоскейлинга\n• CI/CD на GitHub Actions и ArgoCD\n• Мониторинг на Prometheus + Grafana дашборды\n\nСтек: Kubernetes, Helm, ArgoCD, Terraform, Prometheus, Grafana.",
+          "url": {
+            "label": "GitHub",
+            "href": "https://github.com/vvbeliaev"
+          }
+        },
+        {
+          "id": "multi-service",
+          "visible": true,
+          "name": "Multi-Service Платформа Деплоя",
+          "date": "2024",
+          "description": "Self-hosted PaaS для micro-SaaS продуктов",
+          "summary": "Деплой множества production сервисов на Hetzner через Coolify:\n\n• Автоматизированные деплои из GitHub с zero-downtime обновлениями\n• Централизованное логирование и мониторинг\n• Автоматическое управление SSL сертификатами\n• Бэкапы баз данных и настройка disaster recovery\n\nСтек: Coolify, Docker, Nginx, PostgreSQL, Redis.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Публикации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "Рекомендации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Навыки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "clouds",
+          "visible": true,
+          "name": "Облачные платформы",
+          "description": "Управление облачной инфраструктурой",
+          "level": 4,
+          "keywords": [
+            "Hetzner",
+            "DigitalOcean",
+            "AWS (базовый)",
+            "Yandex Cloud"
+          ]
+        },
+        {
+          "id": "containerization",
+          "visible": true,
+          "name": "Контейнеризация и Оркестрация",
+          "description": "Управление контейнерами",
+          "level": 5,
+          "keywords": [
+            "Docker",
+            "Kubernetes (K8s)",
+            "Helm",
+            "ArgoCD",
+            "Docker Compose"
+          ]
+        },
+        {
+          "id": "iac",
+          "visible": true,
+          "name": "Infrastructure as Code",
+          "description": "IaC и управление конфигурацией",
+          "level": 4,
+          "keywords": [
+            "Terraform",
+            "Ansible",
+            "GitHub Actions",
+            "CI/CD Pipelines"
+          ]
+        },
+        {
+          "id": "monitoring",
+          "visible": true,
+          "name": "Мониторинг и Observability",
+          "description": "Мониторинг систем и логирование",
+          "level": 4,
+          "keywords": [
+            "Prometheus",
+            "Grafana",
+            "ELK Stack",
+            "Coolify Monitoring"
+          ]
+        },
+        {
+          "id": "scripting",
+          "visible": true,
+          "name": "Скриптинг и Разработка",
+          "description": "Автоматизация и бэкенд разработка",
+          "level": 5,
+          "keywords": ["Python", "Bash", "Go", "FastAPI", "Node.js"]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        ["profiles", "summary", "experience", "projects", "education"],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "cyrillic",
+        "variants": ["regular"],
+        "size": 14
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "ru-devops"
+  }
+}

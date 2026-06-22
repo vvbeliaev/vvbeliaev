@@ -1,0 +1,79 @@
+[
+  {
+    "slug": "hackseeker",
+    "featured": true,
+    "title": "HackSeeker",
+    "priority": 2,
+    "description": "A tool that helps you find and validate your product ideas.",
+    "tags": ["SvelteKit", "Node.js", "LLM", "Coolify"],
+    "link": "https://hackseeker.com/",
+    "image": "../assets/hackseeker.png",
+    "color": "from-primary to-secondary"
+  },
+  {
+    "slug": "quizbee",
+    "featured": true,
+    "title": "Quizbee.academy",
+    "priority": 1,
+    "description": "AI-powered quiz generator for educators. Automatically converts lecture notes and PDFs into interactive quizzes.",
+    "tags": ["Sveltekit", "FastAPI", "Redis", "PydanticAI"],
+    "link": "https://quizbee.academy",
+    "image": "../assets/quizbee.png",
+    "color": "from-blue-500 to-cyan-400"
+  },
+  {
+    "slug": "growplex",
+    "featured": true,
+    "title": "Growplex.dev",
+    "priority": 3,
+    "description": "Seamless AI integration for CRM systems. Automates customer data entry and follow-up scheduling.",
+    "tags": ["Astro", "LangChain", "Postgres"],
+    "link": "https://growplex.dev",
+    "image": "../assets/growplex.png",
+    "color": "from-green-500 to-emerald-400"
+  },
+  {
+    "slug": "llmagent",
+    "featured": true,
+    "title": "LLMAgent.ru",
+    "priority": 4,
+    "description": "Enterprise-grade AI knowledge base. Ingests corporate documentation to answer employee queries.",
+    "tags": ["FastAPI", "Elastic", "Qdrant", "Postgres"],
+    "link": "https://llmagent.ru",
+    "image": "../assets/llmagent.png",
+    "color": "from-purple-500 to-indigo-400"
+  },
+  {
+    "slug": "cogisoft",
+    "featured": false,
+    "title": "Cogito Software",
+    "priority": 0,
+    "description": "Software development company for small teams and early-stage businesses.",
+    "tags": ["Software Development", "Web Development", "AI Development"],
+    "link": "https://cogisoft.dev",
+    "image": "../assets/cogisoft-light.png",
+    "color": "from-blue-500 to-cyan-400"
+  },
+  {
+    "slug": "univerlink",
+    "featured": false,
+    "title": "Univerlink",
+    "priority": 2,
+    "description": "University portal for students mentorship and networking.",
+    "tags": ["Community", "Mentorship", "Astro"],
+    "link": "https://univerlink.cogisoft.dev",
+    "image": "../assets/univerlink.png",
+    "color": "from-blue-500 to-cyan-400"
+  },
+  {
+    "slug": "youstory",
+    "featured": false,
+    "title": "YouStory",
+    "priority": 3,
+    "description": "LLM-based Roleplay Stories Generator",
+    "tags": ["AI", "LLM", "SvelteKit"],
+    "link": "https://youstory.cogisoft.dev",
+    "image": "../assets/youstory.png",
+    "color": "from-fuchsia-500 to-pink-400"
+  }
+]

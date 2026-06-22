@@ -1,0 +1,185 @@
+{
+  "name": "Vladimir Beliaev",
+  "headline": "AI Full Stack Engineer | Product Lead | Analytics Engineer",
+  "location": "Moscow / Tbilisi / Remote",
+  "contacts": {
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "github": "https://github.com/vvbeliaev",
+    "website": "https://vvbeliaev.cogisoft.dev"
+  },
+  "summary": "Full Stack Engineer with 4+ years of experience building production-ready web applications, AI-driven systems, and data-driven products. Expert in bridging the gap between business goals and engineering execution. Specialized in integrating LLMs (RAG, Agents) with modern web stacks. Founder of 3 shipped micro-SaaS products. Strong background in ML and Marketing Analytics (HSE University).",
+  "philosophy": "Ship, ship, ship — delivering value fast while keeping code quality and architecture under control. Thrive in small teams and early-stage products.",
+  "skills": {
+    "languages": [
+      "Python",
+      "TypeScript",
+      "JavaScript",
+      "SQL (Advanced)",
+      "Go (Basic)",
+      "Bash"
+    ],
+    "frontend": [
+      "SvelteKit",
+      "Astro",
+      "Next.js",
+      "React",
+      "Tailwind CSS",
+      "DaisyUI",
+      "Figma"
+    ],
+    "backend": [
+      "FastAPI",
+      "Node.js",
+      "Go",
+      "PostgreSQL",
+      "Redis",
+      "Meilisearch",
+      "Elasticsearch",
+      "Qdrant",
+      "ChromaDB"
+    ],
+    "ai_ml": [
+      "RAG (Retrieval-Augmented Generation)",
+      "LLM Agents",
+      "LangChain",
+      "PydanticAI",
+      "OpenAI API",
+      "Prompt Engineering",
+      "PyTorch",
+      "Data Mining",
+      "Statistical Modeling"
+    ],
+    "devops_infra": [
+      "Docker",
+      "Kubernetes (K8s)",
+      "Helm",
+      "ArgoCD",
+      "Terraform",
+      "GitHub Actions",
+      "Linux (Server Admin)",
+      "Coolify",
+      "Hetzner",
+      "Nginx"
+    ],
+    "analytics_product": [
+      "Product Roadmap",
+      "User Research (CustDev)",
+      "Unit Economics",
+      "A/B Testing",
+      "ETL Pipelines",
+      "Tableau",
+      "Metabase",
+      "Superset",
+      "Market Analysis (US/EU)"
+    ]
+  },
+  "experience": [
+    {
+      "company": "Cogito Software (Founder)",
+      "position": "AI Full Stack Engineer / Product Lead",
+      "period": "Nov 2024 - Present",
+      "location": "Remote",
+      "summary": "Architected and deployed full-stack AI solutions and micro-SaaS products. Managed full lifecycle: hypothesis validation, prototyping, and GTM strategy.",
+      "achievements": [
+        "Built Quizbee.academy: AI platform converting PDFs to interactive quizzes using PydanticAI and Redis.",
+        "Developed HackSeeker: Market validation tool with LLM-powered data analysis.",
+        "Created YouStory.nl: Interactive AI storytelling platform with real-time text generation.",
+        "Managed infrastructure on Hetzner with Docker and Coolify (99.9% uptime).",
+        "Reduced deployment time by 40% through optimized CI/CD pipelines."
+      ],
+      "stack": "SvelteKit, Astro, FastAPI, Node.js, Postgres, Redis, LangChain, PydanticAI, Docker"
+    },
+    {
+      "company": "LLMAgent.ru",
+      "position": "Lead / Core Developer & Product Developer",
+      "period": "Jan 2023 - Nov 2024",
+      "location": "Moscow",
+      "summary": "Led development of a self-hosted RAG system for enterprise clients, integrated with Bitrix24.",
+      "achievements": [
+        "Implemented vector search strategies (Qdrant, Elastic), significantly improving retrieval accuracy.",
+        "Optimized backend performance (FastAPI) for high-load concurrent user scenarios.",
+        "Designed document ingestion pipelines with complex validation and role-based access control.",
+        "Translated business requirements into technical specs for B2B knowledge base systems."
+      ],
+      "stack": "FastAPI, Elastic, Qdrant, Postgres, Docker, Python"
+    },
+    {
+      "company": "B2B Food Distribution Company",
+      "position": "Business Analyst",
+      "period": "Feb 2022 - Jan 2023",
+      "location": "Moscow",
+      "summary": "Analyzed operations and built financial/operational models for inventory and supply chain.",
+      "achievements": [
+        "Built demand forecasting and inventory management models.",
+        "Automated reporting using SQL and Python, reducing manual work by 60%+",
+        "Analyzed supply chain efficiency and proposed data-driven optimizations."
+      ],
+      "stack": "SQL, Python (Pandas, NumPy), Excel"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Quizbee.academy",
+      "role": "Founder / Developer",
+      "description": "AI-powered educational platform converting lecture notes and PDFs into interactive quizzes.",
+      "stack": "SvelteKit, FastAPI, Redis, PydanticAI"
+    },
+    {
+      "name": "HackSeeker.com",
+      "role": "Founder / Developer",
+      "description": "Market validation tool using LLMs to analyze trends and validate product ideas.",
+      "stack": "SvelteKit, FastAPI, LangChain"
+    },
+    {
+      "name": "YouStory.nl",
+      "role": "Founder / Developer",
+      "description": "Interactive storytelling platform with branching narratives and real-time AI generation.",
+      "stack": "SvelteKit, Node.js, Docker"
+    },
+    {
+      "name": "MLOps Platform",
+      "description": "Production Kubernetes deployment with GitOps (ArgoCD), Terraform, and Prometheus/Grafana.",
+      "stack": "K8s, Helm, ArgoCD, Terraform"
+    },
+    {
+      "name": "AI Disraeli",
+      "description": "Developed GTM strategy for an AI startup entering the US Western market.",
+      "type": "Consulting"
+    }
+  ],
+  "education": [
+    {
+      "institution": "Higher School of Economics (HSE)",
+      "degree": "Bachelor's Minor in Data Science & Machine Learning",
+      "period": "2021 - 2024",
+      "score": "GPA 9.5/10",
+      "summary": "Strong foundation in neural networks, optimization, and statistical modeling."
+    },
+    {
+      "institution": "Higher School of Economics (HSE)",
+      "degree": "Bachelor's in Marketing and Market Analytics",
+      "period": "2021 - Present (Academic Leave)",
+      "score": "GPA 8/10",
+      "summary": "Focus on data-driven marketing, unit economics, and consumer behavior."
+    }
+  ],
+  "awards": [
+    {
+      "title": "Case Championship Winner — Kept (ex-KPMG)",
+      "date": "2022",
+      "summary": "Developed crisis management and logistics strategy for a major company under sanctions."
+    }
+  ],
+  "languages": [
+    { "language": "English", "level": "Professional Working Proficiency (C1)" },
+    { "language": "Russian", "level": "Native" }
+  ],
+  "interests": [
+    "Self-hosting",
+    "Homelab (Proxmox, Raspberry Pi)",
+    "Product Strategy",
+    "Monte Carlo Simulations"
+  ]
+}

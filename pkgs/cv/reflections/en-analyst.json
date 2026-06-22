@@ -1,0 +1,376 @@
+{
+  "basics": {
+    "name": "Vladimir Beliaev",
+    "headline": "Product Analyst / Analytics Engineer",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Moscow / Remote",
+    "url": {
+      "label": "Portfolio",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Website",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "Summary",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "Data Analyst with a Marketing major and strong engineering skills (Python, SQL, ETL). 9.5/10 GPA in Data Mining & Math Statistics. Experienced in building automated data pipelines, creating dashboards, and modeling business scenarios. Proficient in Python for complex data simulations."
+    },
+    "awards": {
+      "name": "Awards",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": [
+        {
+          "id": "kept-case-championship",
+          "visible": true,
+          "title": "Case Championship Winner — Kept",
+          "awarder": "Kept Consulting",
+          "date": "2022",
+          "summary": "Developed data-driven crisis management strategy for a logistics company.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "certifications": {
+      "name": "Certifications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Education",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Minor",
+          "area": "Intellectual Data Analysis (Machine Learning)",
+          "score": "GPA 9.5/10",
+          "date": "Sep 2021 - May 2024",
+          "summary": "Specialized in data mining, probability theory, and mathematical statistics. Developed simulation models using Python (Pygame/SimPy) to test probability theories.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        },
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Degree",
+          "area": "Marketing and Market Analytics",
+          "score": "GPA 8/10",
+          "date": "Sep 2021 - Present (Academic Leave)",
+          "summary": "Strong foundation in market research, consumer analytics, and data-driven decision making.",
+          "url": {
+            "label": "HSE University",
+            "href": "https://www.hse.ru/en/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Experience",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "business-analyst",
+          "visible": true,
+          "company": "B2B Food Distribution Company",
+          "position": "Business Analyst",
+          "location": "Moscow",
+          "date": "Feb 2022 - Jan 2023",
+          "summary": "Worked at a B2B food distributor with warehouse operations, analyzing business processes and building models.\n\n• Built operational models for inventory management and demand forecasting.\n• Automated reporting using SQL and Python, reducing manual work significantly.\n• Analyzed sales data to identify patterns and optimize procurement.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "data-projects",
+          "visible": true,
+          "company": "Independent Projects",
+          "position": "Data Analyst / Engineer",
+          "location": "Remote",
+          "date": "2024 - Present",
+          "summary": "Built data-focused products and pipelines for market analysis and AI systems.\n\n• HackSeeker: Developed data parsing algorithms to analyze market trends and validate product ideas.\n• Implemented RAG pipelines involving complex data structuring and retrieval optimization.\n• Built ETL pipelines for web scraping and data normalization.",
+          "url": {
+            "label": "Portfolio",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "Data / ML Engineer",
+          "location": "Moscow",
+          "date": "Jan 2023 - Nov 2024",
+          "summary": "Built data pipelines and search systems for enterprise knowledge base platform.\n\n• Designed document ingestion pipelines with data validation and normalization.\n• Implemented vector search and text indexing strategies (Elastic, Qdrant).\n• Analyzed user query patterns to improve search relevance.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Volunteering",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Interests",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "data-science",
+          "visible": true,
+          "name": "Data Science & Simulations",
+          "keywords": [
+            "probability-theory",
+            "monte-carlo",
+            "pygame-simulations",
+            "statistical-modeling"
+          ]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Languages",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "english",
+          "visible": true,
+          "name": "English",
+          "description": "Professional Working Proficiency",
+          "level": 4
+        },
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Russian",
+          "description": "Native",
+          "level": 5
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Profiles",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Projects",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "hackseeker",
+          "visible": true,
+          "name": "HackSeeker — Market Data Analysis",
+          "date": "2025",
+          "description": "Data parsing and market trend analysis platform",
+          "summary": "Developed data parsing algorithms to analyze market trends and validate product ideas. Built web scraping pipelines and data normalization systems.\n\nStack: Python, FastAPI, Postgres, Redis.",
+          "url": {
+            "label": "hackseeker.com",
+            "href": "https://hackseeker.com"
+          }
+        },
+        {
+          "id": "simulations",
+          "visible": true,
+          "name": "Probability Simulations",
+          "date": "2021-2023",
+          "description": "Python simulations for testing statistical theories",
+          "summary": "Built simulation models using Python (Pygame/SimPy) to visualize and test probability theories and mathematical statistics concepts.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Publications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "References",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Skills",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "tools",
+          "visible": true,
+          "name": "Analytics Tools",
+          "description": "Data analysis and visualization",
+          "level": 5,
+          "keywords": [
+            "SQL (Advanced)",
+            "Python (Pandas, NumPy, Scikit-learn)",
+            "Tableau",
+            "Metabase",
+            "Superset"
+          ]
+        },
+        {
+          "id": "concepts",
+          "visible": true,
+          "name": "Analytical Concepts",
+          "description": "Methods and frameworks",
+          "level": 5,
+          "keywords": [
+            "A/B Testing",
+            "Unit Economics",
+            "ETL Pipelines",
+            "Data Modeling",
+            "Statistical Analysis"
+          ]
+        },
+        {
+          "id": "data-engineering",
+          "visible": true,
+          "name": "Data Engineering",
+          "description": "Pipeline development",
+          "level": 4,
+          "keywords": [
+            "Web Scraping",
+            "Data Normalization",
+            "Vector Databases",
+            "Elastic",
+            "Redis"
+          ]
+        },
+        {
+          "id": "programming",
+          "visible": true,
+          "name": "Programming",
+          "description": "Development skills",
+          "level": 4,
+          "keywords": ["Python", "SQL", "TypeScript", "FastAPI", "Docker"]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        [
+          "profiles",
+          "summary",
+          "experience",
+          "education",
+          "projects",
+          "awards"
+        ],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "latin",
+        "variants": ["regular"],
+        "size": 10
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "en-analyst"
+  }
+}

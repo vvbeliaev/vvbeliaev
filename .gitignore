@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+.output/
+.vercel/
+.netlify/
+
+# astro
+.astro/
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+*.local
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+.playwright-mcp

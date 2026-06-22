@@ -1,0 +1,374 @@
+{
+  "basics": {
+    "name": "Владимир Беляев",
+    "headline": "AI Full Stack Engineer / Software Engineer",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Москва / Удаленно",
+    "url": {
+      "label": "Портфолио",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Сайт",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "О себе",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "Full Stack инженер с 3+ годами опыта разработки production-ready веб-приложений и AI-систем. Эксперт в интеграции LLM (RAG, Агенты) с современными веб-стеками (FastAPI, SvelteKit, TypeScript). Фокус на быстром выводе продуктов на рынок и масштабируемой архитектуре. Основатель 3 запущенных micro-SaaS продуктов."
+    },
+    "awards": {
+      "name": "Награды",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": [
+        {
+          "id": "kept-case-championship",
+          "visible": true,
+          "title": "Победитель кейс-чемпионата — Kept",
+          "awarder": "Kept Consulting",
+          "date": "2022",
+          "summary": "Разработка антикризисной стратегии для российской логистической компании в условиях санкций.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "certifications": {
+      "name": "Сертификаты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Образование",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Minor)",
+          "area": "Data Science & Machine Learning",
+          "score": "GPA 9.5/10",
+          "date": "Сен 2021 - Май 2024",
+          "summary": "Сильная база в машинном обучении: нейросети, методы оптимизации, практическое обучение и валидация моделей.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        },
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Major)",
+          "area": "Маркетинг и Рыночная Аналитика",
+          "score": "GPA 8/10 (Тех. дисциплины: 9.5+)",
+          "date": "Сен 2021 - Настоящее время (Академический отпуск)",
+          "summary": "Фокус на data-driven маркетинге и аналитике. Количественное мышление применяется в разработке продуктов.",
+          "url": {
+            "label": "НИУ ВШЭ",
+            "href": "https://www.hse.ru/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Опыт работы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "cogito-software",
+          "visible": true,
+          "company": "Cogito Software (Самозанятость / Основатель)",
+          "position": "AI Full Stack Engineer",
+          "location": "Удаленно",
+          "date": "Ноя 2024 - Настоящее время",
+          "summary": "Архитектура и деплой full-stack AI решений для клиентов и собственных продуктов на SvelteKit и FastAPI.\n\n• Создал Quizbee.academy: AI-платформа для образования, конвертирующая PDF в квизы через PydanticAI и Redis.\n• Разработал HackSeeker: инструмент валидации рынка с интеграцией LLM для анализа данных.\n• Создал YouStory.nl: интерактивная AI-платформа для сторителлинга с генерацией текста в реальном времени.\n• Управление инфраструктурой на Hetzner с Docker и Coolify, обеспечивая 99.9% uptime.\n\nСтек: SvelteKit, Astro, FastAPI, Node.js, Postgres, Redis, LangChain, PydanticAI, Docker, GitHub Actions.",
+          "url": {
+            "label": "Портфолио",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "Lead / Core Developer",
+          "location": "Москва",
+          "date": "Янв 2023 - Ноя 2024",
+          "summary": "Руководство разработкой self-hosted RAG системы с интеграцией в Битрикс24 для российского бизнеса.\n\n• Реализация стратегий векторного поиска на Qdrant и Elastic, улучшение точности поиска.\n• Оптимизация производительности бэкенда (Python/FastAPI) при высоких нагрузках.\n• Построение пайплайнов загрузки документов и ролевого доступа.\n\nСтек: FastAPI, Elastic, Qdrant, Postgres, Docker.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Волонтерство",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Интересы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "self-hosting",
+          "visible": true,
+          "name": "Self-hosting и Инфраструктура",
+          "keywords": ["homelab", "coolify", "linux", "server-configuration"]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Языки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Русский",
+          "description": "Родной",
+          "level": 5
+        },
+        {
+          "id": "english",
+          "visible": true,
+          "name": "Английский",
+          "description": "Профессиональный рабочий",
+          "level": 4
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Профили",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Проекты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "quizbee",
+          "visible": true,
+          "name": "Quizbee.academy — AI Генератор Квизов",
+          "date": "2024",
+          "description": "AI-платформа для образования",
+          "summary": "Инструмент для преподавателей, конвертирующий лекции и PDF в интерактивные квизы. Реализован парсинг контента, генерация вопросов через LLM, трекинг прогресса.\n\nСтек: SvelteKit, FastAPI, Redis, PydanticAI.",
+          "url": {
+            "label": "quizbee.academy",
+            "href": "https://quizbee.academy"
+          }
+        },
+        {
+          "id": "hackseeker",
+          "visible": true,
+          "name": "HackSeeker — Инструмент Валидации Рынка",
+          "date": "2025",
+          "description": "AI-платформа для валидации продуктовых идей",
+          "summary": "Инструмент валидации рынка с интеграцией LLM для анализа трендов и проверки продуктовых гипотез через алгоритмы парсинга данных.\n\nСтек: SvelteKit, FastAPI, LangChain.",
+          "url": {
+            "label": "hackseeker.com",
+            "href": "https://hackseeker.com"
+          }
+        },
+        {
+          "id": "youstory",
+          "visible": true,
+          "name": "YouStory.nl — AI Сторителлинг Платформа",
+          "date": "2024",
+          "description": "Интерактивный сторителлинг с ветвящимися нарративами",
+          "summary": "Платформа где пользователи создают истории вместе с AI. Генерация текста в реальном времени, ветвящиеся нарративы, консистентность персонажей.\n\nСтек: SvelteKit, Node.js, custom LLM pipelines, Docker.",
+          "url": {
+            "label": "ys.cogitosoftware.nl",
+            "href": "https://ys.cogitosoftware.nl"
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Публикации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "Рекомендации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Навыки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "core-languages",
+          "visible": true,
+          "name": "Основные языки",
+          "description": "Языки программирования",
+          "level": 5,
+          "keywords": ["Python", "TypeScript", "JavaScript", "Go (базовый)"]
+        },
+        {
+          "id": "ai-ml",
+          "visible": true,
+          "name": "AI / ML",
+          "description": "Интеграция LLM и машинное обучение",
+          "level": 5,
+          "keywords": [
+            "RAG",
+            "LangChain",
+            "PydanticAI",
+            "Vector DBs (Meilisearch, Chroma, Qdrant)",
+            "OpenAI API",
+            "Prompt Engineering"
+          ]
+        },
+        {
+          "id": "web-stack",
+          "visible": true,
+          "name": "Веб-разработка",
+          "description": "Full-stack веб-технологии",
+          "level": 5,
+          "keywords": [
+            "SvelteKit",
+            "Next.js",
+            "React",
+            "Astro",
+            "FastAPI",
+            "Node.js",
+            "Tailwind"
+          ]
+        },
+        {
+          "id": "infrastructure",
+          "visible": true,
+          "name": "Инфраструктура",
+          "description": "DevOps и деплой",
+          "level": 4,
+          "keywords": [
+            "Docker",
+            "Linux",
+            "CI/CD",
+            "GitHub Actions",
+            "Hetzner",
+            "Coolify"
+          ]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        [
+          "profiles",
+          "summary",
+          "experience",
+          "education",
+          "projects",
+          "awards"
+        ],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "cyrillic",
+        "variants": ["regular"],
+        "size": 14
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "ru-ai-fullstack"
+  }
+}

@@ -1,0 +1,376 @@
+{
+  "basics": {
+    "name": "Владимир Беляев",
+    "headline": "Product Analyst / Analytics Engineer",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Москва / Удаленно",
+    "url": {
+      "label": "Портфолио",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Сайт",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "О себе",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "Аналитик данных с образованием в маркетинге и сильными инженерными навыками (Python, SQL, ETL). GPA 9.5/10 по Data Mining и матстатистике. Опыт построения автоматизированных data pipelines, создания дашбордов и моделирования бизнес-сценариев. Владение Python для сложных симуляций данных."
+    },
+    "awards": {
+      "name": "Награды",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": [
+        {
+          "id": "kept-case-championship",
+          "visible": true,
+          "title": "Победитель кейс-чемпионата — Kept",
+          "awarder": "Kept Consulting",
+          "date": "2022",
+          "summary": "Разработка data-driven антикризисной стратегии для логистической компании.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "certifications": {
+      "name": "Сертификаты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Образование",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Minor)",
+          "area": "Интеллектуальный Анализ Данных (Machine Learning)",
+          "score": "GPA 9.5/10",
+          "date": "Сен 2021 - Май 2024",
+          "summary": "Специализация в data mining, теории вероятностей и математической статистике. Разработка симуляционных моделей на Python (Pygame/SimPy) для проверки теорий вероятности.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        },
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "НИУ ВШЭ",
+          "studyType": "Бакалавриат (Major)",
+          "area": "Маркетинг и Рыночная Аналитика",
+          "score": "GPA 8/10",
+          "date": "Сен 2021 - Настоящее время (Академический отпуск)",
+          "summary": "Сильная база в исследованиях рынка, потребительской аналитике и data-driven принятии решений.",
+          "url": {
+            "label": "НИУ ВШЭ",
+            "href": "https://www.hse.ru/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Опыт работы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "business-analyst",
+          "visible": true,
+          "company": "B2B Дистрибьютор продуктов питания",
+          "position": "Бизнес-аналитик",
+          "location": "Москва",
+          "date": "Фев 2022 - Янв 2023",
+          "summary": "Работа в B2B дистрибьюторе продуктов питания со складскими операциями, анализ бизнес-процессов и построение моделей.\n\n• Построение операционных моделей для управления запасами и прогнозирования спроса.\n• Автоматизация отчетности на SQL и Python, значительное сокращение ручной работы.\n• Анализ данных продаж для выявления паттернов и оптимизации закупок.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "data-projects",
+          "visible": true,
+          "company": "Независимые проекты",
+          "position": "Аналитик данных / Инженер",
+          "location": "Удаленно",
+          "date": "2024 - Настоящее время",
+          "summary": "Создание data-ориентированных продуктов и пайплайнов для анализа рынка и AI систем.\n\n• HackSeeker: разработка алгоритмов парсинга данных для анализа рыночных трендов и валидации продуктовых идей.\n• Реализация RAG пайплайнов со сложным структурированием данных и оптимизацией поиска.\n• Построение ETL пайплайнов для веб-скрапинга и нормализации данных.",
+          "url": {
+            "label": "Портфолио",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "Data / ML Engineer",
+          "location": "Москва",
+          "date": "Янв 2023 - Ноя 2024",
+          "summary": "Построение data pipelines и поисковых систем для корпоративной knowledge base платформы.\n\n• Проектирование пайплайнов загрузки документов с валидацией и нормализацией данных.\n• Реализация векторного поиска и текстовой индексации (Elastic, Qdrant).\n• Анализ паттернов пользовательских запросов для улучшения релевантности поиска.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Волонтерство",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Интересы",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "data-science",
+          "visible": true,
+          "name": "Data Science и Симуляции",
+          "keywords": [
+            "теория-вероятностей",
+            "монте-карло",
+            "pygame-симуляции",
+            "статистическое-моделирование"
+          ]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Языки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Русский",
+          "description": "Родной",
+          "level": 5
+        },
+        {
+          "id": "english",
+          "visible": true,
+          "name": "Английский",
+          "description": "Профессиональный рабочий",
+          "level": 4
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Профили",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Проекты",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "hackseeker",
+          "visible": true,
+          "name": "HackSeeker — Анализ рыночных данных",
+          "date": "2025",
+          "description": "Платформа парсинга данных и анализа рыночных трендов",
+          "summary": "Разработка алгоритмов парсинга данных для анализа рыночных трендов и валидации продуктовых идей. Построение пайплайнов веб-скрапинга и систем нормализации данных.\n\nСтек: Python, FastAPI, Postgres, Redis.",
+          "url": {
+            "label": "hackseeker.com",
+            "href": "https://hackseeker.com"
+          }
+        },
+        {
+          "id": "simulations",
+          "visible": true,
+          "name": "Симуляции вероятностей",
+          "date": "2021-2023",
+          "description": "Python симуляции для проверки статистических теорий",
+          "summary": "Построение симуляционных моделей на Python (Pygame/SimPy) для визуализации и проверки теорий вероятности и математической статистики.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Публикации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "Рекомендации",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Навыки",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "tools",
+          "visible": true,
+          "name": "Инструменты аналитики",
+          "description": "Анализ и визуализация данных",
+          "level": 5,
+          "keywords": [
+            "SQL (продвинутый)",
+            "Python (Pandas, NumPy, Scikit-learn)",
+            "Tableau",
+            "Metabase",
+            "Superset"
+          ]
+        },
+        {
+          "id": "concepts",
+          "visible": true,
+          "name": "Аналитические концепции",
+          "description": "Методы и фреймворки",
+          "level": 5,
+          "keywords": [
+            "A/B Testing",
+            "Unit Economics",
+            "ETL Pipelines",
+            "Data Modeling",
+            "Статистический анализ"
+          ]
+        },
+        {
+          "id": "data-engineering",
+          "visible": true,
+          "name": "Data Engineering",
+          "description": "Разработка пайплайнов",
+          "level": 4,
+          "keywords": [
+            "Веб-скрапинг",
+            "Нормализация данных",
+            "Векторные БД",
+            "Elastic",
+            "Redis"
+          ]
+        },
+        {
+          "id": "programming",
+          "visible": true,
+          "name": "Программирование",
+          "description": "Навыки разработки",
+          "level": 4,
+          "keywords": ["Python", "SQL", "TypeScript", "FastAPI", "Docker"]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        [
+          "profiles",
+          "summary",
+          "experience",
+          "education",
+          "projects",
+          "awards"
+        ],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "cyrillic",
+        "variants": ["regular"],
+        "size": 14
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "ru-analyst"
+  }
+}

@@ -1,0 +1,395 @@
+{
+  "basics": {
+    "name": "Vladimir Beliaev",
+    "headline": "Technical Product Manager / Product Owner",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Moscow / Remote",
+    "url": {
+      "label": "Portfolio",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Website",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "Summary",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "Product Manager with a strong engineering background (CS & Data Science) and Marketing degree. Successfully launched and managed 4+ digital products from idea to market. Experienced in market analysis (US/EU), customer development, and leading technical teams. I bridge the gap between business goals and engineering execution."
+    },
+    "awards": {
+      "name": "Awards",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": [
+        {
+          "id": "kept-case-championship",
+          "visible": true,
+          "title": "Case Championship Winner — Kept",
+          "awarder": "Kept Consulting",
+          "date": "2022",
+          "summary": "Developed a crisis management strategy for a Russian logistics company operating under sanctions.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "certifications": {
+      "name": "Certifications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Education",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Degree",
+          "area": "Marketing and Market Analytics",
+          "score": "GPA 8/10",
+          "date": "Sep 2021 - Present (Academic Leave)",
+          "summary": "Focus on data-driven marketing, consumer behavior, and analytics. Combines quantitative thinking with product and business understanding.",
+          "url": {
+            "label": "HSE University",
+            "href": "https://www.hse.ru/en/"
+          }
+        },
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Minor",
+          "area": "Data Science & Machine Learning",
+          "score": "GPA 9.5/10",
+          "date": "Sep 2021 - May 2024",
+          "summary": "Technical foundation enabling effective communication with engineering teams and hands-on prototyping.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Experience",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "cogito-software",
+          "visible": true,
+          "company": "Cogito Software",
+          "position": "Founder & Product Lead",
+          "location": "Remote",
+          "date": "Nov 2024 - Present",
+          "summary": "Launched 3 micro-SaaS products (EdTech, Analytics), managing the full lifecycle: hypothesis validation, prototyping (MVP), and GTM strategy.\n\n• Conducted customer interviews and market research to define product roadmaps.\n• Built MVPs personally to reduce development costs and validate ideas fast.\n• Managed infrastructure and deployment pipelines for rapid iteration.\n\nProducts: Quizbee.academy, HackSeeker, YouStory.nl",
+          "url": {
+            "label": "Portfolio",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "Product Developer",
+          "location": "Moscow",
+          "date": "Jan 2023 - Nov 2024",
+          "summary": "Collaborated with stakeholders to define requirements for B2B Knowledge Base systems.\n\n• Translated business requirements into technical specifications.\n• Managed product backlog and prioritization for Bitrix24 integration features.\n• Led development of self-hosted RAG system for enterprise clients.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        },
+        {
+          "id": "business-analyst",
+          "visible": true,
+          "company": "Food Distribution Company",
+          "position": "Business Analyst",
+          "location": "Moscow",
+          "date": "Feb 2022 - Jan 2023",
+          "summary": "Worked at a B2B food distributor analyzing operations and building financial models.\n\n• Built operational models for inventory management.\n• Automated reporting using SQL and Python.\n• Analyzed supply chain efficiency and proposed optimizations.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Volunteering",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Interests",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "product-strategy",
+          "visible": true,
+          "name": "Product Strategy & Startups",
+          "keywords": [
+            "unit-economics",
+            "customer-development",
+            "lean-startup",
+            "growth"
+          ]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Languages",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "english",
+          "visible": true,
+          "name": "English",
+          "description": "Professional Working Proficiency",
+          "level": 4
+        },
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Russian",
+          "description": "Native",
+          "level": 5
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Profiles",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Consulting Projects",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "ai-disraeli",
+          "visible": true,
+          "name": "AI Disraeli — US Market Entry Strategy",
+          "date": "2023",
+          "description": "GTM strategy for Russian AI startup",
+          "summary": "Developed go-to-market strategy for AI startup entering the US Western market. Conducted competitive analysis and positioning recommendations.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "askona",
+          "visible": true,
+          "name": "Askona FoodTech — Financial Modeling",
+          "date": "2023",
+          "description": "Financial and operational model development",
+          "summary": "Developed financial and operational model for Russian food tech startup expansion. Created unit economics framework and growth projections.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        },
+        {
+          "id": "kept-logistics",
+          "visible": true,
+          "name": "Kept Case — Logistics Strategy",
+          "date": "2022",
+          "description": "Crisis management strategy under sanctions",
+          "summary": "Won case championship with strategy for Russian logistics company navigating sanctions. Analyzed risks and developed contingency plans.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Publications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "References",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Skills",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "product-management",
+          "visible": true,
+          "name": "Product Management",
+          "description": "End-to-end product ownership",
+          "level": 5,
+          "keywords": [
+            "Product Roadmap",
+            "User Research",
+            "Customer Development",
+            "A/B Testing",
+            "Agile/Scrum"
+          ]
+        },
+        {
+          "id": "business-strategy",
+          "visible": true,
+          "name": "Business & Strategy",
+          "description": "Market analysis and planning",
+          "level": 5,
+          "keywords": [
+            "Unit Economics",
+            "Market Analysis",
+            "GTM Strategy",
+            "Financial Modeling",
+            "Competitive Analysis"
+          ]
+        },
+        {
+          "id": "technical",
+          "visible": true,
+          "name": "Technical Skills",
+          "description": "Hands-on engineering capability",
+          "level": 4,
+          "keywords": [
+            "Python",
+            "TypeScript",
+            "SQL",
+            "FastAPI",
+            "SvelteKit",
+            "Docker"
+          ]
+        },
+        {
+          "id": "tools",
+          "visible": true,
+          "name": "Tools & Frameworks",
+          "description": "Product and analytics tools",
+          "level": 4,
+          "keywords": [
+            "Jira",
+            "Figma",
+            "Notion",
+            "Google Analytics",
+            "Metabase"
+          ]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        [
+          "profiles",
+          "summary",
+          "experience",
+          "projects",
+          "education",
+          "awards"
+        ],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "latin",
+        "variants": ["regular"],
+        "size": 14
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "en-tpm"
+  }
+}

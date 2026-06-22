@@ -1,0 +1,362 @@
+{
+  "basics": {
+    "name": "Vladimir Beliaev",
+    "headline": "AI Full Stack Engineer / Software Engineer",
+    "email": "vvladimirbeliaev@gmail.com",
+    "phone": "+7 978 712-98-33",
+    "telegram": "@vvbeliaevv",
+    "location": "Moscow / Remote",
+    "url": {
+      "label": "Portfolio",
+      "href": "https://vvbeliaev.cogisoft.dev"
+    },
+    "customFields": [
+      {
+        "id": "github-link",
+        "icon": "github",
+        "name": "GitHub",
+        "value": "https://github.com/vvbeliaev"
+      },
+      {
+        "id": "website-link",
+        "icon": "globe",
+        "name": "Website",
+        "value": "https://vvbeliaev.cogisoft.dev/"
+      }
+    ],
+    "picture": {
+      "url": "https://rxresu.me/uploads/019bef8d-0eb8-7599-8427-272841ae9312/pictures/1770219124831.webp",
+      "size": 194,
+      "aspectRatio": 1,
+      "borderRadius": 0,
+      "effects": {
+        "hidden": false,
+        "border": false,
+        "grayscale": false
+      }
+    }
+  },
+  "sections": {
+    "summary": {
+      "name": "Summary",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "summary",
+      "content": "Full Stack Engineer with 3+ years of experience building production-ready web applications and AI-driven systems. Expert in integrating LLMs (RAG, Agents) with modern web stacks (FastAPI, SvelteKit, TypeScript). Focused on shipping scalable products and optimizing time-to-market. Founder of 3 shipped micro-SaaS products."
+    },
+    "awards": {
+      "name": "Awards",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "awards",
+      "items": [
+        {
+          "id": "kept-case-championship",
+          "visible": true,
+          "title": "Case Championship Winner — Kept",
+          "awarder": "Kept Consulting",
+          "date": "2022",
+          "summary": "Developed a crisis management strategy for a Russian logistics company under sanctions.",
+          "url": {
+            "label": "",
+            "href": ""
+          }
+        }
+      ]
+    },
+    "certifications": {
+      "name": "Certifications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "certifications",
+      "items": []
+    },
+    "education": {
+      "name": "Education",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "education",
+      "items": [
+        {
+          "id": "hse-minor-ml",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Minor",
+          "area": "Data Science & Machine Learning",
+          "score": "GPA 9.5/10",
+          "date": "Sep 2021 - May 2024",
+          "summary": "Built a strong foundation in machine learning: neural networks, optimization methods, practical model training and evaluation.",
+          "url": {
+            "label": "HSE ML Minor",
+            "href": "https://electives.hse.ru/minor_intel/"
+          }
+        },
+        {
+          "id": "hse-major",
+          "visible": true,
+          "institution": "Higher School of Economics",
+          "studyType": "Bachelor's Degree",
+          "area": "Marketing and Market Analytics",
+          "score": "GPA 8/10 (Tech: 9.5+)",
+          "date": "Sep 2021 - Present (Academic Leave)",
+          "summary": "Focus on data-driven marketing and analytics. Strong quantitative thinking applied to product development.",
+          "url": {
+            "label": "HSE University",
+            "href": "https://www.hse.ru/en/"
+          }
+        }
+      ]
+    },
+    "experience": {
+      "name": "Experience",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "experience",
+      "items": [
+        {
+          "id": "cogito-software",
+          "visible": true,
+          "company": "Cogito Software (Self-employed / Founder)",
+          "position": "AI Full Stack Engineer",
+          "location": "Remote",
+          "date": "Nov 2024 - Present",
+          "summary": "Architected and deployed full-stack AI solutions for clients and internal products using SvelteKit and FastAPI.\n\n• Built Quizbee.academy: An AI-powered educational platform that converts PDFs to quizzes using PydanticAI and Redis.\n• Developed HackSeeker: A market validation tool integrating LLMs for data analysis.\n• Created YouStory.nl: Interactive AI storytelling platform with real-time text generation.\n• Managed infrastructure on Hetzner using Docker and Coolify, ensuring 99.9% uptime.\n\nStack: SvelteKit, Astro, FastAPI, Node.js, Postgres, Redis, LangChain, PydanticAI, Docker, GitHub Actions.",
+          "url": {
+            "label": "Portfolio",
+            "href": "https://vvbeliaev.cogisoft.dev"
+          }
+        },
+        {
+          "id": "llmagent",
+          "visible": true,
+          "company": "LLMAgent.ru",
+          "position": "Lead / Core Developer",
+          "location": "Moscow",
+          "date": "Jan 2023 - Nov 2024",
+          "summary": "Led the development of a self-hosted RAG system integrated with Bitrix24 for Russian businesses.\n\n• Implemented vector search strategies using Qdrant and Elastic, improving retrieval accuracy.\n• Optimized backend performance (Python/FastAPI) handling concurrent users.\n• Built document ingestion pipelines and role-based access control.\n\nStack: FastAPI, Elastic, Qdrant, Postgres, Docker.",
+          "url": {
+            "label": "LLMAgent",
+            "href": "https://llmagent.ru"
+          }
+        }
+      ]
+    },
+    "volunteer": {
+      "name": "Volunteering",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "volunteer",
+      "items": []
+    },
+    "interests": {
+      "name": "Interests",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "interests",
+      "items": [
+        {
+          "id": "self-hosting",
+          "visible": true,
+          "name": "Self-hosting & Infrastructure",
+          "keywords": ["homelab", "coolify", "linux", "server-configuration"]
+        }
+      ]
+    },
+    "languages": {
+      "name": "Languages",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "languages",
+      "items": [
+        {
+          "id": "english",
+          "visible": true,
+          "name": "English",
+          "description": "Professional Working Proficiency",
+          "level": 4
+        },
+        {
+          "id": "russian",
+          "visible": true,
+          "name": "Russian",
+          "description": "Native",
+          "level": 5
+        }
+      ]
+    },
+    "profiles": {
+      "name": "Profiles",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "profiles",
+      "items": []
+    },
+    "projects": {
+      "name": "Projects",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "projects",
+      "items": [
+        {
+          "id": "quizbee",
+          "visible": true,
+          "name": "Quizbee.academy — AI Quiz Generator",
+          "date": "2024",
+          "description": "AI-powered educational platform for educators",
+          "summary": "Tool for educators that converts lecture notes and PDFs into interactive quizzes. Implemented content parsing, question generation using LLMs, and progress tracking.\n\nStack: SvelteKit, FastAPI, Redis, PydanticAI.",
+          "url": {
+            "label": "quizbee.academy",
+            "href": "https://quizbee.academy"
+          }
+        },
+        {
+          "id": "hackseeker",
+          "visible": true,
+          "name": "HackSeeker — Market Validation Tool",
+          "date": "2025",
+          "description": "AI-powered product validation platform",
+          "summary": "Market validation tool that integrates LLMs for analyzing trends and validating product ideas through data parsing algorithms.\n\nStack: SvelteKit, FastAPI, LangChain.",
+          "url": {
+            "label": "hackseeker.com",
+            "href": "https://hackseeker.com"
+          }
+        }
+      ]
+    },
+    "publications": {
+      "name": "Publications",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "publications",
+      "items": []
+    },
+    "references": {
+      "name": "References",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "references",
+      "items": []
+    },
+    "skills": {
+      "name": "Skills",
+      "columns": 1,
+      "separateLinks": true,
+      "visible": true,
+      "id": "skills",
+      "items": [
+        {
+          "id": "core-languages",
+          "visible": true,
+          "name": "Core Languages",
+          "description": "Primary programming languages",
+          "level": 5,
+          "keywords": ["Python", "TypeScript", "JavaScript", "Go (basic)"]
+        },
+        {
+          "id": "ai-ml",
+          "visible": true,
+          "name": "AI / ML",
+          "description": "LLM integration and machine learning",
+          "level": 5,
+          "keywords": [
+            "RAG",
+            "LangChain",
+            "PydanticAI",
+            "Vector DBs (Meilisearch, Chroma, Qdrant)",
+            "OpenAI API",
+            "Prompt Engineering"
+          ]
+        },
+        {
+          "id": "web-stack",
+          "visible": true,
+          "name": "Web Development",
+          "description": "Full-stack web technologies",
+          "level": 5,
+          "keywords": [
+            "SvelteKit",
+            "Next.js",
+            "React",
+            "Astro",
+            "FastAPI",
+            "Node.js",
+            "Tailwind"
+          ]
+        },
+        {
+          "id": "infrastructure",
+          "visible": true,
+          "name": "Infrastructure",
+          "description": "DevOps and deployment",
+          "level": 4,
+          "keywords": [
+            "Docker",
+            "Linux",
+            "CI/CD",
+            "GitHub Actions",
+            "Hetzner",
+            "Coolify"
+          ]
+        }
+      ]
+    },
+    "custom": {}
+  },
+  "metadata": {
+    "template": "pikachu",
+    "layout": [
+      [
+        [
+          "profiles",
+          "summary",
+          "experience",
+          "education",
+          "projects",
+          "awards"
+        ],
+        ["skills", "interests", "languages"]
+      ]
+    ],
+    "css": {
+      "value": "",
+      "visible": false
+    },
+    "page": {
+      "margin": 18,
+      "format": "a4",
+      "options": {
+        "breakLine": true,
+        "pageNumbers": true
+      }
+    },
+    "theme": {
+      "background": "#ffffff",
+      "text": "#000000",
+      "primary": "#475569"
+    },
+    "typography": {
+      "font": {
+        "family": "JetBrains Mono",
+        "subset": "latin",
+        "variants": ["regular"],
+        "size": 14
+      },
+      "lineHeight": 1.5,
+      "hideIcons": false,
+      "underlineLinks": true
+    },
+    "notes": "en-ai-fullstack"
+  }
+}

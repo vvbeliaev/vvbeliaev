@@ -1,0 +1,276 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# BACKBONE — единый factual источник правды.
+#
+# Максимально подробная НАСТОЯЩАЯ история: всё, что было на самом деле, с датами,
+# контекстом и метриками. Здесь — только правда. Приукрашивание и расстановка
+# акцентов происходят в ОТРАЖЕНИЯХ (reflections/*.json), собираемых из этого файла
+# под конкретную вакансию.
+#
+# Правила:
+#   • Правим здесь, и только здесь. reflections/ и pdf/ — производные.
+#   • status: planned | developing  → ещё не факт (пет-проект, навык в процессе).
+#     В отражениях такое можно подавать как «цель/в работе», но НЕ как готовое.
+#   • Теги roles: отмечают, под какие отражения релевантен пункт.
+#       roles: [ai-fullstack, analyst, devops, tpm]   ← полный список ролей
+# ─────────────────────────────────────────────────────────────────────────────
+
+meta:
+  updated: 2026-06-22
+  roles: [ai-fullstack, analyst, devops, tpm] # целевые «отражения»
+  source: >
+    Собрано из автобиографии (2026-06) + portfolio_cog/me.json. Метрики,
+    помеченные verify:false, требуют подтверждения цифрами перед попаданием в CV.
+
+identity:
+  name:
+    ru: Владимир Беляев
+    en: Vladimir Beliaev
+  age: 22 # на 2026-06 (значение стареет — обновлять)
+  # Один человек, разные акценты заголовка под каждое отражение
+  headlines:
+    ai-fullstack: AI Full Stack Engineer / Software Engineer
+    analyst: Product Analyst / Analytics Engineer
+    devops: DevOps Engineer / Platform Engineer
+    tpm: Technical Product Manager / Product Owner
+  contacts:
+    email: vvladimirbeliaev@gmail.com
+    phone: "+7 978 712-98-33"
+    telegram: "@vvbeliaevv"
+    github: https://github.com/vvbeliaev
+    website: https://vvbeliaev.cogisoft.dev
+  locations: [Москва, Тбилиси, Remote]
+  languages:
+    - { name: Русский, level: native }
+    - { name: English, level: C1, note: Professional Working Proficiency }
+
+# ── Нарратив и психологический профиль ───────────────────────────────────────
+# В CV напрямую не идёт, но задаёт тон summary, сайта и собеседований.
+narrative:
+  philosophy: >
+    Ship, ship, ship — быстро доставлять ценность, держа качество кода и
+    архитектуру под контролем. Сильнее всего в маленьких командах и на ранних
+    стадиях продукта.
+  # Бренд-полярность (см. MAYBE.md): через неё читается весь профиль
+  polarity:
+    cosmos: простор, свобода, продуктовая стратегия, философия
+    chthonic: земля, руки, числа, инфраструктура, аналитика
+  origin: >
+    Программирует со школы: игры на Unity (C#), симуляции на Python (pygame).
+    Деятельный фон, не теоретик — строил руками задолго до первой работы.
+
+# Психологический профиль генералиста — опорные тезисы позиционирования.
+# Каждый заземлён на факт из истории, не маркетинговый воздух.
+disposition:
+  archetype: Технологический генералист на стыке бизнеса, инженерии и данных
+  shape: >
+    T-shaped: широкий охват (бизнес ↔ код ↔ данные ↔ инфра), глубина — в
+    AI/RAG-интеграциях и анализе данных.
+  traits:
+    - id: bridge
+      text: "Соединяет бизнес-цели и инженерную реализацию: «могу посчитать unit-экономику — и сам поправлю баг на проде»."
+      evidence: [Маркетинг-аналитика major + ML minor, founder + разработчик]
+      roles: [tpm, ai-fullstack, analyst]
+    - id: owner
+      text: "Founder/owner-mindset: берёт end-to-end ответственность, в одиночку доводит MVP до прода, чтобы быстро проверить гипотезу."
+      evidence: [3 запущенных micro-SaaS, self-hosting инфры]
+      roles: [tpm, ai-fullstack]
+    - id: quantitative
+      text: "Количественное/вероятностное мышление: матстат, симуляции, Monte Carlo как рабочий инструмент, а не теория."
+      evidence: [GPA 9.5 minor ML, симуляции тервера на Python, B2B-модели спроса]
+      roles: [analyst, tpm]
+    - id: fast-learner
+      text: "Быстрый самоучка, комфортен в неопределённости — осваивает новый инструмент под задачу за вечер."
+      evidence: [путь школа→веб→AI→инфра без формального CS]
+      roles: [ai-fullstack, devops]
+    - id: autonomy
+      text: "Автономность и самодостаточность: сам держит инфраструктуру, homelab, полный цикл владения."
+      evidence: [Hetzner, Coolify, Proxmox/Raspberry Pi homelab]
+      roles: [devops, ai-fullstack]
+    - id: risk-reducer
+      text: "Снижает риски ранней команды: один человек закрывает прототип, аналитику и деплой."
+      roles: [tpm]
+  # Честный трейд-офф генералиста — держим в уме, в CV не выносим
+  tradeoff: >
+    Генералист → не глубочайший узкий специалист в одной вертикали (напр. чистый
+    K8s-инженер или ML-исследователь). Компенсирует скоростью, охватом и
+    самостоятельностью. Под узкие вакансии — закрывать целевыми пет-проектами.
+
+# ── Опыт работы ──────────────────────────────────────────────────────────────
+experience:
+  - id: cogito-software
+    company: Cogito Software (Основатель / Самозанятость / Фриланс)
+    position: AI Full Stack Engineer / Product Lead
+    location: Remote
+    period: { start: 2024-11, end: null } # present
+    roles: [ai-fullstack, tpm, devops]
+    summary: >
+      Собственные продукты и full-stack фриланс на стыке веб-технологий, AI-
+      интеграций и векторных индексов. Полный цикл: гипотеза → MVP → деплой → GTM.
+    achievements:
+      - text: "Quizbee.academy — AI-платформа, конвертирующая PDF/лекции в интерактивные квизы (PydanticAI, Redis)."
+        roles: [ai-fullstack, tpm]
+      - text: "HackSeeker — инструмент валидации рынка: парсинг данных + LLM-анализ трендов и гипотез."
+        roles: [ai-fullstack, analyst, tpm]
+      - text: "YouStory.nl — интерактивный AI-сторителлинг с генерацией текста в реальном времени."
+        roles: [ai-fullstack]
+      - text: "Фриланс: построение и поддержка RAG-систем, парсинг сайтов и доменов, веб- и Telegram-автоматизации."
+        roles: [ai-fullstack]
+      - text: "Инфраструктура на Hetzner (Docker, Coolify), 99.9% uptime."
+        roles: [devops]
+      - text: "Сократил время деплоя на 40% через оптимизацию CI/CD (GitHub Actions)."
+        metric: { value: -40, unit: "%", of: "deploy time", verify: false }
+        roles: [devops]
+    stack: [SvelteKit, Astro, FastAPI, Node.js, Postgres, Redis, LangChain, PydanticAI, Docker, Coolify, GitHub Actions]
+
+  - id: llmagent
+    company: LLMAgent.ru
+    position: Full Stack Developer / Core Developer
+    location: Москва (Remote)
+    period: { start: 2023-01, end: 2024-11 }
+    roles: [ai-fullstack, devops, tpm]
+    summary: >
+      Развитие self-hosted Knowledge Base систем для российского бизнеса:
+      RAG-пайплайны, стратегии промпт-инжиниринга, интеграция с Битрикс24.
+    achievements:
+      - text: "Построение RAG-систем: стратегии векторного поиска (Qdrant, Elastic), рост точности retrieval."
+        roles: [ai-fullstack]
+      - text: "Различные стратегии промпт-инжиниринга под задачи knowledge base."
+        roles: [ai-fullstack]
+      - text: "Интеграция с Битрикс24 для российского B2B."
+        roles: [ai-fullstack, tpm]
+      - text: "Оптимизация бэкенда (Python/FastAPI) под конкурентную нагрузку."
+        roles: [ai-fullstack, devops]
+      - text: "Пайплайны ингеста документов с валидацией и ролевым доступом (RBAC)."
+        roles: [ai-fullstack, devops]
+      - text: "Перевод бизнес-требований стейкхолдеров в техспеки."
+        roles: [tpm]
+    stack: [FastAPI, Python, Elastic, Qdrant, Postgres, Docker, Bitrix24]
+
+  - id: b2b-food-distribution
+    company: B2B-дистрибьютор продуктов питания (мелкий, со складом)
+    position: Business Analyst
+    location: Москва
+    period: { start: 2022-02, end: 2023-01 }
+    roles: [analyst, tpm]
+    summary: >
+      Анализ операций и построение финансовых/операционных моделей для запасов
+      и цепочки поставок небольшого складского B2B-бизнеса.
+    achievements:
+      - text: "Модели прогноза спроса и управления запасами."
+        roles: [analyst]
+      - text: "Автоматизация отчётности (SQL, Python) — ручной труд сокращён на 60%+."
+        metric: { value: -60, unit: "%", of: "manual reporting", verify: false }
+        roles: [analyst, devops]
+      - text: "Анализ эффективности цепочки поставок, data-driven оптимизации."
+        roles: [analyst]
+    stack: [SQL, "Python (Pandas, NumPy)", Excel]
+
+# ── Проекты ──────────────────────────────────────────────────────────────────
+# status: planned → идея/в работе, ещё НЕ сделано (в CV — только как «цель»).
+projects:
+  - id: quizbee
+    name: Quizbee.academy
+    role: Founder / Developer
+    year: 2024
+    link: https://quizbee.academy
+    description: AI-генератор квизов — лекции и PDF в интерактивные квизы.
+    roles: [ai-fullstack, tpm]
+    stack: [SvelteKit, FastAPI, Redis, PydanticAI]
+  - id: hackseeker
+    name: HackSeeker.com
+    role: Founder / Developer
+    year: 2025
+    link: https://hackseeker.com
+    description: Валидация рынка через парсинг данных и LLM-анализ трендов/гипотез.
+    roles: [ai-fullstack, analyst, tpm]
+    stack: [SvelteKit, FastAPI, LangChain]
+  - id: youstory
+    name: YouStory.nl
+    role: Founder / Developer
+    year: 2024
+    link: https://ys.cogitosoftware.nl
+    description: Интерактивный сторителлинг с ветвящимися нарративами и генерацией в реальном времени.
+    roles: [ai-fullstack]
+    stack: [SvelteKit, Node.js, Docker]
+  - id: ai-disraeli
+    name: AI Disraeli — GTM-стратегия
+    type: Consulting / University
+    year: 2023
+    description: Стратегия выхода на западный рынок США для российского AI-стартапа.
+    roles: [tpm, analyst]
+  - id: askona-foodtech-model
+    name: Аскона — финансовая и операционная модель
+    type: University
+    description: Финансовая и операционная модель развития российского food-tech стартапа.
+    roles: [analyst, tpm]
+  - id: school-unity-games
+    name: Игры на Unity (C#)
+    type: Personal / School
+    description: Ранние игровые проекты — старт инженерного пути со школы.
+    roles: [ai-fullstack]
+    stack: [Unity, "C#"]
+  - id: school-pygame-sims
+    name: Симуляции на Python (pygame)
+    type: Personal / School
+    description: Симуляции и проверка вероятностных моделей кодом.
+    roles: [analyst]
+    stack: [Python, pygame]
+  - id: mlops-k8s-platform
+    name: End-to-End MLOps Platform on K8s
+    type: Pet-project
+    status: planned # ⚠️ ИДЕЯ, ещё не сделано. В CV — только как «в работе/цель».
+    description: >
+      Целевой killer-проект под DevOps-вектор: llmagent в Kubernetes «правильно» —
+      Terraform (IaC), multistage Docker, Helm-чарты, Ingress(Nginx)+Cert-Manager,
+      HPA-автоскейл, GitOps (ArgoCD/GitHub Actions), Prometheus+Grafana.
+    roles: [devops]
+    stack: [Kubernetes, Helm, Terraform, ArgoCD, Nginx, Cert-Manager, Prometheus, Grafana]
+
+# ── Образование ──────────────────────────────────────────────────────────────
+education:
+  - id: hse
+    institution: НИУ ВШЭ (Высшая школа экономики)
+    period: { start: 2021, end: 2026 }
+    status: Бакалавриат завершён, диплом получен (2026).
+    degree: Бакалавр
+    tracks:
+      - kind: major
+        area: Маркетинг и рыночная аналитика
+        score: GPA 8/10 (тех. дисциплины и программирование — 9.5+)
+        roles: [analyst, tpm]
+      - kind: minor
+        area: Интеллектуальный анализ данных (Machine Learning)
+        score: GPA 9.5/10
+        summary: Нейросети, методы оптимизации, тервер/матстат, статистическое моделирование.
+        roles: [ai-fullstack, analyst]
+    note: >
+      Сильнее всего вдохновился анализом данных и тервером/матстатом — отсюда
+      переход в minor по ML.
+
+# ── Награды ──────────────────────────────────────────────────────────────────
+awards:
+  - id: kept-case-championship
+    title: Победитель кейс-чемпионата — Kept (ex-KPMG)
+    date: 2022
+    summary: >
+      Стратегия развития российской логистической компании в условиях санкций
+      (антикризис + логистика).
+    roles: [analyst, tpm]
+
+# ── Навыки ───────────────────────────────────────────────────────────────────
+# Полный инвентарь. Отражение выбирает релевантное подмножество.
+skills:
+  languages: [Python, TypeScript, JavaScript, "SQL (Advanced)", "C#", "Go (Basic)", Bash]
+  frontend: [SvelteKit, Astro, Next.js, React, Tailwind CSS, DaisyUI, Figma]
+  backend: [FastAPI, Node.js, Go, PostgreSQL, Redis, Meilisearch, Elasticsearch, Qdrant, ChromaDB]
+  ai_ml: [RAG, "LLM Agents", LangChain, PydanticAI, OpenAI API, Prompt Engineering, "Web/Domain Parsing", PyTorch, Scikit-learn, Data Mining, Statistical Modeling]
+  data_analytics: ["Python (Pandas, NumPy)", "SQL (Advanced)", ETL, A/B Testing, Unit Economics, "Monte Carlo / Simulations (SimPy, pygame)", Tableau, Metabase, Superset]
+  devops_infra: [Docker, Linux, "CI/CD (GitHub Actions)", Coolify, Hetzner, Nginx, "Self-hosting / Homelab"]
+  product: [Product Roadmap, "User Research (CustDev)", "Market Analysis (US/EU)", "GTM Strategy", "Financial / Operational Modeling"]
+
+# Навыки в процессе освоения / под целевые пет-проекты. НЕ выдавать за прод-опыт.
+developing:
+  devops: [Kubernetes, Helm, ArgoCD, Terraform, Ansible, "Prometheus/Grafana", "AWS (база)"]
+  note: Закрываются через MLOps-K8s пет-проект (см. projects/mlops-k8s-platform).
+
+interests: [Self-hosting, "Homelab (Proxmox, Raspberry Pi)", Product Strategy, "Monte Carlo Simulations", "Game/Simulation Dev"]
