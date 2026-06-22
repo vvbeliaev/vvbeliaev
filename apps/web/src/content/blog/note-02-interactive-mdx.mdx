@@ -1,0 +1,19 @@
+---
+title: Interactive MDX
+description: How to embed live Svelte components right inside a long-form post.
+pubDate: 2026-06-23
+noteNumber: 2
+tags: ["astro", "svelte", "mdx"]
+---
+
+import Counter from "$lib/components/Counter.svelte";
+
+MDX lets you embed interactive components right inside the article text. Below is
+a live Svelte component. It hydrates on the client via the `client:load`
+directive:
+
+<Counter start={5} client:load />
+
+The rest of the text stays static HTML — only the part that actually needs it is
+interactive. That's the Astro approach: islands of interactivity in a sea of
+static content.

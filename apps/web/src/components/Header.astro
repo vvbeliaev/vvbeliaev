@@ -1,0 +1,32 @@
+---
+import { NAV, SITE } from "$lib/config";
+
+const { pathname } = Astro.url;
+const isActive = (href: string) =>
+  href === "/" ? pathname === "/" : pathname.startsWith(href);
+---
+
+<header class="border-b border-border">
+  <div
+    class="mx-auto flex max-w-3xl items-center justify-between px-4 py-4"
+  >
+    <a href="/" class="font-display font-bold tracking-tight">{SITE.title}</a>
+    <nav class="flex items-center gap-1">
+      {
+        NAV.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-secondary hover:text-foreground",
+              isActive(item.href)
+                ? "text-foreground"
+                : "text-muted-foreground",
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
