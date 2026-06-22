@@ -1,13 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#0f172a" />
-  <text
-    x="50%"
-    y="50%"
-    dy="0.35em"
-    text-anchor="middle"
-    font-family="ui-sans-serif, system-ui, sans-serif"
-    font-size="16"
-    font-weight="700"
-    fill="#f8fafc"
-  >В</text>
+  <!-- Corona Bloom site mark: a "V" traced as a 3-star constellation.
+       Cool steel-blue starlight on the deep cosmic base; the bottom vertex is
+       the brightest star. Reads as both the initial and a real star pattern. -->
+  <rect width="32" height="32" rx="7" fill="#04050b" />
+
+  <!-- constellation links -->
+  <polyline
+    points="8,9 16,24 24,9"
+    fill="none"
+    stroke="#5f95c2"
+    stroke-width="1.1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.55"
+  />
+
+  <!-- arm stars -->
+  <g fill="#8fb4d8">
+    <circle cx="8" cy="9" r="2" />
+    <circle cx="24" cy="9" r="2" />
+  </g>
+
+  <!-- vertex star: cool halo + bright core -->
+  <circle cx="16" cy="24" r="5.4" fill="#5f95c2" opacity="0.16" />
+  <circle cx="16" cy="24" r="3" fill="#5f95c2" opacity="0.34" />
+  <circle cx="16" cy="24" r="2.2" fill="#e6eefb" />
 </svg>
