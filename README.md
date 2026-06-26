@@ -21,7 +21,7 @@
 <br /><br />
 
 <a href="https://vbeliaev.dev">
-  <img src="https://readme-typing-svg.demolab.com?font=Sora&weight=600&size=22&pause=1100&color=F08A72&center=true&vCenter=true&width=620&height=42&lines=AI+Full+Stack+Engineer;Product+Lead;Analytics+Engineer;Operator-essayist+%E2%80%94+more+philosopher+than+maker" alt="AI Full Stack Engineer · Product Lead · Analytics Engineer" />
+  <img src="https://readme-typing-svg.demolab.com?font=Sora&weight=600&size=22&pause=1100&color=F08A72&center=true&vCenter=true&width=620&height=42&lines=AI+Full+Stack+Engineer;Product+Lead;Analytics+Engineer" alt="AI Full Stack Engineer · Product Lead · Analytics Engineer" />
 </a>
 
 </div>
