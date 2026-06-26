@@ -5,6 +5,8 @@ export const SITE = {
   // locale-aware — see SITE_I18N[lang].name.
   title: "Vladimir Beliaev",
   author: "Vladimir Beliaev",
+  // Cross-channel handle (github/youtube/telegram). Shown as the header wordmark.
+  handle: "vvbeliaev",
   // TODO: set the final domain
   url: "https://vbeliaev.dev",
 } as const;
