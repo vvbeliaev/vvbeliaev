@@ -192,6 +192,10 @@ const lit = new Set<number>(lines.flatMap(([a, b]) => [a.i, b.i]));
     mix-blend-mode: overlay;
   }
 
+  .starfield {
+    will-change: transform;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .star.bright,
     .lines line {
@@ -199,3 +203,33 @@ const lit = new Set<number>(lines.flatMap(([a, b]) => [a.i, b.i]));
     }
   }
 </style>
+
+<script>
+  // Subtle scroll parallax: the star field drifts gently upward — against the
+  // scroll — so the cosmos rises as the page descends. Capped + rAF-driven so it
+  // stays restrained and cheap; disabled under reduced-motion.
+  const field = document.querySelector<SVGElement>(".starfield");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  if (field && !reduce.matches) {
+    const FACTOR = 0.04; // share of scroll the stars travel
+    const CAP = 36; // max drift in px — keeps the field from emptying out
+    let ticking = false;
+
+    const apply = () => {
+      const shift = Math.min((window.scrollY || 0) * FACTOR, CAP);
+      field.style.transform = `translate3d(0, ${-shift}px, 0)`;
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(apply);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    apply();
+  }
+</script>

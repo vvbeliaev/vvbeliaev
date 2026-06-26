@@ -3,6 +3,7 @@ import type { CollectionEntry } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Cover from "./Cover.astro";
 import { formatDate } from "$lib/date";
+import { postSlug } from "$lib/post";
 import { useTranslations, localizePath } from "$i18n/utils";
 import type { Lang } from "$i18n/ui";
 
@@ -23,6 +24,16 @@ const readTime = Math.max(1, Math.ceil(words / 200));
 const notePrefix = post.data.articleNumber
   ? `${t("article.prefix")} #${post.data.articleNumber}.`
   : "";
+
+// Translation badge: if this post is a translation, link back to the original
+// (same slug, source-language route).
+const translatedFrom = post.data.translatedFrom;
+const translatedLabel = translatedFrom
+  ? t(translatedFrom === "ru" ? "post.translated.ru" : "post.translated.en")
+  : null;
+const originalHref = translatedFrom
+  ? localizePath(`/blog/${postSlug(post)}`, translatedFrom)
+  : null;
 ---
 
 <div id="read-progress" class="glow-primary fixed inset-x-0 top-0 z-50 h-0.5 origin-left scale-x-0 bg-primary">
@@ -47,6 +58,19 @@ const notePrefix = post.data.articleNumber
         <span class="opacity-40">·</span>
         <span>{readTime} {t("post.min")}</span>
       </div>
+
+      {
+        translatedFrom && originalHref && (
+          <a
+            href={originalHref}
+            class="mt-5 inline-flex items-center gap-2 rounded-md border border-border bg-card/40 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:border-accent/50 hover:text-accent"
+          >
+            <span class="glow-accent size-1.5 rounded-full bg-accent" aria-hidden="true" />
+            <span>{translatedLabel}</span>
+            <span class="opacity-50">· {t("post.original")} →</span>
+          </a>
+        )
+      }
     </header>
 
     <div class="relative mb-12 aspect-2/1 overflow-hidden rounded-xl border border-border">

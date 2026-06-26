@@ -13,7 +13,11 @@ const blog = defineCollection({
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     // Сквозной ритуал бренда — нумерация статей («Статья №14»).
+    // Он же связывает RU↔EN-версии одной статьи.
     articleNumber: z.number().int().positive().optional(),
+    // Если статья — перевод, указываем язык оригинала; в UI рендерится плашка
+    // «Translated from …» со ссылкой на оригинал (тот же articleNumber/slug).
+    translatedFrom: z.enum(["en", "ru"]).optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
     // Cover image: a path under /public (e.g. "/covers/note-01.jpg") or a URL.

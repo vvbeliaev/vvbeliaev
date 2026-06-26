@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import PostLayout from "../../../components/PostLayout.astro";
+import { postSlug } from "$lib/post";
 
 export const getStaticPaths = (async () => {
   const posts = (
@@ -9,7 +10,7 @@ export const getStaticPaths = (async () => {
   ).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
   return posts.map((post, i) => ({
-    params: { slug: post.id },
+    params: { slug: postSlug(post) },
     props: { post, prevPost: posts[i + 1], nextPost: posts[i - 1] },
   }));
 }) satisfies GetStaticPaths;

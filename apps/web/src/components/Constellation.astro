@@ -9,12 +9,10 @@
   (face / mascot animal — TBD); without it, a monogram placeholder is shown.
   This avatar is meant to become the cross-channel mark.
 
-  NOTE: strawman copy below is placeholder (English). Final copy will be routed
-  through src/i18n once the concept/wording is locked.
+  Copy (facet names/captions, subtitle) is routed through src/i18n.
 */
-import { SITE } from "$lib/config";
-import { Button } from "$lib/components/ui/button/index.js";
-import { getLangFromUrl, localizePath } from "$i18n/utils";
+import { SITE_I18N } from "$lib/config";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
 
 interface Props {
   avatar?: string;
@@ -22,20 +20,22 @@ interface Props {
 const { avatar } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const name = SITE_I18N[lang].name;
 
 const core = { x: 300, y: 180 };
 const R = 38; // avatar radius
 const facets = [
-  { x: 96, y: 70, name: "Engineer", caption: "ship AI products end-to-end" },
-  { x: 506, y: 64, name: "Product", caption: "decide what's worth building" },
-  { x: 430, y: 300, name: "Analytics", caption: "read the market with data" },
+  { x: 96, y: 70, name: t("facet.engineer.name"), caption: t("facet.engineer.caption") },
+  { x: 506, y: 64, name: t("facet.product.name"), caption: t("facet.product.caption") },
+  { x: 430, y: 300, name: t("facet.analytics.name"), caption: t("facet.analytics.caption") },
 ];
 
 // a few ambient dim stars for depth (hand-placed so nothing crowds the labels)
 const ambient = [
   [50, 40], [250, 44], [566, 150], [548, 304], [70, 256], [368, 120], [186, 312],
 ];
-const monogram = SITE.title
+const monogram = name
   .split(" ")
   .map((w) => w[0])
   .join("")
@@ -44,7 +44,7 @@ const monogram = SITE.title
 ---
 
 <section class="pt-4 pb-2">
-  <figure class="constellation" aria-label="A constellation of one operator: Engineer, Product, Analytics">
+  <figure class="constellation" aria-label={`${t("facet.engineer.name")}, ${t("facet.product.name")}, ${t("facet.analytics.name")}`}>
     <svg viewBox="0 0 600 360" role="img" preserveAspectRatio="xMidYMid meet">
       <defs>
         <clipPath id="avatarClip">
@@ -103,16 +103,11 @@ const monogram = SITE.title
 
   <div class="mt-2 text-center">
     <h1 class="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
-      {SITE.title}
+      {name}
     </h1>
     <p class="mx-auto mt-4 max-w-xl text-balance leading-relaxed text-muted-foreground">
-      An engineer mapping the space between code, product, and market.
+      {t("hero.subtitle")}
     </p>
-    <div class="mt-6">
-      <Button href={localizePath("/blog", lang)} class="glow-primary">
-        Enter the field log
-      </Button>
-    </div>
   </div>
 </section>
 

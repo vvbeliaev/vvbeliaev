@@ -1,18 +1,21 @@
 import type { Lang, UIKey } from "$i18n/ui";
 
 export const SITE = {
+  // Locale-neutral brand handle (used as a stable fallback). Displayed name is
+  // locale-aware — see SITE_I18N[lang].name.
   title: "Vladimir Beliaev",
   author: "Vladimir Beliaev",
   // TODO: set the final domain
   url: "https://vbeliaev.dev",
 } as const;
 
-// Per-locale site metadata (tagline / meta description / Intl locale).
+// Per-locale site metadata (display name / tagline / meta description / Intl locale).
 export const SITE_I18N: Record<
   Lang,
-  { tagline: string; description: string; locale: string; now: string }
+  { name: string; tagline: string; description: string; locale: string; now: string }
 > = {
   en: {
+    name: "Vladimir Beliaev",
     tagline: "AI Full Stack Engineer · Product Lead · Analytics Engineer",
     description:
       "Personal site and long-form blog by Vladimir Beliaev — notes on AI, product and analytics.",
@@ -20,6 +23,7 @@ export const SITE_I18N: Record<
     now: "Lead engineer at Space N Place (Dubai PropTech)", // TODO: keep current
   },
   ru: {
+    name: "Владимир Беляев",
     tagline: "AI Full Stack инженер · Product Lead · Analytics Engineer",
     description:
       "Личный сайт и блог Владимира Беляева — заметки про AI, продукт и аналитику.",
