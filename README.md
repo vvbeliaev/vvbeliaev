@@ -64,8 +64,3 @@
 
 **Read the work** → [Telegram channel](https://t.me/vvbeliaev_ch) · [YouTube](https://www.youtube.com/@vvbeliaev) · [vbeliaev.dev](https://vbeliaev.dev)
 **Reach me** → [Telegram DM](https://t.me/vvbeliaev_me) · [Email](mailto:vvladimirbeliaev@gmail.com) · [Résumé](https://rxresu.me/vvbeliaev/full-stack)
-
-<div align="center">
-  <br />
-  <sub><i>◉&nbsp;&nbsp;Corona Bloom — a luminous halo in the dark, not a neon sign.</i></sub>
-</div>
