@@ -28,20 +28,12 @@
 
 ---
 
-### `> whoami`
-
-I build with AI from the model up to the product — the full stack: data and retrieval, the agents and pipelines, the interface people actually touch, and the analytics that tell us whether any of it worked.
-
-Right now I'm **Lead Engineer at [Space N Place](https://spacenplace.ai)** — AI real-estate discovery & market intelligence for Dubai. Before that, a string of LLM-native micro-products as a founder.
-
-I write a **field log** — numbered notes on AI, product, and analytics: what I tried, the forks, what I shut down and why. Restraint over hype; the work, by the numbers.
-
 ### `> building now`
 
-| Project | What it is |
-| :-- | :-- |
-| **[Space N Place](https://spacenplace.ai)** · _Lead Engineer_ | AI real-estate discovery & market intelligence for Dubai — live market snapshot, ML liquidity scoring, multimodal vector search, floor-plan understanding. |
-| **[LLM-Агент](https://llmagent.ru)** · _AI agents for business_ | Turns company knowledge into 24/7 RAG assistants across web, Telegram & Bitrix24. |
+| Project                                                         | What it is                                                                                                                                                 |
+| :-------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[Space N Place](https://spacenplace.ai)** · _Lead Engineer_   | AI real-estate discovery & market intelligence for Dubai — live market snapshot, ML liquidity scoring, multimodal vector search, floor-plan understanding. |
+| **[LLM-Агент](https://llmagent.ru)** · _AI agents for business_ | Turns company knowledge into 24/7 RAG assistants across web, Telegram & Bitrix24.                                                                          |
 
 <sub>Parked micro-SaaS: Quizbee · HackSeeker · YouStory.</sub>
 
