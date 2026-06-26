@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" fill="none" role="img" aria-label="Vladimir Beliaev — AI Full Stack Engineer, Product Lead, Analytics Engineer">
+  <title>Vladimir Beliaev — Corona Bloom</title>
+
+  <defs>
+    <!-- Vertical polarity: cosmos (top) -> chthonic floor (bottom) -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#06070f"/>
+      <stop offset="0.5" stop-color="#04050b"/>
+      <stop offset="1" stop-color="#020308"/>
+    </linearGradient>
+
+    <!-- Warm coral ember at top-center -->
+    <radialGradient id="ember" cx="0.5" cy="0.18" r="0.55">
+      <stop offset="0" stop-color="#f08a72" stop-opacity="0.30"/>
+      <stop offset="0.35" stop-color="#f08a72" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#f08a72" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Cold nebula haze, left + right margins -->
+    <radialGradient id="nebulaL" cx="0.12" cy="0.4" r="0.5">
+      <stop offset="0" stop-color="#5f95c2" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#5f95c2" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nebulaR" cx="0.9" cy="0.7" r="0.5">
+      <stop offset="0" stop-color="#9a86c4" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#9a86c4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Chthonic floor welling up from the bottom -->
+    <radialGradient id="floor" cx="0.5" cy="1" r="0.75">
+      <stop offset="0" stop-color="#020308" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#020308" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft glow for the ember cursor / status -->
+    <filter id="glow" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Fade the star field before it reaches the lower reading band -->
+    <linearGradient id="starMask" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="0.7" stop-color="#fff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="fadeDown">
+      <rect width="1200" height="300" fill="url(#starMask)"/>
+    </mask>
+  </defs>
+
+  <!-- Skybox, back to front -->
+  <rect width="1200" height="300" fill="url(#sky)"/>
+  <rect width="1200" height="300" fill="url(#nebulaL)"/>
+  <rect width="1200" height="300" fill="url(#nebulaR)"/>
+  <rect width="1200" height="300" fill="url(#ember)"/>
+  <rect width="1200" height="300" fill="url(#floor)"/>
+
+  <!-- Constellation lines, kept to the side margins so they never cross the wordmark -->
+  <g stroke="#9aa3bd" stroke-width="0.6" stroke-opacity="0.28" fill="none">
+    <polyline points="70,60 130,95 96,150 180,128">
+      <animate attributeName="stroke-opacity" values="0.10;0.32;0.10" dur="7s" repeatCount="indefinite"/>
+    </polyline>
+    <polyline points="210,52 250,110 300,80">
+      <animate attributeName="stroke-opacity" values="0.30;0.12;0.30" dur="9s" repeatCount="indefinite"/>
+    </polyline>
+    <polyline points="1130,70 1060,104 1100,168 1020,150">
+      <animate attributeName="stroke-opacity" values="0.12;0.30;0.12" dur="8s" repeatCount="indefinite"/>
+    </polyline>
+    <polyline points="980,58 940,112 900,86">
+      <animate attributeName="stroke-opacity" values="0.28;0.10;0.28" dur="6.5s" repeatCount="indefinite"/>
+    </polyline>
+  </g>
+
+  <!-- Star field: irregular, biased to the top, twinkling (staggered) -->
+  <g fill="#e3e5ee" mask="url(#fadeDown)">
+    <circle cx="70" cy="60" r="1.5"><animate attributeName="opacity" values="0.4;1;0.4" dur="4s" begin="0s" repeatCount="indefinite"/></circle>
+    <circle cx="130" cy="95" r="1.1"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="5s" begin="0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="96" cy="150" r="0.9"><animate attributeName="opacity" values="0.2;0.7;0.2" dur="6s" begin="1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="180" cy="128" r="1.3"><animate attributeName="opacity" values="0.4;1;0.4" dur="4.5s" begin="0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="210" cy="52" r="1.0"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="5.5s" begin="1.8s" repeatCount="indefinite"/></circle>
+    <circle cx="250" cy="110" r="0.8"><animate attributeName="opacity" values="0.25;0.6;0.25" dur="7s" begin="0.9s" repeatCount="indefinite"/></circle>
+    <circle cx="300" cy="80" r="1.4"><animate attributeName="opacity" values="0.5;1;0.5" dur="4s" begin="2.1s" repeatCount="indefinite"/></circle>
+    <circle cx="345" cy="40" r="0.9"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="6s" begin="0.2s" repeatCount="indefinite"/></circle>
+    <circle cx="400" cy="70" r="1.0"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="5s" begin="2.6s" repeatCount="indefinite"/></circle>
+    <circle cx="455" cy="36" r="0.7"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="7.5s" begin="1.1s" repeatCount="indefinite"/></circle>
+    <circle cx="520" cy="58" r="1.2"><animate attributeName="opacity" values="0.4;1;0.4" dur="4.2s" begin="3s" repeatCount="indefinite"/></circle>
+    <circle cx="585" cy="32" r="0.8"><animate attributeName="opacity" values="0.25;0.7;0.25" dur="6.5s" begin="0.4s" repeatCount="indefinite"/></circle>
+    <circle cx="640" cy="52" r="1.0"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="5s" begin="1.6s" repeatCount="indefinite"/></circle>
+    <circle cx="705" cy="34" r="0.9"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="6s" begin="2.4s" repeatCount="indefinite"/></circle>
+    <circle cx="770" cy="60" r="1.3"><animate attributeName="opacity" values="0.4;1;0.4" dur="4.6s" begin="0.7s" repeatCount="indefinite"/></circle>
+    <circle cx="835" cy="40" r="0.8"><animate attributeName="opacity" values="0.25;0.65;0.25" dur="7s" begin="1.9s" repeatCount="indefinite"/></circle>
+    <circle cx="900" cy="86" r="1.1"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="5.2s" begin="0.5s" repeatCount="indefinite"/></circle>
+    <circle cx="940" cy="112" r="0.9"><animate attributeName="opacity" values="0.25;0.7;0.25" dur="6.5s" begin="2.7s" repeatCount="indefinite"/></circle>
+    <circle cx="980" cy="58" r="1.4"><animate attributeName="opacity" values="0.5;1;0.5" dur="4s" begin="1.3s" repeatCount="indefinite"/></circle>
+    <circle cx="1020" cy="150" r="0.9"><animate attributeName="opacity" values="0.2;0.7;0.2" dur="6s" begin="0.1s" repeatCount="indefinite"/></circle>
+    <circle cx="1060" cy="104" r="1.0"><animate attributeName="opacity" values="0.3;0.85;0.3" dur="5.4s" begin="2.2s" repeatCount="indefinite"/></circle>
+    <circle cx="1100" cy="168" r="0.8"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="7s" begin="0.8s" repeatCount="indefinite"/></circle>
+    <circle cx="1130" cy="70" r="1.2"><animate attributeName="opacity" values="0.4;1;0.4" dur="4.3s" begin="1.5s" repeatCount="indefinite"/></circle>
+    <circle cx="40" cy="110" r="0.8"><animate attributeName="opacity" values="0.25;0.7;0.25" dur="6.8s" begin="2.9s" repeatCount="indefinite"/></circle>
+    <circle cx="160" cy="40" r="0.7"><animate attributeName="opacity" values="0.2;0.6;0.2" dur="7.2s" begin="0.35s" repeatCount="indefinite"/></circle>
+    <circle cx="480" cy="100" r="0.7"><animate attributeName="opacity" values="0.2;0.55;0.2" dur="7.6s" begin="1.0s" repeatCount="indefinite"/></circle>
+    <circle cx="720" cy="96" r="0.7"><animate attributeName="opacity" values="0.2;0.55;0.2" dur="7.4s" begin="2.0s" repeatCount="indefinite"/></circle>
+    <circle cx="1160" cy="120" r="0.9"><animate attributeName="opacity" values="0.25;0.7;0.25" dur="6.2s" begin="1.7s" repeatCount="indefinite"/></circle>
+    <circle cx="260" cy="170" r="0.7"><animate attributeName="opacity" values="0.15;0.45;0.15" dur="8s" begin="0.5s" repeatCount="indefinite"/></circle>
+    <circle cx="1050" cy="44" r="0.8"><animate attributeName="opacity" values="0.25;0.7;0.25" dur="6.6s" begin="2.5s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- HUD: wordmark + tagline (kept legible above the skybox) -->
+  <g font-family="'Sora','Segoe UI Variable','Segoe UI',system-ui,-apple-system,sans-serif">
+    <text x="600" y="172" text-anchor="middle" font-size="66" font-weight="800" letter-spacing="-1.5" fill="#e3e5ee">Vladimir Beliaev</text>
+    <!-- blinking terminal cursor (ember) -->
+    <rect x="838" y="138" width="13" height="44" rx="1.5" fill="#f08a72" filter="url(#glow)">
+      <animate attributeName="opacity" values="1;1;0;0" dur="1.1s" repeatCount="indefinite" keyTimes="0;0.5;0.5;1"/>
+    </rect>
+  </g>
+
+  <!-- Mono tagline -->
+  <g font-family="'JetBrains Mono','SF Mono',ui-monospace,monospace">
+    <text x="600" y="219" text-anchor="middle" font-size="16.5" letter-spacing="6" fill="#8b90a4">AI&#160;FULL&#160;STACK&#160;&#183;&#160;PRODUCT&#160;&#183;&#160;ANALYTICS</text>
+  </g>
+</svg>

@@ -1,5 +1,5 @@
 ---
-import { NAV, FOLLOW, SITE_I18N } from "$lib/config";
+import { NAV, FOLLOW, SITE, SITE_I18N } from "$lib/config";
 import {
   getLangFromUrl,
   useTranslations,
@@ -37,8 +37,12 @@ const navItems = NAV.map((item) => ({
 <header class="relative border-b border-border">
   <div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
     <!-- Brand: full wordmark on ≥sm, the V-constellation site mark on mobile -->
-    <a href={home} class="hidden font-display font-bold tracking-tight sm:block">
-      {name}
+    <a
+      href={home}
+      class="hidden font-display font-bold tracking-tight sm:block"
+      aria-label={name}
+    >
+      {SITE.handle}
     </a>
     <a href={home} class="site-mark inline-flex items-center sm:hidden" aria-label={name}>
       <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
