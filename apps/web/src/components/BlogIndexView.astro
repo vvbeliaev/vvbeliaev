@@ -18,7 +18,15 @@ const posts = (
 
 {
   posts.length === 0 ? (
-    <p class="mt-10 text-muted-foreground">{t("blog.empty")}</p>
+    <div class="mt-12 rounded-xl border border-border bg-card/40 px-6 py-14 text-center">
+      <p class="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+        <span class="led-indicator animate-blink align-middle text-primary" />
+        <span class="ml-2 align-middle">{t("blog.soon")}</span>
+      </p>
+      <p class="mx-auto mt-4 max-w-sm text-balance text-muted-foreground">
+        {t("blog.empty")}
+      </p>
+    </div>
   ) : (
     <ul class="mt-10 space-y-10">
       {posts.map((post) => (
