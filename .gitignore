@@ -21,6 +21,10 @@ dist/
 npm-debug.log*
 pnpm-debug.log*
 
+# python tooling (social-kit generator)
+.ruff_cache/
+__pycache__/
+
 # os / editor
 .DS_Store
 *.local
