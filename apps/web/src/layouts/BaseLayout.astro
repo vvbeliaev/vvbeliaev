@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import { SITE, SITE_I18N } from "$lib/config";
+import { SITE_I18N } from "$lib/config";
 import { getLangFromUrl, getAlternatePath, otherLang } from "$i18n/utils";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -15,7 +15,7 @@ interface Props {
 const lang = getLangFromUrl(Astro.url);
 const meta = SITE_I18N[lang];
 const { title, description = meta.description, wide = false } = Astro.props;
-const pageTitle = title ? `${title} — ${SITE.title}` : SITE.title;
+const pageTitle = title ? `${title} — ${meta.name}` : meta.name;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const alternateHref = new URL(getAlternatePath(Astro.url, otherLang(lang)), Astro.site);
 ---

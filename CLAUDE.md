@@ -16,8 +16,9 @@ The site is **bilingual — English and Russian.**
 
 - `apps/web` — the personal site and blog. Astro + Svelte 5 + shadcn-svelte,
 Tailwind v4, content via Astro Content Collections + MDX, static build (SSG).
-- `cv` — résumés for different roles. Standalone artifacts (backbone → reflections
-→ pdf), not a workspace package; nothing imports them yet.
+- `workspace` — the "kitchen": everything raw and non-buildable. Astro never
+looks here; nothing ships from here directly. Holds article drafts
+(`workspace/drafts/`) and résumés (`workspace/cv/`). See `workspace/README.md`.
 - `DESIGN.md` — the site's **design system** (theme "Corona Bloom"). The source
 of truth for colors/tokens, fonts, atmosphere, components, and voice.
 - `docs/design-notes.md` — the design-decision journal: what was tried, the
@@ -42,7 +43,24 @@ component.
 - On any significant theme change, update `DESIGN.md` in lockstep and record the
 context/rationale in `docs/design-notes.md`.
 
-c
+## Articles: the writing pipeline
+
+Articles move from a raw "kitchen" (`workspace/`, not built) to the "storefront"
+(`apps/web/src/content/blog`, built and schema-checked). The full convention lives
+in `workspace/README.md` — read it before working on article drafts or publishing.
+
+Stages: `ideas.md` (one-line idea) → `drafts/<slug>/main.md` (loose Russian draft,
+no schema) → `blog/note-NN-slug/ru.mdx` (RU shaped into the schema, `draft: true`)
+→ `blog/note-NN-slug/en.mdx` (English translation, `translatedFrom: "ru"`) →
+drop `draft: true` to publish.
+
+- **Russian is written first; English is a translation of it.** Mark the EN file
+with `translatedFrom: "ru"`; the UI shows a "Translated from Russian" note.
+- **Folder per article** in the storefront (`note-NN-slug/ru.mdx` + `en.mdx`),
+with the article's cover/assets in the same folder.
+- **RU↔EN are linked by a shared `articleNumber`** — no separate translation key.
+- "Publishing" is a deliberate promotion (draft → collection + schema), not just
+flipping a flag.
 
 ## Internationalization (i18n)
 

@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import Cover from "./Cover.astro";
 import { formatDate } from "$lib/date";
 import { getLangFromUrl, useTranslations, localizePath } from "$i18n/utils";
+import { postSlug } from "$lib/post";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -23,7 +24,7 @@ const posts = (
       {posts.map((post) => (
         <li>
           <a
-            href={localizePath(`/blog/${post.id}`, lang)}
+            href={localizePath(`/blog/${postSlug(post)}`, lang)}
             class="group grid gap-5 sm:grid-cols-[220px_1fr]"
           >
             <div class="aspect-2/1 overflow-hidden rounded-lg border border-border transition-colors group-hover:border-primary/40">
