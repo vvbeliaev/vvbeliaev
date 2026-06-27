@@ -33,3 +33,5 @@ __pycache__/
 !.vscode/extensions.json
 
 .playwright-mcp
+
+workspace/private
