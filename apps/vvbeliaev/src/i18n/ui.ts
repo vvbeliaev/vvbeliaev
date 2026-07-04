@@ -19,9 +19,6 @@ export const ui = {
     "lang.to.ru": "Переключить на русский",
     "menu.open": "Open menu",
     "menu.close": "Close menu",
-    "hero.intro":
-      "I write long-form posts on AI, product and analytics. This is a field log: numbered articles, breakdowns and by-the-numbers recaps.",
-    "hero.cta": "Read the blog",
     "hero.subtitle":
       "An engineer mapping the space between code, product, and market.",
     "facet.engineer.name": "Engineer",
@@ -30,7 +27,6 @@ export const ui = {
     "facet.product.caption": "decide what's worth building",
     "facet.analytics.name": "Analytics",
     "facet.analytics.caption": "read the market with data",
-    "notfound.title": "Page not found",
     "notfound.body": "This page doesn't exist or has moved.",
     "notfound.back": "Back home",
     "home.now": "Now",
@@ -59,9 +55,6 @@ export const ui = {
     "lang.to.ru": "Переключить на русский",
     "menu.open": "Открыть меню",
     "menu.close": "Закрыть меню",
-    "hero.intro":
-      "Пишу лонгриды про AI, продукт и аналитику. Это полевой журнал: нумерованные статьи, разборы и сводки цифр.",
-    "hero.cta": "Читать блог",
     "hero.subtitle":
       "Инженер, который наносит на карту пространство между кодом, продуктом и рынком.",
     "facet.engineer.name": "Инженер",
@@ -70,7 +63,6 @@ export const ui = {
     "facet.product.caption": "решаю, что вообще стоит строить",
     "facet.analytics.name": "Аналитика",
     "facet.analytics.caption": "читаю рынок через данные",
-    "notfound.title": "Страница не найдена",
     "notfound.body": "Такой страницы нет или она переехала.",
     "notfound.back": "На главную",
     "home.now": "Сейчас",

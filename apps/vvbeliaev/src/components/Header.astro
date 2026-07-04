@@ -14,7 +14,7 @@ const name = SITE_I18N[lang].name;
 
 const { pathname } = Astro.url;
 const isActive = (href: string) =>
-  href === "/" ? pathname === home : pathname.startsWith(href);
+  href === home ? pathname === home : pathname.startsWith(href);
 
 // Language segments: both locales shown, active one highlighted. Each links to
 // the equivalent page in that locale (the active one links to itself).
