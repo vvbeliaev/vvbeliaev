@@ -1,0 +1,37 @@
+---
+/*
+  Manifesto.astro — why market-first, plus the "by the numbers" ritual shared
+  with the personal site (HUD readout in a bordered grid).
+  NOTE: strawman numbers — adjust values/labels in i18n once locked.
+*/
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+import type { UIKey } from "$i18n/ui";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const numbers = ["1", "2", "3", "4"].map((n) => ({
+  value: t(`numbers.${n}.value` as UIKey),
+  label: t(`numbers.${n}.label` as UIKey),
+}));
+---
+
+<section class="mx-auto max-w-3xl px-6 py-24 sm:py-28">
+  <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-accent">
+    {t("manifesto.label")}
+  </h2>
+  <p class="mt-5 text-xl leading-relaxed text-foreground sm:text-2xl">
+    {t("manifesto.body")}
+  </p>
+
+  <dl class="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4">
+    {
+      numbers.map((s) => (
+        <div class="bg-card px-4 py-5">
+          <dt class="font-display text-3xl font-bold tracking-tight text-foreground">{s.value}</dt>
+          <dd class="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{s.label}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>

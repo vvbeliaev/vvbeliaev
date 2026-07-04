@@ -19,8 +19,8 @@ cv/              Резюме: backbone → reflections → pdf. Свой пай
 ```
 1. ideas.md                                   идея, одна строка
 2. drafts/<slug>/main.md                       русский черновик, свободная форма
-3. apps/web/src/content/blog/note-NN-slug/ru.mdx   оформляем RU в схему, draft: true
-4. apps/web/src/content/blog/note-NN-slug/en.mdx   перевод EN, translatedFrom: "ru"
+3. apps/vvbeliaev/src/content/blog/note-NN-slug/ru.mdx   оформляем RU в схему, draft: true
+4. apps/vvbeliaev/src/content/blog/note-NN-slug/en.mdx   перевод EN, translatedFrom: "ru"
 5. снимаем draft: true                          выпуск
 ```
 
@@ -46,6 +46,6 @@ cv/              Резюме: backbone → reflections → pdf. Свой пай
 ## Что ещё предстоит (на первый перевод)
 
 - Добавить опциональное `translatedFrom: z.enum(["ru","en"]).optional()` в схему
-  `apps/web/src/content.config.ts`.
+  `apps/vvbeliaev/src/content.config.ts`.
 - Плашку «Translated from …» — по `DESIGN.md` (UI-компонент, обновить документ в lockstep).
 - Правку slug в обоих `[...slug].astro` (см. выше).

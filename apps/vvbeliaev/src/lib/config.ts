@@ -87,6 +87,13 @@ export const PROJECTS: ReadonlyArray<Project> = [
     ],
   },
   {
+    name: "Cogisoft",
+    tag: "Market-first studio",
+    description:
+      "Validation studio: demand experiments before code — offer tests, content, community, MVP.",
+    href: "https://cogisoft.dev",
+  },
+  {
     name: "LLM-Агент",
     tag: "AI agents for business",
     description:

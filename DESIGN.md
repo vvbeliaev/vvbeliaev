@@ -151,7 +151,7 @@ All motion respects `prefers-reduced-motion`.
 
 ## 9. Implementation
 
-- Tokens live in `:root` in `apps/web/src/styles/global.css`, mapped to Tailwind
+- Tokens live in `:root` in `apps/vvbeliaev/src/styles/global.css`, mapped to Tailwind
   v4 via `@theme inline`. Fonts self-hosted via `@fontsource-variable/*`.
 - The atmosphere is a single `<Atmosphere />` component rendered once in
   `BaseLayout` (depth gradients + seeded SVG star field/constellations + grain).

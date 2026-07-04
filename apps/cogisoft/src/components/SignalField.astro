@@ -1,0 +1,258 @@
+---
+/*
+  SignalField.astro — the hero's signature: a wide field of market noise
+  (steel-blue ticks — dots and short dashes, like data points) out of which a
+  constellation is read: segments connect node by node, then the confirmed
+  pattern warms to coral. The animation IS the pitch: noise → pattern →
+  evidence.
+
+  Deterministic (seeded PRNG) so the field is stable across builds. The
+  constellation sits in the upper center strip so it survives the mobile crop
+  (preserveAspectRatio slice); the tail nodes may crop on narrow screens —
+  the field just extends offscreen.
+*/
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const W = 1200;
+const H = 700;
+const rand = mulberry32(20260704);
+
+type Tick = {
+  cx: number;
+  cy: number;
+  r: number;
+  o: number;
+  dash: boolean;
+  len: number;
+  pulse: boolean;
+};
+
+const ticks: Tick[] = Array.from({ length: 170 }, () => {
+  const dash = rand() > 0.72;
+  return {
+    cx: +(rand() * W).toFixed(1),
+    cy: +(rand() * H).toFixed(1),
+    r: +(0.5 + rand() * 0.9).toFixed(2),
+    o: +(0.1 + rand() * 0.32).toFixed(2),
+    dash,
+    len: +(3 + rand() * 5).toFixed(1),
+    pulse: rand() > 0.82,
+  };
+});
+
+// The constellation: a jagged upward trend read out of the noise.
+// Hand-placed so the first two-thirds stay inside the mobile center strip.
+const NODES = [
+  { x: 460, y: 291 },
+  { x: 516, y: 243 },
+  { x: 576, y: 261 },
+  { x: 642, y: 177 },
+  { x: 702, y: 201 },
+  { x: 758, y: 107 },
+  { x: 852, y: 131 },
+  { x: 952, y: 47 },
+];
+
+const START = 0.5; // s before the first segment draws
+const STEP = 0.5; // s between segment starts
+
+const segs = NODES.slice(1).map((n, i) => {
+  const p = NODES[i];
+  return {
+    x1: p.x,
+    y1: p.y,
+    x2: n.x,
+    y2: n.y,
+    len: +Math.hypot(n.x - p.x, n.y - p.y).toFixed(1),
+    delay: +(START + i * STEP).toFixed(2),
+  };
+});
+
+const WARM_AT = +(START + segs.length * STEP + 0.2).toFixed(2);
+const last = NODES.length - 1;
+---
+
+<div class="signal-field" aria-hidden="true">
+  <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g class="ticks">
+      {
+        ticks.map((tk) =>
+          tk.dash ? (
+            <line
+              x1={tk.cx}
+              y1={tk.cy}
+              x2={tk.cx}
+              y2={+(tk.cy + tk.len).toFixed(1)}
+              class={tk.pulse ? "tick pulse" : "tick"}
+              style={`--o:${tk.o};--pd:${(tk.cx % 7).toFixed(1)}s`}
+            />
+          ) : (
+            <circle
+              cx={tk.cx}
+              cy={tk.cy}
+              r={tk.r}
+              class={tk.pulse ? "tick dot pulse" : "tick dot"}
+              style={`--o:${tk.o};--pd:${(tk.cy % 7).toFixed(1)}s`}
+            />
+          ),
+        )
+      }
+    </g>
+    <g class="constellation">
+      {
+        segs.map((s) => (
+          <line
+            x1={s.x1}
+            y1={s.y1}
+            x2={s.x2}
+            y2={s.y2}
+            style={`--len:${s.len};--sd:${s.delay}s;--wd:${WARM_AT}s`}
+          />
+        ))
+      }
+      {
+        NODES.map((n, i) => (
+          <circle
+            cx={n.x}
+            cy={n.y}
+            r={i === last ? 3.4 : 2.4}
+            class={i === last ? "node core" : "node"}
+            style={`--nd:${(START + i * STEP - 0.15).toFixed(2)}s`}
+          />
+        ))
+      }
+    </g>
+  </svg>
+</div>
+
+<style>
+  .signal-field {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .signal-field svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    /* calm the field under the hero text (bottom-left zone) */
+    -webkit-mask-image: radial-gradient(60% 52% at 26% 70%, rgba(0, 0, 0, 0.22), black 74%);
+    mask-image: radial-gradient(60% 52% at 26% 70%, rgba(0, 0, 0, 0.22), black 74%);
+  }
+
+  /* market noise */
+  .tick {
+    stroke: #9db8dd;
+    stroke-width: 0.7;
+    opacity: var(--o, 0.2);
+  }
+
+  .tick.dot {
+    fill: #9db8dd;
+    stroke: none;
+  }
+
+  .tick.pulse {
+    animation: tick-pulse 5.5s ease-in-out var(--pd, 0s) infinite;
+  }
+
+  @keyframes tick-pulse {
+    0%,
+    100% {
+      opacity: var(--o, 0.2);
+    }
+    50% {
+      opacity: calc(var(--o, 0.2) * 0.3);
+    }
+  }
+
+  /* the read pattern: draw steel, then warm to coral once confirmed */
+  .constellation line {
+    stroke: rgba(157, 184, 221, 0.65);
+    stroke-width: 1;
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: var(--len);
+    animation:
+      seg-draw 0.55s ease-out var(--sd, 0s) forwards,
+      seg-warm 1.4s ease var(--wd, 4s) forwards;
+  }
+
+  @keyframes seg-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes seg-warm {
+    to {
+      stroke: rgba(240, 138, 114, 0.8);
+    }
+  }
+
+  .node {
+    fill: #5f95c2;
+    opacity: 0;
+    animation: node-ignite 0.5s ease-out var(--nd, 0s) forwards;
+  }
+
+  @keyframes node-ignite {
+    0% {
+      opacity: 0;
+      fill: #5f95c2;
+    }
+    60% {
+      opacity: 1;
+      fill: #eef2ff;
+    }
+    100% {
+      opacity: 1;
+      fill: #f08a72;
+    }
+  }
+
+  .node.core {
+    filter: drop-shadow(0 0 6px rgba(240, 138, 114, 0.9));
+    animation:
+      node-ignite 0.5s ease-out var(--nd, 0s) forwards,
+      core-pulse 3.5s ease-in-out 5s infinite;
+  }
+
+  @keyframes core-pulse {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 6px rgba(240, 138, 114, 0.9));
+    }
+    50% {
+      filter: drop-shadow(0 0 14px rgba(240, 138, 114, 1));
+    }
+  }
+
+  /* static, fully-lit version for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .tick.pulse {
+      animation: none;
+    }
+    .constellation line {
+      animation: none;
+      stroke-dashoffset: 0;
+      stroke: rgba(240, 138, 114, 0.7);
+    }
+    .node,
+    .node.core {
+      animation: none;
+      opacity: 1;
+      fill: #f08a72;
+    }
+  }
+</style>

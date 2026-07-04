@@ -1,0 +1,229 @@
+---
+/*
+  Funnel.astro — the five hypotheses as one rail. The signal line draws down
+  the funnel as you scroll; each stage node ignites coral when its gate enters
+  the viewport. The dot cluster on each card densifies stage by stage — the
+  audience accumulates — and warms as evidence stacks up.
+*/
+import { STAGES } from "$lib/config";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+import type { UIKey } from "$i18n/ui";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+type ClusterDot = { x: number; y: number; r: number; o: number; warm: boolean };
+
+// Audience accumulates down the funnel: more dots, and a growing share of
+// them confirmed (coral) as gates get passed.
+const clusters: ClusterDot[][] = STAGES.map((s, i) => {
+  const rand = mulberry32(4200 + s.density);
+  const warmShare = i * 0.12;
+  return Array.from({ length: s.density }, () => ({
+    x: +(4 + rand() * 64).toFixed(1),
+    y: +(4 + rand() * 20).toFixed(1),
+    r: +(1.2 + rand() * 0.9).toFixed(2),
+    o: +(0.35 + rand() * 0.5).toFixed(2),
+    warm: rand() < warmShare,
+  }));
+});
+
+const lastIdx = STAGES.length - 1;
+---
+
+<section id="how" class="mx-auto max-w-5xl px-6 py-24 sm:py-32">
+  <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-accent">
+    {t("funnel.label")}
+  </h2>
+  <p class="mt-4 max-w-3xl font-display text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+    {t("funnel.title")}
+  </p>
+  <p class="mt-4 max-w-2xl text-muted-foreground">
+    {t("funnel.intro")}
+  </p>
+
+  <ol class="funnel relative mt-14">
+    <div class="rail" aria-hidden="true"></div>
+    <div class="rail-lit" aria-hidden="true"></div>
+    {
+      STAGES.map((s, i) => (
+        <li class="stage relative pb-10 pl-12 last:pb-0 sm:pl-16" data-stage>
+          <span class="node" aria-hidden="true">
+            <span class="node-dot" />
+          </span>
+          <article class="card rounded-xl border border-border bg-card/50 p-6 transition-colors duration-500 sm:p-8">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <span class="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
+                Stage {s.id} · {s.name}
+              </span>
+              <svg width="72" height="28" viewBox="0 0 72 28" class="shrink-0" aria-hidden="true">
+                {clusters[i].map((d) => (
+                  <circle
+                    cx={d.x}
+                    cy={d.y}
+                    r={d.r}
+                    fill={d.warm ? "#f08a72" : "#5f95c2"}
+                    opacity={d.o}
+                  />
+                ))}
+                {i === lastIdx && <circle cx="36" cy="14" r="3.2" fill="#f08a72" class="cluster-core" />}
+              </svg>
+            </div>
+            <h3 class="mt-3 font-display text-xl font-bold tracking-tight sm:text-2xl">
+              {t(`stage.${s.key}.q` as UIKey)}
+            </h3>
+            <dl class="mt-5 grid gap-5 sm:grid-cols-3">
+              <div>
+                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {t("funnel.method")}
+                </dt>
+                <dd class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {t(`stage.${s.key}.method` as UIKey)}
+                </dd>
+              </div>
+              <div>
+                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+                  {t("funnel.artifact")}
+                </dt>
+                <dd class="mt-1.5 text-sm leading-relaxed text-foreground">
+                  {t(`stage.${s.key}.artifact` as UIKey)}
+                </dd>
+              </div>
+              <div>
+                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {t("funnel.gate")}
+                </dt>
+                <dd class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {t(`stage.${s.key}.gate` as UIKey)}
+                </dd>
+              </div>
+            </dl>
+          </article>
+        </li>
+      ))
+    }
+  </ol>
+
+  <p class="mt-10 rounded-lg border border-primary/30 bg-card/40 px-5 py-4 font-mono text-xs leading-relaxed tracking-wider text-muted-foreground uppercase">
+    <span class="text-primary">{t("funnel.kill.prefix")}</span> — {t("funnel.kill")}
+  </p>
+</section>
+
+<style>
+  /* the signal rail: dim guide + lit progress (height driven by script) */
+  .rail,
+  .rail-lit {
+    position: absolute;
+    left: 11px;
+    top: 2rem;
+    width: 2px;
+  }
+
+  .rail {
+    bottom: 3rem;
+    background: var(--border);
+  }
+
+  .rail-lit {
+    height: 0;
+    background: linear-gradient(to bottom, var(--accent), var(--primary));
+    box-shadow: 0 0 10px color-mix(in oklch, var(--accent) 55%, transparent);
+    transition: height 0.7s ease;
+  }
+
+  .node {
+    position: absolute;
+    left: 0;
+    top: 1.75rem;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in oklch, var(--accent) 50%, transparent);
+    background: var(--background);
+    transition:
+      border-color 0.5s ease,
+      box-shadow 0.5s ease;
+  }
+
+  .node-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--accent);
+    transition:
+      background-color 0.5s ease,
+      box-shadow 0.5s ease;
+  }
+
+  /* gate passed: the node ignites coral — evidence grammar */
+  .stage.lit .node {
+    border-color: var(--primary);
+    box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+
+  .stage.lit .node-dot {
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--primary);
+  }
+
+  .stage.lit .card {
+    border-color: color-mix(in oklch, var(--accent) 35%, var(--border));
+  }
+
+  .cluster-core {
+    filter: drop-shadow(0 0 4px rgba(240, 138, 114, 0.9));
+  }
+</style>
+
+<script>
+  // Ignite stages as they enter the viewport and extend the lit rail down to
+  // the last ignited node. Reduced motion: everything lit statically.
+  const stages = Array.from(document.querySelectorAll<HTMLElement>("[data-stage]"));
+  const railLit = document.querySelector<HTMLElement>(".rail-lit");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const updateRail = () => {
+    if (!railLit) return;
+    const lit = stages.filter((s) => s.classList.contains("lit"));
+    if (lit.length === 0) return;
+    const node = lit[lit.length - 1].querySelector<HTMLElement>(".node");
+    if (!node) return;
+    const nodeRect = node.getBoundingClientRect();
+    const railRect = railLit.getBoundingClientRect();
+    railLit.style.height = `${nodeRect.top + nodeRect.height / 2 - railRect.top}px`;
+  };
+
+  if (reduce) {
+    stages.forEach((s) => s.classList.add("lit"));
+    if (railLit) railLit.style.transition = "none";
+    updateRail();
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        let changed = false;
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("lit");
+            io.unobserve(entry.target);
+            changed = true;
+          }
+        }
+        if (changed) updateRail();
+      },
+      { threshold: 0.25, rootMargin: "0px 0px -12% 0px" },
+    );
+    stages.forEach((s) => io.observe(s));
+  }
+</script>
