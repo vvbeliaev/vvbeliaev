@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* Self-hosted variable fonts */
+@import "@fontsource-variable/sora";
+@import "@fontsource-variable/hanken-grotesk";
+@import "@fontsource-variable/jetbrains-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Site theme — "Corona Signal": the agency variant of Corona Bloom (see the
+  monorepo root /DESIGN.md). Same cosmic base, fonts and glow language, but an
+  inverted color grammar: steel-blue carries the market noise and structure,
+  coral-clay is reserved for confirmed signals (evidence) and the CTA.
+  Full variant doc: apps/cogisoft/DESIGN.md. Single fixed dark theme.
+*/
+:root {
+  --radius: 0.5rem;
+
+  /* deep, somber cosmic base (shared with Corona Bloom) */
+  --background: #04050b;
+  --foreground: #e3e5ee;
+  --card: #0a0c14;
+  --card-foreground: #e3e5ee;
+  --popover: #0a0c14;
+  --popover-foreground: #e3e5ee;
+
+  /* coral-clay = evidence & CTA only; steel-blue = market noise & structure */
+  --primary: #f08a72;
+  --primary-foreground: #1a0d07;
+  --secondary: #13161f;
+  --secondary-foreground: #e3e5ee;
+  --muted: #0e1018;
+  --muted-foreground: #7d8294;
+  --accent: #5f95c2;
+  --accent-foreground: #060f18;
+  --destructive: #cf6178;
+
+  --border: #1a2034;
+  --input: #1a2034;
+  --ring: #f08a72;
+
+  /* luminous halo (used by glow-* utilities) — alive, not faded */
+  --glow-blur: 24px;
+  --glow-spread: -6px;
+
+  /* fonts */
+  --ff-display: "Sora Variable", "Sora", sans-serif;
+  --ff-body: "Hanken Grotesk Variable", "Hanken Grotesk", sans-serif;
+  --ff-mono: "JetBrains Mono Variable", "JetBrains Mono", monospace;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--ff-body, ui-sans-serif, system-ui, sans-serif);
+  --font-display: var(--ff-display, var(--ff-body, ui-sans-serif, system-ui, sans-serif));
+  --font-mono: var(--ff-mono, ui-monospace, "SF Mono", monospace);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+}
+
+/* The cold backdrop lives in Backdrop.astro; the hero field in SignalField.astro. */
+
+/* ─────────────── Utilities ─────────────── */
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+/* Instrument-panel details (shared brand rituals) */
+@utility led-indicator {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+@utility animate-blink {
+  animation: blink 1.1s step-end infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Luminous accents — glow driven by --glow-blur/--glow-spread */
+@utility glow-primary {
+  box-shadow: 0 0 var(--glow-blur, 0px) var(--glow-spread, 0px)
+    color-mix(in oklch, var(--primary) 65%, transparent);
+}
+
+@utility glow-accent {
+  box-shadow: 0 0 var(--glow-blur, 0px) var(--glow-spread, 0px)
+    color-mix(in oklch, var(--accent) 65%, transparent);
+}

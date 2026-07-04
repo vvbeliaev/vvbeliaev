@@ -9,10 +9,10 @@
   },
   "packageManager": "pnpm@10.33.2",
   "scripts": {
-    "dev": "pnpm --filter web dev",
-    "build": "pnpm --filter web build",
-    "preview": "pnpm --filter web preview",
-    "check": "pnpm --filter web check"
+    "dev": "pnpm --filter vvbeliaev dev",
+    "build": "pnpm --filter vvbeliaev build",
+    "preview": "pnpm --filter vvbeliaev preview",
+    "check": "pnpm --filter vvbeliaev check"
   },
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild", "sharp"]

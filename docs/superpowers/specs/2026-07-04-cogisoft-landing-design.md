@@ -77,7 +77,7 @@ gate — коралловая вспышка; у `04 · MVP` — плотное 
 
 ## 4. Языки
 
-EN в корне (`/`), RU под `/ru/` — тот же паттерн, что в `apps/web`
+EN в корне (`/`), RU под `/ru/` — тот же паттерн, что в `apps/vvbeliaev`
 (`useTranslations(lang)` / `getLangFromUrl(url)`, словари в `src/i18n/`).
 Копирайтинг: EN — основной, RU — параллельная версия (не машинный перевод
 тона).
@@ -113,7 +113,7 @@ radius 0.5rem.
 - `apps/cogisoft`: Astro + Tailwind v4, статика (SSG). Без Svelte в v1 —
   интерактив покрывается CSS/vanilla-скриптом; остров добавим только при
   реальной необходимости.
-- Токены: копия `global.css` из `apps/web` с переопределениями Corona
+- Токены: копия `global.css` из `apps/vvbeliaev` с переопределениями Corona
   Signal. Вынос общей темы в `pkgs/ts` — осознанно отложен до стабилизации
   второй темы (иначе преждевременная абстракция).
 - Страницы: `src/pages/index.astro` (EN), `src/pages/ru/index.astro` (RU),
@@ -123,7 +123,7 @@ radius 0.5rem.
 
 ## 7. Изменение на личном сайте
 
-Добавить в `apps/web` ссылку на cogisoft.dev: пункт в секции Work на главной
+Добавить в `apps/vvbeliaev` ссылку на cogisoft.dev: пункт в секции Work на главной
 (EN и RU) в существующем формате секции. Формулировка типа «Cogisoft —
 market-first validation studio». Ничего больше на личном сайте не трогаем.
 

@@ -14,7 +14,7 @@ The site is **bilingual — English and Russian.**
 
 ## Structure
 
-- `apps/web` — the personal site and blog. Astro + Svelte 5 + shadcn-svelte,
+- `apps/vvbeliaev` — the personal site and blog. Astro + Svelte 5 + shadcn-svelte,
 Tailwind v4, content via Astro Content Collections + MDX, static build (SSG).
 - `workspace` — the "kitchen": everything raw and non-buildable. Astro never
 looks here; nothing ships from here directly. Holds article drafts
@@ -37,8 +37,8 @@ voice, and rituals.
 and update the document when needed.
 - The theme is **single and fixed dark** (`<html class="dark">`), with no runtime
 toggle.
-- Tokens live in `:root` in `apps/web/src/styles/global.css`, mapped to Tailwind
-via `@theme inline`. The atmosphere is the `apps/web/src/components/Atmosphere.astro`
+- Tokens live in `:root` in `apps/vvbeliaev/src/styles/global.css`, mapped to Tailwind
+via `@theme inline`. The atmosphere is the `apps/vvbeliaev/src/components/Atmosphere.astro`
 component.
 - On any significant theme change, update `DESIGN.md` in lockstep and record the
 context/rationale in `docs/design-notes.md`.
@@ -46,7 +46,7 @@ context/rationale in `docs/design-notes.md`.
 ## Articles: the writing pipeline
 
 Articles move from a raw "kitchen" (`workspace/`, not built) to the "storefront"
-(`apps/web/src/content/blog`, built and schema-checked). The full convention lives
+(`apps/vvbeliaev/src/content/blog`, built and schema-checked). The full convention lives
 in `workspace/README.md` — read it before working on article drafts or publishing.
 
 Stages: `ideas.md` (one-line idea) → `drafts/<slug>/main.md` (loose Russian draft,
@@ -65,7 +65,7 @@ flipping a flag.
 ## Internationalization (i18n)
 
 - Two locales: **English (default)** and **Russian**.
-- UI strings live in `apps/web/src/i18n/` (one dictionary per locale); use the
+- UI strings live in `apps/vvbeliaev/src/i18n/` (one dictionary per locale); use the
 `useTranslations(lang)` / `getLangFromUrl(url)` helpers rather than hardcoding
 copy in components.
 - English is served at the root (`/`, `/blog`); Russian is prefixed (`/ru/`,
@@ -77,7 +77,7 @@ makes sense, but a post may exist in only one language.
 
 ## Build / verification
 
-- From `apps/web`: `pnpm build` — the static build (and the final source of truth
+- From `apps/vvbeliaev`: `pnpm build` — the static build (and the final source of truth
 for correctness; IDE diagnostics may lag).
 - Fonts are self-hosted via `@fontsource-variable/*`.
 

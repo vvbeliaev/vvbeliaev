@@ -1,0 +1,45 @@
+---
+/*
+  Hero.astro — full-viewport billboard: the SignalField reads a pattern out of
+  market noise above, the thesis sits in the lower third. Coral appears in
+  exactly two places: the confirmed pattern and the CTA — the same grammar.
+*/
+import { SITE } from "$lib/config";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+import SignalField from "./SignalField.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section class="relative flex min-h-svh items-end">
+  <SignalField />
+  <div class="relative mx-auto w-full max-w-6xl px-6 pt-32 pb-20 sm:pb-24">
+    <p class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+      <span class="led-indicator" aria-hidden="true"></span>
+      {t("hero.eyebrow")}
+    </p>
+    <h1
+      class="mt-5 max-w-4xl font-display text-5xl leading-[1.02] font-extrabold tracking-tight text-balance sm:text-7xl lg:text-8xl"
+    >
+      {t("hero.title")}<span class="text-primary">.</span>
+    </h1>
+    <p class="mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl">
+      {t("hero.sub")}
+    </p>
+    <div class="mt-10 flex flex-wrap items-center gap-4">
+      <a
+        href={`mailto:${SITE.email}`}
+        class="glow-primary rounded-lg bg-primary px-7 py-3.5 font-semibold text-primary-foreground transition-[filter] hover:brightness-110"
+      >
+        {t("hero.cta")}
+      </a>
+      <a
+        href="#how"
+        class="rounded-lg border border-border px-7 py-3.5 text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+      >
+        {t("hero.secondary")} ↓
+      </a>
+    </div>
+  </div>
+</section>
