@@ -13,6 +13,9 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
     "@fontsource-variable/hanken-grotesk": "^5.2.8",
+    "@iconify-json/ph": "^1.2.2",
+    "@iconify-json/simple-icons": "^1.2.55",
+    "astro-icon": "^1.1.5",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource-variable/sora": "^5.2.8",
     "@tailwindcss/vite": "^4.3.1",

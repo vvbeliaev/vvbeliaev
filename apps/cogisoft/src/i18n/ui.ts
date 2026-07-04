@@ -25,51 +25,54 @@ export const ui = {
     "hero.secondary": "How we work",
 
     "manifesto.label": "Why market-first",
-    "manifesto.body":
-      "Most products don't die from bad code — they die from no demand. Building is expensive; testing a signal is cheap. So we invert the default order: evidence first, product last. Every stage ends with data you can act on — including an honest “stop” when the signal isn't there.",
+    "manifesto.commodity.label": "The commodity",
+    "manifesto.commodity.title": "Anyone can ship",
+    "manifesto.commodity.body":
+      "AI made building cheap. A working product takes days now — so code is no longer an edge, and everyone's demo looks the same.",
+    "manifesto.edge.label": "The edge",
+    "manifesto.edge.title": "Few know what to ship",
+    "manifesto.edge.body":
+      "The scarce asset is market knowledge: what to build, for whom, and how it will reach them. That's what we manufacture — as evidence, not opinions.",
+    "manifesto.conclusion":
+      "So we invert the order: demand first, product last — with an honest “stop” when the signal isn't there.",
     "numbers.1.value": "42%",
     "numbers.1.label": "of startups die from “no market need” — CB Insights",
-    "numbers.2.value": "0",
-    "numbers.2.label": "lines of code before the offer converts",
+    "numbers.2.value": "days",
+    "numbers.2.label": "to ship a product with AI",
     "numbers.3.value": "5",
-    "numbers.3.label": "hypotheses in one funnel — signal to revenue",
-    "numbers.4.value": "2–4",
-    "numbers.4.label": "weeks per validation cycle",
+    "numbers.3.label": "gates before product code",
 
     "funnel.label": "The funnel",
     "funnel.title": "Five hypotheses. MVP comes last — on purpose.",
     "funnel.intro":
       "Most agencies start at stage 04. We get there only after the market has said yes four times. Enter at any stage — every one ends with evidence, or an honest stop that saves you months.",
-    "funnel.method": "Method",
-    "funnel.artifact": "You get",
-    "funnel.gate": "Gate to next stage",
     "funnel.kill":
       "No signal → we stop, say so, and hand over what the market actually said. Saved months are a result too.",
     "funnel.kill.prefix": "Kill criteria",
 
     "stage.discovery.q": "Is there a signal at all?",
     "stage.discovery.method": "Niche recon: pains, search demand, competitor density.",
-    "stage.discovery.artifact": "A signal map with ranked hypotheses.",
+    "stage.discovery.artifact": "Signal map + ranked hypotheses",
     "stage.discovery.gate": "One hypothesis worth betting on.",
 
     "stage.offer.q": "Will anyone pay?",
     "stage.offer.method": "A landing page with a real offer, pushed into paid traffic.",
-    "stage.offer.artifact": "Conversion to payment intent and a first CAC estimate.",
+    "stage.offer.artifact": "Payment intent + CAC estimate",
     "stage.offer.gate": "The market votes with intent.",
 
     "stage.attention.q": "Can we earn attention?",
     "stage.attention.method": "Short-form content experiments on TikTok, YouTube and Instagram.",
-    "stage.attention.artifact": "A repeatable format and a known cost of attention.",
+    "stage.attention.artifact": "Repeatable format + cost of attention",
     "stage.attention.gate": "A channel that repeats without luck.",
 
     "stage.community.q": "Does the audience stay?",
     "stage.community.method": "An audience accumulator in Telegram or Discord.",
-    "stage.community.artifact": "A living core and measured attention retention.",
+    "stage.community.artifact": "Living core + retention",
     "stage.community.gate": "People return on their own.",
 
     "stage.mvp.q": "Will the base pay — and stay?",
     "stage.mvp.method": "An MVP launched to the audience we accumulated: payment first, then retention.",
-    "stage.mvp.artifact": "Working monetization on your own audience.",
+    "stage.mvp.artifact": "Working monetization",
     "stage.mvp.gate": "Revenue that retains.",
 
     "contact.label": "Contact",
@@ -95,51 +98,54 @@ export const ui = {
     "hero.secondary": "Как мы работаем",
 
     "manifesto.label": "Почему market-first",
-    "manifesto.body":
-      "Продукты редко умирают от плохого кода — они умирают от отсутствия спроса. Строить дорого, проверять сигнал — дёшево. Поэтому мы переворачиваем порядок по умолчанию: сначала доказательства, продукт — последним. Каждая ступень заканчивается данными, с которыми можно действовать, — включая честное «стоп», если сигнала нет.",
+    "manifesto.commodity.label": "Коммодити",
+    "manifesto.commodity.title": "Собрать может каждый",
+    "manifesto.commodity.body":
+      "AI сделал разработку дешёвой: рабочий продукт — за дни. Код перестал быть преимуществом, и все демо выглядят одинаково.",
+    "manifesto.edge.label": "Преимущество",
+    "manifesto.edge.title": "Мало кто знает, что собирать",
+    "manifesto.edge.body":
+      "Дефицит — рыночное знание: что строить, для кого и как это дойдёт до людей. Его мы и производим — в виде доказательств, а не мнений.",
+    "manifesto.conclusion":
+      "Поэтому мы переворачиваем порядок: сначала спрос, продукт — последним, с честным «стоп», если сигнала нет.",
     "numbers.1.value": "42%",
     "numbers.1.label": "стартапов умирают от «no market need» — CB Insights",
-    "numbers.2.value": "0",
-    "numbers.2.label": "строк кода до того, как оффер конвертит",
+    "numbers.2.value": "дни",
+    "numbers.2.label": "столько занимает собрать продукт с AI",
     "numbers.3.value": "5",
-    "numbers.3.label": "гипотез в одной воронке — от сигнала до выручки",
-    "numbers.4.value": "2–4",
-    "numbers.4.label": "недели на цикл проверки",
+    "numbers.3.label": "gate до продуктового кода",
 
     "funnel.label": "Воронка",
     "funnel.title": "Пять гипотез. MVP — последним, и это осознанно.",
     "funnel.intro":
       "Большинство агентств начинают со ступени 04. Мы доходим до неё только после того, как рынок четыре раза сказал «да». Заходить можно на любую ступень — каждая заканчивается доказательством или честным «стоп», который экономит месяцы.",
-    "funnel.method": "Метод",
-    "funnel.artifact": "Вы получаете",
-    "funnel.gate": "Переход дальше",
     "funnel.kill":
       "Нет сигнала → останавливаемся, говорим прямо и отдаём то, что на самом деле сказал рынок. Сэкономленные месяцы — тоже результат.",
     "funnel.kill.prefix": "Kill criteria",
 
     "stage.discovery.q": "Есть ли сигнал вообще?",
     "stage.discovery.method": "Разведка ниши: боли, поисковый спрос, плотность конкурентов.",
-    "stage.discovery.artifact": "Карта сигналов с ранжированными гипотезами.",
+    "stage.discovery.artifact": "Карта сигналов + гипотезы",
     "stage.discovery.gate": "Одна гипотеза, на которую стоит ставить.",
 
     "stage.offer.q": "Готовы ли платить?",
     "stage.offer.method": "Лендинг с настоящим оффером в платном трафике.",
-    "stage.offer.artifact": "Конверсия в намерение платить и первая оценка CAC.",
+    "stage.offer.artifact": "Намерение платить + оценка CAC",
     "stage.offer.gate": "Рынок голосует намерением.",
 
     "stage.attention.q": "Умеем ли привлекать внимание?",
     "stage.attention.method": "Контент-эксперименты в TikTok, YouTube и Instagram.",
-    "stage.attention.artifact": "Воспроизводимый формат и известная стоимость внимания.",
+    "stage.attention.artifact": "Формат + стоимость внимания",
     "stage.attention.gate": "Канал, который повторяется не на удаче.",
 
     "stage.community.q": "Остаётся ли аудитория?",
     "stage.community.method": "Аккумулятор аудитории в Telegram или Discord.",
-    "stage.community.artifact": "Живое ядро и измеренное удержание внимания.",
+    "stage.community.artifact": "Живое ядро + удержание",
     "stage.community.gate": "Люди возвращаются сами.",
 
     "stage.mvp.q": "Платит ли база — и остаётся ли?",
     "stage.mvp.method": "MVP на накопленную аудиторию: сначала оплата, потом удержание.",
-    "stage.mvp.artifact": "Работающая монетизация на собственной аудитории.",
+    "stage.mvp.artifact": "Работающая монетизация",
     "stage.mvp.gate": "Выручка, которая удерживается.",
 
     "contact.label": "Связь",
