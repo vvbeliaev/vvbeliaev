@@ -2,9 +2,11 @@
 /*
   Funnel.astro — the five hypotheses as one rail. The signal line draws down
   the funnel as you scroll; each stage node ignites coral when its gate enters
-  the viewport. The dot cluster on each card densifies stage by stage — the
-  audience accumulates — and warms as evidence stacks up.
+  the viewport. Cards stay minimal: the question, one line of method, the
+  stage's instruments as icons, and the artifact as a coral evidence chip.
+  The dot cluster densifies stage by stage — the audience accumulates.
 */
+import { Icon } from "astro-icon/components";
 import { STAGES } from "$lib/config";
 import { getLangFromUrl, useTranslations } from "$i18n/utils";
 import type { UIKey } from "$i18n/ui";
@@ -61,7 +63,7 @@ const lastIdx = STAGES.length - 1;
           <span class="node" aria-hidden="true">
             <span class="node-dot" />
           </span>
-          <article class="card rounded-xl border border-border bg-card/50 p-6 transition-colors duration-500 sm:p-8">
+          <article class="card rounded-xl border border-border bg-card/50 p-6 transition-colors duration-500 sm:p-7">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <span class="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
                 Stage {s.id} · {s.name}
@@ -82,32 +84,22 @@ const lastIdx = STAGES.length - 1;
             <h3 class="mt-3 font-display text-xl font-bold tracking-tight sm:text-2xl">
               {t(`stage.${s.key}.q` as UIKey)}
             </h3>
-            <dl class="mt-5 grid gap-5 sm:grid-cols-3">
-              <div>
-                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {t("funnel.method")}
-                </dt>
-                <dd class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {t(`stage.${s.key}.method` as UIKey)}
-                </dd>
-              </div>
-              <div>
-                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-                  {t("funnel.artifact")}
-                </dt>
-                <dd class="mt-1.5 text-sm leading-relaxed text-foreground">
-                  {t(`stage.${s.key}.artifact` as UIKey)}
-                </dd>
-              </div>
-              <div>
-                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {t("funnel.gate")}
-                </dt>
-                <dd class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {t(`stage.${s.key}.gate` as UIKey)}
-                </dd>
-              </div>
-            </dl>
+            <p class="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              {t(`stage.${s.key}.method` as UIKey)}
+            </p>
+            <div class="mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+              <span class="flex items-center gap-3 text-muted-foreground">
+                {s.icons.map((name) => (
+                  <Icon name={name} class="size-4" />
+                ))}
+              </span>
+              <span class="rounded-full border border-primary/40 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-primary">
+                → {t(`stage.${s.key}.artifact` as UIKey)}
+              </span>
+            </div>
+            <p class="mt-4 border-t border-border/60 pt-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              <span class="text-accent">Gate</span> · {t(`stage.${s.key}.gate` as UIKey)}
+            </p>
           </article>
         </li>
       ))
