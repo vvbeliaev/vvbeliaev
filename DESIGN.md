@@ -119,9 +119,12 @@ Back to front:
    the margins that never crosses the reading column; they twinkle too.
 7. **Ground** — the chthonic counterpart to the star field: ~16 schematic
    contour strata (seeded sums of sines) anchored to the bottom edge, spacing
-   tightening toward the floor, cold slate-blue strokes at ~2–4% alpha, masked
-   to dissolve upward within the lower ~40vh. Static — no motion competes with
-   the hero. The footer's top rule is a "horizon": a line fading at both ends.
+   tightening toward the floor, cold slate-blue strokes at ~1–2% alpha, masked
+   to dissolve upward within the lower ~30vh. Motion is a *tremor*, not a wave:
+   each stratum drifts ±1.5px on its own phase (heat haze over ground), and a
+   layer of coarse **living grain** (film dust stepping through offsets, ~7%,
+   screen-blended, masked to the floor) keeps the earth faintly alive. The
+   footer's top rule is a "horizon": a line fading at both ends.
 8. Fractal-noise grain (`::after`, ~2.5%, `mix-blend-overlay`) to kill banding.
 
 No terminal scanlines — they read as "screen", and the goal is cosmos.
