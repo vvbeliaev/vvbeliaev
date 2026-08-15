@@ -13,10 +13,9 @@
 <br />
 
 <a href="https://vvbeliaev.dev"><img src="https://img.shields.io/badge/vvbeliaev.dev-04050B?style=flat&logo=astro&logoColor=F08A72" alt="Website" /></a>
-<a href="https://t.me/vvbeliaev_ch"><img src="https://img.shields.io/badge/Telegram_·_channel-04050B?style=flat&logo=telegram&logoColor=5F95C2" alt="Telegram channel" /></a>
+<a href="https://t.me/vvbeliaevv_ch"><img src="https://img.shields.io/badge/Telegram_·_channel-04050B?style=flat&logo=telegram&logoColor=5F95C2" alt="Telegram channel" /></a>
 <a href="https://www.youtube.com/@vvbeliaev"><img src="https://img.shields.io/badge/YouTube-04050B?style=flat&logo=youtube&logoColor=F08A72" alt="YouTube" /></a>
-<a href="https://rxresu.me/vvbeliaev/full-stack"><img src="https://img.shields.io/badge/Résumé-04050B?style=flat&logo=readdotcv&logoColor=5F95C2" alt="Résumé" /></a>
-<a href="mailto:vvladimirbeliaev@gmail.com"><img src="https://img.shields.io/badge/Email-04050B?style=flat&logo=gmail&logoColor=F08A72" alt="Email" /></a>
+<a href="mailto:vvbeliaevv@gmail.com"><img src="https://img.shields.io/badge/Email-04050B?style=flat&logo=gmail&logoColor=F08A72" alt="Email" /></a>
 
 <br /><br />
 
@@ -30,10 +29,10 @@
 
 ### `> building now`
 
-| Project                                                         | What it is                                                                                                                                                 |
-| :-------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[Space N Place](https://spacenplace.ai)** · _Lead Engineer_   | AI real-estate discovery & market intelligence for Dubai — live market snapshot, ML liquidity scoring, multimodal vector search, floor-plan understanding. |
-| **[LLM-Агент](https://llmagent.ru)** · _AI agents for business_ | Turns company knowledge into 24/7 RAG assistants across web, Telegram & Bitrix24.                                                                          |
+| Project                                                                | What it is                                                                                                                                                 |
+| :--------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[TraffHub](https://traffhub.io)** · _Lead Engineer_                  | Internal product platform for a Tier-1 media-buying team — site, live season leaderboard from Google Sheets, Telegram-bot login, one design system.        |
+| **[Space N Place](https://spacenplace.ai)** · _Lead Engineer_          | AI real-estate discovery & market intelligence for Dubai — live market snapshot, ML liquidity scoring, multimodal vector search, floor-plan understanding. |
 
 <sub>Parked micro-SaaS: Quizbee · HackSeeker · YouStory.</sub>
 
@@ -62,5 +61,5 @@
 
 ### `> reach out`
 
-**Read the work** → [Telegram channel](https://t.me/vvbeliaev_ch) · [YouTube](https://www.youtube.com/@vvbeliaev) · [vvbeliaev.dev](https://vvbeliaev.dev)
-**Reach me** → [Telegram DM](https://t.me/vvbeliaev_me) · [Email](mailto:vvladimirbeliaev@gmail.com) · [Résumé](https://rxresu.me/vvbeliaev/full-stack)
+**Read the work** → [Telegram channel](https://t.me/vvbeliaevv_ch) · [YouTube](https://www.youtube.com/@vvbeliaev) · [vvbeliaev.dev](https://vvbeliaev.dev)
+**Reach me** → [Telegram DM](https://t.me/vvbeliaevv) · [Email](mailto:vvbeliaevv@gmail.com)

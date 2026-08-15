@@ -1,6 +1,5 @@
 ---
 import { getCollection } from "astro:content";
-import { SITE_I18N } from "$lib/config";
 import { getLangFromUrl, useTranslations, localizePath } from "$i18n/utils";
 import Constellation from "./Constellation.astro";
 import Follow from "./Follow.astro";
@@ -9,7 +8,6 @@ import Channels from "./Channels.astro";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const meta = SITE_I18N[lang];
 
 const posts = (
   await getCollection("blog", ({ data }) => !data.draft && data.lang === lang)
@@ -19,14 +17,6 @@ const posts = (
 ---
 
 <Constellation avatar="/avatar.jpg" />
-
-<p class="mt-2 text-center font-mono text-xs tracking-wide text-muted-foreground">
-  <span class="led-indicator align-middle text-primary"></span>
-  <span class="align-middle uppercase tracking-[0.2em] text-foreground/80">
-    {t("home.now")}:
-  </span>
-  <span class="align-middle"> {meta.now}</span>
-</p>
 
 <Follow />
 

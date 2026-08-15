@@ -23,11 +23,11 @@ const t = useTranslations(lang);
 const name = SITE_I18N[lang].name;
 
 const core = { x: 300, y: 180 };
-const R = 38; // avatar radius
+const R = 64; // avatar radius — the person is the core, facets orbit it
 const facets = [
   { x: 96, y: 70, name: t("facet.engineer.name"), caption: t("facet.engineer.caption") },
   { x: 506, y: 64, name: t("facet.product.name"), caption: t("facet.product.caption") },
-  { x: 430, y: 300, name: t("facet.analytics.name"), caption: t("facet.analytics.caption") },
+  { x: 446, y: 308, name: t("facet.analytics.name"), caption: t("facet.analytics.caption") },
 ];
 
 // a few ambient dim stars for depth (hand-placed so nothing crowds the labels)

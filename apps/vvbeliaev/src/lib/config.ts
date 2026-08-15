@@ -13,7 +13,7 @@ export const SITE = {
 // Per-locale site metadata (display name / tagline / meta description / Intl locale).
 export const SITE_I18N: Record<
   Lang,
-  { name: string; tagline: string; description: string; locale: string; now: string }
+  { name: string; tagline: string; description: string; locale: string }
 > = {
   en: {
     name: "Vladimir Beliaev",
@@ -21,7 +21,6 @@ export const SITE_I18N: Record<
     description:
       "Personal site and long-form blog by Vladimir Beliaev — notes on AI, product and analytics.",
     locale: "en-US",
-    now: "Lead engineer at Space N Place (Dubai PropTech)", // TODO: keep current
   },
   ru: {
     name: "Владимир Беляев",
@@ -29,7 +28,6 @@ export const SITE_I18N: Record<
     description:
       "Личный сайт и блог Владимира Беляева — заметки про AI, продукт и аналитику.",
     locale: "ru-RU",
-    now: "Ведущий разработчик в Space N Place (PropTech, Дубай)", // TODO: держать актуальным
   },
 };
 
@@ -48,16 +46,15 @@ type Channel = {
 
 // FOLLOW — where to consume the content (the primary CTA for a content brand).
 export const FOLLOW: ReadonlyArray<Channel> = [
-  { label: "Telegram", handle: "@vvbeliaev_ch", href: "https://t.me/vvbeliaev_ch", primary: true },
+  { label: "Telegram", handle: "@vvbeliaevv_ch", href: "https://t.me/vvbeliaevv_ch", primary: true },
   { label: "YouTube", handle: "@vvbeliaev", href: "https://www.youtube.com/@vvbeliaev" },
 ];
 
 // CONNECT — how to reach out (secondary). Telegram DM is the preferred channel.
 export const CONNECT: ReadonlyArray<Channel> = [
-  { label: "Telegram", handle: "@vvbeliaev_me", href: "https://t.me/vvbeliaev_me", primary: true },
+  { label: "Telegram", handle: "@vvbeliaevv", href: "https://t.me/vvbeliaevv", primary: true },
   { label: "GitHub", handle: "vvbeliaev", href: "https://github.com/vvbeliaev" },
-  { label: "Email", handle: "vvladimirbeliaev@gmail.com", href: "mailto:vvladimirbeliaev@gmail.com" },
-  { label: "Resume", handle: "rxresu.me", href: "https://rxresu.me/vvbeliaev/full-stack" },
+  { label: "Email", handle: "vvbeliaevv@gmail.com", href: "mailto:vvbeliaevv@gmail.com" },
 ];
 
 type Project = {
@@ -69,13 +66,28 @@ type Project = {
   highlights?: readonly string[];
 };
 
-// Selected work shown on the home page. `featured` gets the accent treatment.
+// Selected work shown on the home page. Every entry gets the accent card
+// treatment (see Work.astro) — these are the two current lead roles.
 export const PROJECTS: ReadonlyArray<Project> = [
+  {
+    name: "TraffHub",
+    tag: "Lead Engineer · Media buying",
+    description:
+      "Internal product platform for a Tier-1 media-buying team: site, season leaderboard, story tooling.",
+    href: "https://traffhub.io",
+    featured: true,
+    highlights: [
+      "pnpm monorepo, CI → registry → Coolify",
+      "Live leaderboard from Google Sheets",
+      "Telegram-bot login",
+      "Design system across products",
+    ],
+  },
   {
     name: "Space N Place",
     tag: "Lead Engineer · Dubai PropTech",
     description:
-      "AI real-estate discovery & market intelligence for Dubai.", // TODO: confirm wording
+      "AI real-estate discovery & market intelligence for Dubai.",
     href: "https://spacenplace.ai",
     featured: true,
     highlights: [
@@ -84,20 +96,6 @@ export const PROJECTS: ReadonlyArray<Project> = [
       "Multimodal vector search",
       "Floor-plan understanding",
     ],
-  },
-  {
-    name: "Cogisoft",
-    tag: "Market-first studio",
-    description:
-      "Validation studio: demand experiments before code — offer tests, content, community, MVP.",
-    href: "https://cogisoft.dev",
-  },
-  {
-    name: "LLM-Агент",
-    tag: "AI agents for business",
-    description:
-      "Turns company knowledge into 24/7 RAG assistants across web, Telegram & Bitrix24.",
-    href: "https://llmagent.ru",
   },
 ];
 
