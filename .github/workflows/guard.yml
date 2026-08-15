@@ -1,0 +1,49 @@
+name: guard
+
+# Репозиторий публичный. Этот workflow — страховка от утечек:
+#   1. gitleaks — секреты (токены, ключи) в диффе пуша / PR;
+#   2. path guard — ничего под workspace/private/ не должно быть в индексе,
+#      и в публичных файлах не должно быть телефонов.
+# Не подменяет голову: правило «сомневаешься — в private/» в CLAUDE.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  private-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: No tracked files under workspace/private/
+        run: |
+          set -euo pipefail
+          if git ls-files -- 'workspace/private/*' | grep -q .; then
+            echo "::error::workspace/private/ must never be tracked:"
+            git ls-files -- 'workspace/private/*'
+            exit 1
+          fi
+
+      - name: No phone numbers in public files
+        run: |
+          set -euo pipefail
+          # RU mobile formats: +7 9xx / 8 9xx with any separators.
+          if git grep -n -I -E '(\+7|\b8)[ (-]*9[0-9]{2}[ )-]*[0-9]{3}[ -]*[0-9]{2}[ -]*[0-9]{2}\b' -- ':!pnpm-lock.yaml'; then
+            echo "::error::phone number found in a public file — move it to workspace/private/"
+            exit 1
+          fi

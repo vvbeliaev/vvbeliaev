@@ -17,14 +17,26 @@ The site is **bilingual — English and Russian.**
 - `apps/vvbeliaev` — the personal site and blog. Astro + Svelte 5 + shadcn-svelte,
 Tailwind v4, content via Astro Content Collections + MDX, static build (SSG).
 - `workspace` — the "kitchen": everything raw and non-buildable. Astro never
-looks here; nothing ships from here directly. Holds article drafts
-(`workspace/drafts/`) and résumés (`workspace/cv/`). See `workspace/README.md`.
+looks here; nothing ships from here directly. Public part: brand assets.
+**Private part — `workspace/private/`** (gitignored, never in the index): résumés
+(`private/cv/`), raw article drafts (`private/drafts/`), strategy, project notes.
+See `workspace/README.md`.
 - `DESIGN.md` — the site's **design system** (theme "Corona Bloom"). The source
 of truth for colors/tokens, fonts, atmosphere, components, and voice.
 - `docs/design-notes.md` — the design-decision journal: what was tried, the
 forks, and what was rejected.
 
 pnpm workspace (`apps/*`, `pkgs/*`).
+
+## Core rule: the repo is public
+
+Everything outside `workspace/private/` is published on GitHub. Before writing a
+file, ask: is this ready to be seen by anyone? Contacts, phone numbers, internal
+assessments, raw thoughts, client/employer details beyond the public portfolio,
+tokens and keys — **only** under `workspace/private/` (or in secret managers /
+GitHub secrets for CI). When in doubt, put it in `private/`. Never move a private
+file into a public path "temporarily". CI (`.github/workflows/guard.yml`) fails
+on leaked secrets (gitleaks) and on any tracked path under `workspace/private/`.
 
 ## Core rule: design & frontend
 
@@ -49,8 +61,8 @@ Articles move from a raw "kitchen" (`workspace/`, not built) to the "storefront"
 (`apps/vvbeliaev/src/content/blog`, built and schema-checked). The full convention lives
 in `workspace/README.md` — read it before working on article drafts or publishing.
 
-Stages: `ideas.md` (one-line idea) → `drafts/<slug>/main.md` (loose Russian draft,
-no schema) → `blog/note-NN-slug/ru.mdx` (RU shaped into the schema, `draft: true`)
+Stages: `private/drafts/ideas.md` (one-line idea) → `private/drafts/<slug>/main.md`
+(loose Russian draft, no schema) → `blog/note-NN-slug/ru.mdx` (RU shaped into the schema, `draft: true`)
 → `blog/note-NN-slug/en.mdx` (English translation, `translatedFrom: "ru"`) →
 drop `draft: true` to publish.
 

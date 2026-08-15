@@ -11,10 +11,19 @@ dist/
 # astro
 .astro/
 
-# env
+# env & secrets — never in the index
 .env
 .env.*
 !.env.example
+secrets/
+*.pem
+*.key
+*.p12
+*.key.json
+service-account*.json
+
+# agent-local settings (per machine): permissions, allowlists
+**/.claude/settings.local.json
 
 # logs
 *.log
@@ -34,4 +43,6 @@ __pycache__/
 
 .playwright-mcp
 
-workspace/private
+# private workspace — the only place for anything not meant to be public.
+# Résumés (with contacts), raw drafts, strategy, project notes. See workspace/README.md.
+workspace/private/
