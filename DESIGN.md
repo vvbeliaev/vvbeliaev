@@ -133,6 +133,14 @@ All motion respects `prefers-reduced-motion`.
 - **Blinking cursor** (`animate-blink`): a terminal `_` after key headings.
 - **Stat block** ("by the numbers"): mono/large display numbers in a bordered
   grid — a recurring ritual.
+- **Constellation hero** (`Constellation.astro`): the avatar core with three
+  facet stars. On load it **blooms once** (core ignites → links draw out →
+  stars/names appear → captions peek → name rises; ~2 s), then a faint pointer
+  parallax (facets 5px, core 1.5px; fine pointers only). Reduced motion → the
+  final frame. This is the page's one orchestrated moment — don't add others.
+- **Work entries**: full-width log rows (role / domain · name | description +
+  chips), coral rim at 30%, ember glow **on hover only**. Two accent blocks
+  never glow at rest side by side.
 
 ## 7. Voice & rituals (carry the brand more than any logo)
 

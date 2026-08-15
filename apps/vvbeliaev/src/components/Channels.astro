@@ -1,8 +1,9 @@
 ---
 /*
   Channels.astro — the "Connect" block (how to reach out, secondary). Telegram DM
-  is the preferred channel (accent tile, quieter than Follow). Handles truncate
-  so long values (e.g. email) never break the row.
+  is the preferred channel (accent row); the rest sit in a two-up grid using the
+  same label ↔ handle row as Follow, so both blocks read as one family. Handles
+  truncate so long values (e.g. email) never break the row.
 */
 import { CONNECT } from "$lib/config";
 import { getLangFromUrl, useTranslations } from "$i18n/utils";
@@ -38,7 +39,7 @@ const rest = CONNECT.filter((c) => !c.primary);
     )
   }
 
-  <ul class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+  <ul class="mt-3 grid gap-3 sm:grid-cols-2">
     {
       rest.map((c) => (
         <li class="min-w-0">
@@ -46,10 +47,10 @@ const rest = CONNECT.filter((c) => !c.primary);
             href={c.href}
             target="_blank"
             rel="noopener noreferrer"
-            class="group flex min-w-0 flex-col rounded-lg border border-border bg-card/40 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-card"
+            class="group flex min-w-0 items-center justify-between gap-4 rounded-lg border border-border bg-card/40 px-4 py-3.5 transition-colors hover:border-primary/40 hover:bg-card"
           >
             <span class="font-medium">{c.label}</span>
-            <span class="mt-0.5 truncate font-mono text-xs text-muted-foreground group-hover:text-foreground">
+            <span class="min-w-0 truncate font-mono text-sm text-muted-foreground group-hover:text-foreground">
               {c.handle}
             </span>
           </a>
