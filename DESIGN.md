@@ -117,7 +117,12 @@ Back to front:
 6. **Constellation lines** between the larger stars, restricted to the side
    bands (`cx < 300 || cx > 700`) with short segments — a faint silver sketch in
    the margins that never crosses the reading column; they twinkle too.
-7. Fractal-noise grain (`::after`, ~2.5%, `mix-blend-overlay`) to kill banding.
+7. **Ground** — the chthonic counterpart to the star field: ~16 schematic
+   contour strata (seeded sums of sines) anchored to the bottom edge, spacing
+   tightening toward the floor, cold slate-blue strokes at ~2–4% alpha, masked
+   to dissolve upward within the lower ~40vh. Static — no motion competes with
+   the hero. The footer's top rule is a "horizon": a line fading at both ends.
+8. Fractal-noise grain (`::after`, ~2.5%, `mix-blend-overlay`) to kill banding.
 
 No terminal scanlines — they read as "screen", and the goal is cosmos.
 All motion respects `prefers-reduced-motion`.

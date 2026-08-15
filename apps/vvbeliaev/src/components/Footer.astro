@@ -6,8 +6,24 @@ const lang = getLangFromUrl(Astro.url);
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-16 border-t border-border">
+<!-- The horizon: not a hard rule but a line that fades at both ends, so the
+     footer reads as the ground meeting the page rather than a box border. -->
+<footer class="horizon mt-16">
   <div class="mx-auto max-w-3xl px-4 py-8 text-sm text-muted-foreground">
     © {year} {SITE_I18N[lang].name}
   </div>
 </footer>
+
+<style>
+  .horizon {
+    border-top: 1px solid transparent;
+    border-image: linear-gradient(
+        to right,
+        transparent,
+        color-mix(in oklch, var(--accent) 45%, var(--border)) 30%,
+        color-mix(in oklch, var(--accent) 45%, var(--border)) 70%,
+        transparent
+      )
+      1;
+  }
+</style>

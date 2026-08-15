@@ -7,6 +7,11 @@
   schematic constellation lines stay stable across builds. They are biased
   toward the top (cosmos) and thin out toward the bottom (chthonic), and the
   whole layer is masked so it fades before the denser lower content.
+
+  The chthonic counterpart is the "ground": schematic contour lines (as on a
+  topographic map) rising from the bottom edge, denser toward the floor and
+  dissolving upward. Static, cold, faint — the page settles into earth the way
+  it opens into sky. Same language as the constellation: a chart, not a picture.
 */
 function mulberry32(seed: number) {
   return function () {
@@ -76,6 +81,35 @@ for (const a of anchors) {
 
 // star indices that anchor a constellation line — render them as bright endpoints
 const lit = new Set<number>(lines.flatMap(([a, b]) => [a.i, b.i]));
+
+// ── Ground: contour strata ────────────────────────────────────────────────────
+// Smooth horizontal isolines across a 1000×400 box anchored to the bottom.
+// Spacing tightens toward the floor (denser earth), amplitude is gentle, and
+// each line is a sum of three seeded sines so neighbours undulate together
+// like real contours rather than random noise.
+const GW = 1000;
+const GH = 400;
+const grand = mulberry32(20260815);
+const STRATA = 16;
+const phases = Array.from({ length: 3 }, () => grand() * Math.PI * 2);
+const freqs = [0.0031, 0.0074, 0.014];
+const contours = Array.from({ length: STRATA }, (_, k) => {
+  const t = k / (STRATA - 1); // 0 = top-most (faint, sparse), 1 = floor
+  const base = GH - Math.pow(1 - t, 1.7) * (GH - 18) ; // geometric spacing toward the floor
+  const amp = 14 + t * 18;
+  const drift = grand() * 40 - 20;
+  const pts: string[] = [];
+  for (let x = -40; x <= GW + 40; x += 20) {
+    const y =
+      base +
+      amp *
+        (0.55 * Math.sin(x * freqs[0] + phases[0] + k * 0.35) +
+          0.3 * Math.sin(x * freqs[1] + phases[1] + k * 0.6 + drift * 0.01) +
+          0.15 * Math.sin(x * freqs[2] + phases[2] + k * 0.9));
+    pts.push(`${x},${y.toFixed(1)}`);
+  }
+  return { d: "M" + pts.join(" L"), o: (0.35 + t * 0.65).toFixed(2), w: (0.5 + t * 0.4).toFixed(2) };
+});
 ---
 
 <div class="atmosphere" aria-hidden="true">
@@ -110,6 +144,17 @@ const lit = new Set<number>(lines.flatMap(([a, b]) => [a.i, b.i]));
           />
         ))
       }
+    </g>
+  </svg>
+
+  <svg
+    class="ground"
+    viewBox={`0 0 ${GW} ${GH}`}
+    preserveAspectRatio="xMidYMax slice"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g class="contours">
+      {contours.map((c) => <path d={c.d} style={`--o:${c.o};--w:${c.w}`} />)}
     </g>
   </svg>
 </div>
@@ -180,6 +225,25 @@ const lit = new Set<number>(lines.flatMap(([a, b]) => [a.i, b.i]));
     50% {
       opacity: calc(var(--o, 0.6) * 0.35);
     }
+  }
+
+  /* the chthonic ground: contour strata anchored to the bottom, dissolving upward */
+  .ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 42vh;
+    -webkit-mask-image: linear-gradient(to top, black 0%, black 30%, transparent 100%);
+    mask-image: linear-gradient(to top, black 0%, black 30%, transparent 100%);
+  }
+  .contours path {
+    fill: none;
+    stroke: rgba(122, 150, 196, 0.5);
+    stroke-width: var(--w, 0.6);
+    opacity: calc(var(--o, 0.6) * 0.42);
+    vector-effect: non-scaling-stroke;
   }
 
   /* faint cosmic grain to avoid gradient banding */
