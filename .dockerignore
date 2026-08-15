@@ -1,0 +1,27 @@
+# Контекст сборки — корень монорепы. В образ едет только то, что нужно
+# для `pnpm install` и `astro build`; кухня (workspace/), доки и секреты — нет.
+
+.git
+.github
+node_modules
+**/node_modules
+**/dist
+**/.astro
+
+# секреты и локальные окружения
+.env
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key.json
+
+# кухня и документация: Astro на них не смотрит
+workspace/
+docs/
+*.md
+
+.playwright-mcp
+.vscode
+.idea
+.DS_Store
