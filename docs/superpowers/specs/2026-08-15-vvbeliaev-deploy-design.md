@@ -1,6 +1,6 @@
 # Деплой vvbeliaev.dev: CI → GHCR → Coolify за Cloudflare Tunnel
 
-Дата: 2026-08-15. Статус: утверждён владельцем в чате.
+Дата: 2026-08-15. Статус: реализован 2026-08-15 (сайт в проде).
 
 ## Цель
 
@@ -29,7 +29,7 @@ push main ──► GitHub Actions
               deploy: POST {COOLIFY_URL}/api/v1/deploy?uuid=<app>
                                 │
 Coolify (small-ubuntu) ◄────────┘  pull image, restart container
-   Traefik :443 (coolify-proxy) ◄── cloudflared (Coolify-сервис, туннель vvbeliaev-01)
+   Traefik :443 (localhost)  ◄──── cloudflared (Coolify-сервис, host network, туннель vvbeliaev-01)
                                           ▲
 Cloudflare edge (TLS, proxied CNAME) ◄────┘
 ```
@@ -37,12 +37,13 @@ Cloudflare edge (TLS, proxied CNAME) ◄────┘
 ### 1. Сеть
 
 - Туннель `vvbeliaev-01` создаётся через Cloudflare API (remotely-managed).
-- Ingress: `vvbeliaev.dev` → `https://coolify-proxy:443`, `noTLSVerify: true`;
+- Ingress: `vvbeliaev.dev` → `https://localhost:443`, `noTLSVerify: true`;
   catch-all → `http_status:404`. Схема из документации Coolify: Traefik
   сохраняет https-роутер и редирект http→https, петли нет.
-- Cloudflared — сервис Coolify из шаблона `cloudflared`, на том же сервере,
-  подключён к docker-сети `coolify` (иначе `coolify-proxy` не резолвится),
-  токен туннеля в env `TUNNEL_TOKEN`.
+- Cloudflared — сервис Coolify из шаблона `cloudflared`
+  (`cloudflared-vvbeliaev-01`, проект `net`, окружение `production`) на том же
+  сервере. Шаблон использует `network_mode: host`, поэтому origin — `localhost`,
+  а не `coolify-proxy`. Токен туннеля — env `CLOUDFLARE_TUNNEL_TOKEN`.
 - DNS: proxied CNAME `vvbeliaev.dev` → `<tunnel-id>.cfargotunnel.com`.
   Зона: SSL mode `Full`. `www` — не в v1.
 

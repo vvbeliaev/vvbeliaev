@@ -7,8 +7,7 @@ export const SITE = {
   author: "Vladimir Beliaev",
   // Cross-channel handle (github/youtube/telegram). Shown as the header wordmark.
   handle: "vvbeliaev",
-  // TODO: set the final domain
-  url: "https://vbeliaev.dev",
+  url: "https://vvbeliaev.dev",
 } as const;
 
 // Per-locale site metadata (display name / tagline / meta description / Intl locale).

@@ -81,3 +81,27 @@ makes sense, but a post may exist in only one language.
 for correctness; IDE diagnostics may lag).
 - Fonts are self-hosted via `@fontsource-variable/*`.
 
+## Deploy & ops
+
+Production is **https://vvbeliaev.dev**. Full runbook — the `vvbeliaev-ops` skill
+(`.claude/skills/vvbeliaev-ops/SKILL.md`); read it before touching CI, Coolify,
+Cloudflare, or the server. Design rationale — `docs/superpowers/specs/2026-08-15-vvbeliaev-deploy-design.md`.
+
+- **Pipeline:** push to `main` → GitHub Actions (`.github/workflows/vvbeliaev.yml`)
+runs `check` → builds the image → pushes to GHCR (`ghcr.io/vvbeliaev/vvbeliaev`) →
+triggers Coolify, which pulls the image. **Nothing is ever built on the server.**
+Each app has its own `apps/<app>/Dockerfile`; the build context is the monorepo root.
+- **Hosting:** Coolify (`https://coolify.cogisoft.dev`, MCP server **`coolify`** — no
+suffix; `coolify-th` / `coolify-gleb` are other teams, don't touch them), project
+`portfolio`, server `small-ubuntu-4gb-fsn1-2`. Public traffic comes only through a
+Cloudflare Tunnel (`vvbeliaev-01`, cloudflared runs as a Coolify service); the server
+exposes no ports for the site.
+- **Discipline:** after every push, `gh run watch --exit-status` until green; a red
+`check` means no image and no deploy. Reading prod (logs, status, deployments) is
+free; **any mutation** (deploy/restart/env/tunnel/DNS/re-run of a deploy workflow)
+only on an explicit request from the owner, naming the exact resource. Rollback is a
+mutation too.
+- Adding another app of the monorepo to deploy: follow the checklist at the end of
+the ops skill (Dockerfile → workflow copy → Coolify Docker Image app → tunnel
+hostname + CNAME).
+

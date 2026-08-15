@@ -6,13 +6,13 @@
 
 <div align="center">
 
-<a href="https://vbeliaev.dev">
+<a href="https://vvbeliaev.dev">
   <img src="workspace/assets/corona-bloom-banner.svg" alt="Vladimir Beliaev — AI Full Stack Engineer · Product Lead · Analytics Engineer" width="100%" />
 </a>
 
 <br />
 
-<a href="https://vbeliaev.dev"><img src="https://img.shields.io/badge/vbeliaev.dev-04050B?style=flat&logo=astro&logoColor=F08A72" alt="Website" /></a>
+<a href="https://vvbeliaev.dev"><img src="https://img.shields.io/badge/vvbeliaev.dev-04050B?style=flat&logo=astro&logoColor=F08A72" alt="Website" /></a>
 <a href="https://t.me/vvbeliaev_ch"><img src="https://img.shields.io/badge/Telegram_·_channel-04050B?style=flat&logo=telegram&logoColor=5F95C2" alt="Telegram channel" /></a>
 <a href="https://www.youtube.com/@vvbeliaev"><img src="https://img.shields.io/badge/YouTube-04050B?style=flat&logo=youtube&logoColor=F08A72" alt="YouTube" /></a>
 <a href="https://rxresu.me/vvbeliaev/full-stack"><img src="https://img.shields.io/badge/Résumé-04050B?style=flat&logo=readdotcv&logoColor=5F95C2" alt="Résumé" /></a>
@@ -20,7 +20,7 @@
 
 <br /><br />
 
-<a href="https://vbeliaev.dev">
+<a href="https://vvbeliaev.dev">
   <img src="https://readme-typing-svg.demolab.com?font=Sora&weight=600&size=22&pause=1100&color=F08A72&center=true&vCenter=true&width=620&height=42&lines=AI+Full+Stack+Engineer;Product+Lead;Analytics+Engineer" alt="AI Full Stack Engineer · Product Lead · Analytics Engineer" />
 </a>
 
@@ -62,5 +62,5 @@
 
 ### `> reach out`
 
-**Read the work** → [Telegram channel](https://t.me/vvbeliaev_ch) · [YouTube](https://www.youtube.com/@vvbeliaev) · [vbeliaev.dev](https://vbeliaev.dev)
+**Read the work** → [Telegram channel](https://t.me/vvbeliaev_ch) · [YouTube](https://www.youtube.com/@vvbeliaev) · [vvbeliaev.dev](https://vvbeliaev.dev)
 **Reach me** → [Telegram DM](https://t.me/vvbeliaev_me) · [Email](mailto:vvladimirbeliaev@gmail.com) · [Résumé](https://rxresu.me/vvbeliaev/full-stack)
