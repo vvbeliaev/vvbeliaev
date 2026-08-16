@@ -83,6 +83,20 @@ export const PROJECTS: ReadonlyArray<Project> = [
       "Floor-plan understanding",
     ],
   },
+  {
+    name: "Cogisoft",
+    tag: "Market-first studio",
+    description:
+      "Validation studio: demand experiments before code — offer tests, content, community, MVP.",
+    href: "https://cogisoft.dev",
+  },
+  {
+    name: "LLM-Агент",
+    tag: "AI agents for business",
+    description:
+      "Turns company knowledge into 24/7 RAG assistants across web, Telegram & Bitrix24.",
+    href: "https://llmagent.ru",
+  },
 ];
 
 // On hold: kept out of the site until the role is public again. To bring it
@@ -104,25 +118,13 @@ export const PARKED_PROJECTS: ReadonlyArray<Project> = [
   },
 ];
 
-// Earlier micro-SaaS: shipped, now low-priority. Rendered as the compact list
-// under the featured entries.
+// Parked: earlier micro-SaaS, currently lower priority. Not rendered — move an
+// entry into PROJECTS when it's worth showing again.
 export const ARCHIVED_PROJECTS: ReadonlyArray<Project> = [
   {
     name: "Quizbee",
     tag: "Founder",
     description: "Turns PDFs and lecture notes into interactive quizzes.",
     href: "https://quizbee.academy",
-  },
-  {
-    name: "HackSeeker",
-    tag: "Founder",
-    description: "LLM-powered market-validation tool for product ideas.",
-    href: "https://hackseeker.com",
-  },
-  {
-    name: "YouStory",
-    tag: "Founder",
-    description: "Interactive AI storytelling with branching narratives.",
-    href: "https://ys.cogitosoftware.nl",
   },
 ];

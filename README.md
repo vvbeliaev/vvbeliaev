@@ -32,8 +32,9 @@
 | Project                                                                | What it is                                                                                                                                                 |
 | :--------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **[Space N Place](https://spacenplace.ai)** · _Lead Engineer_          | AI real-estate discovery & market intelligence for Dubai — live market snapshot, ML liquidity scoring, multimodal vector search, floor-plan understanding. |
+| **[LLM-Агент](https://llmagent.ru)** · _AI agents for business_        | Turns company knowledge into 24/7 RAG assistants across web, Telegram & Bitrix24.                                                                          |
 
-<sub>Parked micro-SaaS: Quizbee · HackSeeker · YouStory.</sub>
+<sub>Parked micro-SaaS: Quizbee.</sub>
 
 ### `> stack`
 
