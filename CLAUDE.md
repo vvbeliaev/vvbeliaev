@@ -103,7 +103,7 @@ Cloudflare, or the server. Design rationale — `docs/superpowers/specs/2026-08-
 runs `check` → builds the image → pushes to GHCR (`ghcr.io/vvbeliaev/vvbeliaev`) →
 triggers Coolify, which pulls the image. **Nothing is ever built on the server.**
 Each app has its own `apps/<app>/Dockerfile`; the build context is the monorepo root.
-- **Hosting:** Coolify (`https://coolify.cogisoft.dev`, MCP server **`coolify`** — no
+- **Hosting:** Coolify (`https://coolify.vvbeliaev.dev`, MCP server **`coolify`** — no
 suffix; `coolify-th` / `coolify-gleb` are other teams, don't touch them), project
 `portfolio`, server `small-ubuntu-4gb-fsn1-2`. Public traffic comes only through a
 Cloudflare Tunnel (`vvbeliaev-01`, cloudflared runs as a Coolify service); the server

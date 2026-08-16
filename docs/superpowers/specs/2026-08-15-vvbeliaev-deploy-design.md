@@ -12,7 +12,8 @@ Cloudflare Tunnel.
 ## Контекст
 
 - Cloudflare-зона `vvbeliaev.dev` (аккаунт `vvbeliaev`), DNS пустой, туннелей нет.
-- Coolify — инстанс `https://coolify.cogisoft.dev`, личная команда, MCP-сервер
+- Coolify — инстанс `https://coolify.vvbeliaev.dev` (на момент спеки —
+  `coolify.cogisoft.dev`; control plane переименован 2026-08-16), личная команда, MCP-сервер
   `coolify` (без суффикса). Проект `portfolio`, окружение `production` — уже
   созданы, пустые.
 - Сервер `small-ubuntu-4gb-fsn1-2` (Hetzner fsn1, 2 vCPU / 4 ГБ, tailnet

@@ -62,7 +62,9 @@ Cloudflare-аккаунт `vvbeliaev` (MCP `cloudflare-api`): туннель и 
 run`, `gh run rerun`) — это тот же деплой. Откат — тоже мутация (деплой
 предыдущего `sha-*` тега), сам не делаешь.
 
-**Coolify** — `https://coolify.cogisoft.dev`, MCP-сервер **`coolify`** (без
+**Coolify** — `https://coolify.vvbeliaev.dev` (control plane на mgmt-01; до
+2026-08-16 назывался `coolify.cogisoft.dev` — старое имя отдаёт 503, ищи его в
+секретах при непонятных отказах деплоя), MCP-сервер **`coolify`** (без
 суффикса — это личная команда). `coolify-th` и `coolify-gleb` — чужие команды на
 том же инстансе, туда не ходим. Читающие вызовы: `diagnose_app` (статус + логи +
 деплои одним вызовом), `logs`, `list_deployments`, `get_service` (для
@@ -85,6 +87,7 @@ Coolify содержат uuid приложения.
 | «no available server» / 404 от Traefik | Роут домена не совпал с приложением | FQDN приложения в Coolify = `https://vvbeliaev.dev`; `diagnose_app` |
 | Деплой `finished`, сайт старый | Coolify стянул старый `latest` (кэш) или пакет GHCR стал приватным | Проверить `docker pull ghcr.io/vvbeliaev/vvbeliaev:latest` без логина; redeploy с `force=true` |
 | `deploy` в CI → 401 | `COOLIFY_TOKEN` пуст/протух | Новый токен в Coolify (Keys & Tokens), `gh secret set COOLIFY_TOKEN` |
+| `deploy` в CI → 503 `no available server` | Секрет `COOLIFY_URL` указывает на старое имя control plane (Traefik роут есть, бэкенда нет) | `curl -sI https://coolify.vvbeliaev.dev/api/health`, затем `gh secret set COOLIFY_URL`. Сайт при этом жив — контейнер работает без Coolify |
 
 ## Добавить приложение монорепы в деплой
 
