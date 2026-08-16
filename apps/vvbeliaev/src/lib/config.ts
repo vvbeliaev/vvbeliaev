@@ -66,23 +66,9 @@ type Project = {
   highlights?: readonly string[];
 };
 
-// Selected work shown on the home page. Every entry gets the accent card
-// treatment (see Work.astro) — these are the two current lead roles.
+// Selected work shown on the home page. `featured` entries get the accent log
+// row (see Work.astro); everything else lands in the compact list below it.
 export const PROJECTS: ReadonlyArray<Project> = [
-  {
-    name: "TraffHub",
-    tag: "Lead Engineer · Media buying",
-    description:
-      "Internal product platform for a Tier-1 media-buying team: site, season leaderboard, story tooling.",
-    href: "https://traffhub.io",
-    featured: true,
-    highlights: [
-      "pnpm monorepo, CI → registry → Coolify",
-      "Live leaderboard from Google Sheets",
-      "Telegram-bot login",
-      "Design system across products",
-    ],
-  },
   {
     name: "Space N Place",
     tag: "Lead Engineer · Dubai PropTech",
@@ -99,8 +85,27 @@ export const PROJECTS: ReadonlyArray<Project> = [
   },
 ];
 
-// Parked: earlier micro-SaaS, currently lower priority. Re-add to PROJECTS when
-// the next products ship.
+// On hold: kept out of the site until the role is public again. To bring it
+// back, move this entry into PROJECTS above — nothing else changes.
+export const PARKED_PROJECTS: ReadonlyArray<Project> = [
+  {
+    name: "TraffHub",
+    tag: "Lead Engineer · Media buying",
+    description:
+      "Internal product platform for a Tier-1 media-buying team: site, season leaderboard, story tooling.",
+    href: "https://traffhub.io",
+    featured: true,
+    highlights: [
+      "pnpm monorepo, CI → registry → Coolify",
+      "Live leaderboard from Google Sheets",
+      "Telegram-bot login",
+      "Design system across products",
+    ],
+  },
+];
+
+// Earlier micro-SaaS: shipped, now low-priority. Rendered as the compact list
+// under the featured entries.
 export const ARCHIVED_PROJECTS: ReadonlyArray<Project> = [
   {
     name: "Quizbee",

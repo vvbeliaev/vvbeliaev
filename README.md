@@ -31,7 +31,6 @@
 
 | Project                                                                | What it is                                                                                                                                                 |
 | :--------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[TraffHub](https://traffhub.io)** · _Lead Engineer_                  | Internal product platform for a Tier-1 media-buying team — site, live season leaderboard from Google Sheets, Telegram-bot login, one design system.        |
 | **[Space N Place](https://spacenplace.ai)** · _Lead Engineer_          | AI real-estate discovery & market intelligence for Dubai — live market snapshot, ML liquidity scoring, multimodal vector search, floor-plan understanding. |
 
 <sub>Parked micro-SaaS: Quizbee · HackSeeker · YouStory.</sub>

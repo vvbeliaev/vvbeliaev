@@ -7,14 +7,14 @@
   only (DESIGN.md: glow is a focused source, not an ambient wash). The first
   entry carries the LED — it's the current one.
 */
-import { PROJECTS } from "$lib/config";
+import { ARCHIVED_PROJECTS, PROJECTS } from "$lib/config";
 import { getLangFromUrl, useTranslations } from "$i18n/utils";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 const featured = PROJECTS.filter((p) => p.featured);
-const others = PROJECTS.filter((p) => !p.featured);
+const others = [...PROJECTS.filter((p) => !p.featured), ...ARCHIVED_PROJECTS];
 ---
 
 <section class="mt-14">
