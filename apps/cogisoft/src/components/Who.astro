@@ -1,0 +1,27 @@
+---
+/*
+  Who.astro — who is behind this, named. The link to the personal site is
+  deliberate: the two brands are connected in the open. A hidden connection
+  reads worse on discovery than a stated one, and there is no team to invent.
+*/
+import { SITE } from "$lib/config";
+import Section from "./Section.astro";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Section label={t("who.label")}>
+  <p class="max-w-2xl text-lg leading-relaxed text-foreground/85">
+    {t("who.body")}
+  </p>
+  <a
+    href={SITE.founderUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="mt-5 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-accent transition-colors hover:text-foreground"
+  >
+    vvbeliaev.dev ↗
+  </a>
+</Section>

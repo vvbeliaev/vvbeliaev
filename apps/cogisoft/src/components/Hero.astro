@@ -1,10 +1,17 @@
 ---
 /*
-  Hero.astro — full-viewport billboard: the SignalField reads a pattern out of
-  market noise above, the thesis sits in the lower third. Coral appears in
-  exactly two places: the confirmed pattern and the CTA — the same grammar.
+  Hero.astro — the `signals` offer page hero. The SignalField reads a dense
+  region out of market noise above; the thesis sits below it.
+
+  Deliberately NOT full-viewport. The previous version used `min-h-svh`, which
+  on a tall window left the top 40% empty and pushed the copy to the floor —
+  and it hid the next section entirely. The hero now ends above the fold so the
+  manifesto peeks and the page reads as continuous.
+
+  Headline caps at 7xl: Sora's full stop is squarish, and at 8xl the coral
+  period stopped reading as punctuation and became a block.
 */
-import { SITE } from "$lib/config";
+import { CONTACT_HREF } from "$lib/config";
 import { getLangFromUrl, useTranslations } from "$i18n/utils";
 import SignalField from "./SignalField.astro";
 
@@ -12,24 +19,26 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<section class="relative flex min-h-svh items-end">
+<section class="relative flex min-h-[46rem] items-end sm:min-h-[42rem]">
   <SignalField />
-  <div class="relative mx-auto w-full max-w-6xl px-6 pt-32 pb-20 sm:pb-24">
+  <div class="relative mx-auto w-full max-w-6xl px-6 pt-32 pb-16 sm:pb-20">
     <p class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
       <span class="led-indicator" aria-hidden="true"></span>
       {t("hero.eyebrow")}
     </p>
     <h1
-      class="mt-5 max-w-4xl font-display text-5xl leading-[1.02] font-extrabold tracking-tight text-balance sm:text-7xl lg:text-8xl"
+      class="mt-5 max-w-3xl font-display text-4xl leading-[1.04] font-extrabold tracking-tight text-balance sm:text-6xl lg:text-7xl"
     >
-      {t("hero.title")}<span class="text-primary">.</span>
+      {t("hero.title")}<span class="full-stop" aria-hidden="true" />
     </h1>
-    <p class="mt-6 max-w-xl text-lg text-muted-foreground sm:text-xl">
+    <p class="mt-6 max-w-xl text-lg text-muted-foreground">
       {t("hero.sub")}
     </p>
-    <div class="mt-10 flex flex-wrap items-center gap-4">
+    <div class="mt-9 flex flex-wrap items-center gap-4">
       <a
-        href={`mailto:${SITE.email}`}
+        href={CONTACT_HREF}
+        target="_blank"
+        rel="noopener noreferrer"
         class="glow-primary rounded-lg bg-primary px-7 py-3.5 font-semibold text-primary-foreground transition-[filter] hover:brightness-110"
       >
         {t("hero.cta")}

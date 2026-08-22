@@ -3,11 +3,17 @@
   Header.astro — minimal HUD strip over the hero: wordmark with the blinking
   cursor ritual, an anchor to the funnel, and the language switcher.
 */
+import { NAV } from "$lib/config";
 import { getLangFromUrl, useTranslations, getAlternatePath, otherLang, localizePath } from "$i18n/utils";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const target = otherLang(lang);
+
+const navItems = NAV.map((item) => ({
+  href: localizePath(item.href, lang),
+  label: t(item.key),
+}));
 ---
 
 <header class="absolute inset-x-0 top-0 z-20">
@@ -16,12 +22,16 @@ const target = otherLang(lang);
       cogisoft<span class="animate-blink text-primary">_</span>
     </a>
     <nav class="flex items-center gap-6">
-      <a
-        href="#how"
-        class="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground sm:inline"
-      >
-        {t("nav.how")}
-      </a>
+      {
+        navItems.map((item) => (
+          <a
+            href={item.href}
+            class="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground sm:inline"
+          >
+            {item.label}
+          </a>
+        ))
+      }
       <a
         href={getAlternatePath(Astro.url, target)}
         aria-label={t("lang.aria")}

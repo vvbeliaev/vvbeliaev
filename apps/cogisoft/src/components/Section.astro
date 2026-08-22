@@ -1,0 +1,25 @@
+---
+/*
+  Section.astro — the root's section grammar: the mono label sits in a narrow
+  left gutter, the content runs in the wide column beside it. Consistent across
+  every section so the page reads as one annotated instrument rather than a
+  stack of centred blocks — and so the 6xl width is actually used instead of
+  leaving a void on the right.
+*/
+interface Props {
+  id?: string;
+  label: string;
+}
+const { id, label } = Astro.props;
+---
+
+<section id={id} class="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+  <div class="grid gap-6 lg:grid-cols-[9rem_1fr] lg:gap-12">
+    <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-accent lg:pt-2">
+      {label}
+    </h2>
+    <div class="min-w-0">
+      <slot />
+    </div>
+  </div>
+</section>

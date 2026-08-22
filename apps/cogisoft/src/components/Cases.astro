@@ -1,0 +1,33 @@
+---
+/*
+  Cases.astro — renders nothing until CASES has entries. Deliberate: an empty
+  "cases coming soon" block advertises the absence. Pages follow cases.
+*/
+import { CASES } from "$lib/config";
+import Section from "./Section.astro";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+{
+  CASES.length > 0 && (
+    <Section id="cases" label={t("cases.label")}>
+      <p class="max-w-3xl font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
+        {t("cases.title")}
+      </p>
+      <ul class="mt-10 grid gap-4 sm:grid-cols-2">
+        {CASES.map((c) => (
+          <li class="rounded-xl border border-primary/30 bg-card/60 p-6">
+            <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+              {c.tag[lang]}
+            </span>
+            <h3 class="mt-2 font-display text-xl font-bold tracking-tight">{c.name}</h3>
+            <p class="mt-2 text-muted-foreground">{c.result[lang]}</p>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )
+}

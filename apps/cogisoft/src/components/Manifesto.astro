@@ -2,8 +2,10 @@
 /*
   Manifesto.astro — why market-first, as a diptych in the theme's grammar:
   left, "the commodity" — a uniform steel grid of dots (everyone's demo looks
-  the same); right, "the edge" — a small coral constellation (knowing what to
-  build). One conclusion line and a slim numbers readout underneath.
+  the same); right, "the edge" — the same kind of dots, but concentrated
+  (knowing where the demand actually is). Uniform distribution vs density is
+  the argument, and it matches the hero's SignalField: never a rising line,
+  which reads as a stock chart. One conclusion line and a numbers readout below.
   NOTE: strawman numbers — adjust values/labels in i18n once locked.
 */
 import { getLangFromUrl, useTranslations } from "$i18n/utils";
@@ -23,15 +25,24 @@ const GRID = Array.from({ length: 60 }, (_, i) => ({
   y: 14 + Math.floor(i / 10) * 20,
 }));
 
-// The edge: a small confirmed pattern read out of the same kind of dots.
-const EDGE_NODES = [
-  { x: 28, y: 96 },
-  { x: 62, y: 68 },
-  { x: 96, y: 80 },
-  { x: 136, y: 44 },
-  { x: 172, y: 24 },
+// The edge: the same dots, but concentrated — hand-placed so the density reads
+// at this size. `core` marks the few at the centre that carry the glow.
+const EDGE_DOTS = [
+  { x: 132, y: 52, r: 2.6, core: true },
+  { x: 143, y: 44, r: 2.4, core: true },
+  { x: 139, y: 61, r: 2.2, core: true },
+  { x: 152, y: 55, r: 2.0 },
+  { x: 124, y: 42, r: 1.9 },
+  { x: 148, y: 34, r: 1.7 },
+  { x: 119, y: 60, r: 1.7 },
+  { x: 158, y: 45, r: 1.6 },
+  { x: 130, y: 70, r: 1.5 },
+  { x: 163, y: 63, r: 1.3 },
+  { x: 108, y: 50, r: 1.3 },
+  { x: 146, y: 76, r: 1.2 },
+  { x: 172, y: 30, r: 1.1 },
+  { x: 96, y: 68, r: 1.0 },
 ];
-const EDGE_POINTS = EDGE_NODES.map((n) => `${n.x},${n.y}`).join(" ");
 ---
 
 <section class="mx-auto max-w-5xl px-6 py-24 sm:py-28">
@@ -53,7 +64,7 @@ const EDGE_POINTS = EDGE_NODES.map((n) => `${n.x},${n.y}`).join(" ");
         {t("manifesto.commodity.label")}
       </p>
       <h3 class="relative mt-3 font-display text-2xl font-bold tracking-tight sm:text-3xl">
-        {t("manifesto.commodity.title")}<span class="text-accent">.</span>
+        {t("manifesto.commodity.title")}<span class="full-stop-accent" aria-hidden="true" />
       </h3>
       <p class="relative mt-3 leading-relaxed text-muted-foreground">
         {t("manifesto.commodity.body")}
@@ -67,15 +78,22 @@ const EDGE_POINTS = EDGE_NODES.map((n) => `${n.x},${n.y}`).join(" ");
         fill="none"
         aria-hidden="true"
       >
-        <polyline points={EDGE_POINTS} stroke="rgba(240,138,114,0.65)" stroke-width="1.2"></polyline>
+        <defs>
+          <radialGradient id="edgeHalo">
+            <stop offset="0%" stop-color="rgba(240, 138, 114, 0.30)" />
+            <stop offset="100%" stop-color="rgba(240, 138, 114, 0)" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="138" cy="55" rx="58" ry="42" fill="url(#edgeHalo)" />
         {
-          EDGE_NODES.map((n, i) => (
+          EDGE_DOTS.map((d) => (
             <circle
-              cx={n.x}
-              cy={n.y}
-              r={i === EDGE_NODES.length - 1 ? 3 : 2}
+              cx={d.x}
+              cy={d.y}
+              r={d.r}
               fill="#f08a72"
-              opacity={i === EDGE_NODES.length - 1 ? 1 : 0.75}
+              opacity={d.core ? 1 : 0.7}
+              style={d.core ? "filter:drop-shadow(0 0 3px rgba(240,138,114,0.9))" : undefined}
             />
           ))
         }
@@ -84,7 +102,7 @@ const EDGE_POINTS = EDGE_NODES.map((n) => `${n.x},${n.y}`).join(" ");
         {t("manifesto.edge.label")}
       </p>
       <h3 class="relative mt-3 font-display text-2xl font-bold tracking-tight sm:text-3xl">
-        {t("manifesto.edge.title")}<span class="text-primary">.</span>
+        {t("manifesto.edge.title")}<span class="full-stop" aria-hidden="true" />
       </h3>
       <p class="relative mt-3 leading-relaxed text-muted-foreground">
         {t("manifesto.edge.body")}

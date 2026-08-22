@@ -1,0 +1,21 @@
+---
+/*
+  The `signals` offer — the original single-page pitch, now living at its own
+  route under /offers/. Treated as a proto-offer: the argument is unchanged,
+  only the voice and the hero were reworked. It still needs the offer template
+  (ICP, trigger, alternatives, contract, proof, disqualification) applied.
+*/
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Hero from "../../../components/Hero.astro";
+import Manifesto from "../../../components/Manifesto.astro";
+import Funnel from "../../../components/Funnel.astro";
+import Contact from "../../../components/Contact.astro";
+import { ui } from "$i18n/ui";
+---
+
+<BaseLayout title={ui.ru["hero.title"]}>
+  <Hero />
+  <Manifesto />
+  <Funnel />
+  <Contact />
+</BaseLayout>

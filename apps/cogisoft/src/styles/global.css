@@ -135,3 +135,28 @@
   box-shadow: 0 0 var(--glow-blur, 0px) var(--glow-spread, 0px)
     color-mix(in oklch, var(--accent) 65%, transparent);
 }
+
+/* The terminal mark on display headlines (DESIGN.md §4 "coral period"): drawn
+   deliberately rather than typed. Sora's full stop is squarish, and at display
+   sizes the coral glyph stopped reading as punctuation and became a stray
+   block — worse, it no longer matched the white periods inside the same
+   headline. Sizing it in `em` keeps it proportional at every scale. */
+@utility full-stop {
+  display: inline-block;
+  width: 0.2em;
+  height: 0.2em;
+  margin-left: 0.07em;
+  border-radius: 0.05em;
+  background-color: var(--primary);
+  vertical-align: baseline;
+}
+
+@utility full-stop-accent {
+  display: inline-block;
+  width: 0.2em;
+  height: 0.2em;
+  margin-left: 0.07em;
+  border-radius: 0.05em;
+  background-color: var(--accent);
+  vertical-align: baseline;
+}

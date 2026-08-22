@@ -1,18 +1,22 @@
 ---
 /*
   SignalField.astro — the hero's signature: a wide field of market noise
-  (steel-blue ticks — dots and short dashes, like data points) out of which a
-  constellation is read: segments connect node by node, then the confirmed
-  pattern warms to coral. The animation IS the pitch: noise → pattern →
-  evidence.
+  (steel-blue ticks — dots and short dashes, like data points) out of which one
+  region turns out to be dense. The pattern is expressed as CONCENTRATION, not
+  direction: cluster points ignite coral from the centre outward and a warm
+  halo settles under them. noise → density → evidence.
 
-  Ongoing life after the intro: a highlight periodically re-traces the
-  constellation (the signal keeps repeating), pulsing/flashing ticks, and a
-  two-depth parallax (mouse on fine pointers + scroll drift).
+  Deliberately not a line. An earlier version drew a jagged rising polyline,
+  which read as a stock chart ("number go up") — the most generic startup
+  visual there is, and the opposite of the thesis. A cluster cannot be misread
+  that way: there is no axis and no trend, only "here is where the demand is".
 
-  Deterministic (seeded PRNG) so the field is stable across builds. The
-  constellation sits in the viewBox center strip so it survives the mobile
-  crop (preserveAspectRatio slice).
+  Ongoing life after the intro: the cluster breathes, ticks pulse and flash,
+  and a two-depth parallax (mouse on fine pointers + scroll drift) gives depth.
+
+  Deterministic (seeded PRNG) so the field is stable across builds. The cluster
+  sits near the viewBox centre so it survives the mobile crop
+  (preserveAspectRatio slice); the mask calms the field under the hero text.
 */
 function mulberry32(seed: number) {
   return function () {
@@ -56,42 +60,44 @@ const ticks: Tick[] = Array.from({ length: 170 }, () => {
   };
 });
 
-// The constellation: a jagged upward trend read out of the noise. Compact
-// vertical span — it should sit in the upper-right middle, not fly offscreen.
-const NODES = [
-  { x: 460, y: 306 },
-  { x: 516, y: 264 },
-  { x: 576, y: 280 },
-  { x: 642, y: 214 },
-  { x: 702, y: 232 },
-  { x: 758, y: 166 },
-  { x: 852, y: 184 },
-  { x: 952, y: 130 },
-];
+// The cluster: the region where the noise turns out to be dense. Kept near the
+// horizontal centre and above the copy so the mobile crop never loses it.
+const CX = 700;
+const CY = 248;
+const R = 112;
+const COUNT = 26;
 
-const START = 0.5; // s before the first segment draws
-const STEP = 0.5; // s between segment starts
+const START = 0.6; // s before the first (centre) point ignites
+const SPREAD = 1.5; // s for ignition to reach the rim
 
-const segs = NODES.slice(1).map((n, i) => {
-  const p = NODES[i];
+const cluster = Array.from({ length: COUNT }, () => {
+  // pow > 0.5 biases radius toward the centre → density, not a ring
+  const t = Math.pow(rand(), 1.6);
+  const a = rand() * Math.PI * 2;
+  const rr = R * t;
   return {
-    x1: p.x,
-    y1: p.y,
-    x2: n.x,
-    y2: n.y,
-    len: +Math.hypot(n.x - p.x, n.y - p.y).toFixed(1),
-    delay: +(START + i * STEP).toFixed(2),
+    x: +(CX + Math.cos(a) * rr).toFixed(1),
+    // slightly flattened so it reads as a patch, not a perfect disc
+    y: +(CY + Math.sin(a) * rr * 0.78).toFixed(1),
+    size: +(1.5 + (1 - t) * 1.9).toFixed(2),
+    delay: +(START + t * SPREAD).toFixed(2),
+    core: t < 0.14,
   };
 });
 
-const WARM_AT = +(START + segs.length * STEP + 0.2).toFixed(2);
-const TOTAL_LEN = +segs.reduce((sum, s) => sum + s.len, 0).toFixed(1);
-const TRACE_POINTS = NODES.map((n) => `${n.x},${n.y}`).join(" ");
-const last = NODES.length - 1;
+const HALO_AT = +(START + SPREAD + 0.15).toFixed(2);
 ---
 
 <div class="signal-field" aria-hidden="true">
   <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="clusterHalo">
+        <stop offset="0%" stop-color="rgba(240, 138, 114, 0.28)" />
+        <stop offset="55%" stop-color="rgba(240, 138, 114, 0.10)" />
+        <stop offset="100%" stop-color="rgba(240, 138, 114, 0)" />
+      </radialGradient>
+    </defs>
+
     <g class="ticks" data-depth="far">
       {
         ticks
@@ -118,6 +124,7 @@ const last = NODES.length - 1;
           )
       }
     </g>
+
     <g class="ticks" data-depth="near">
       {
         ticks
@@ -144,27 +151,25 @@ const last = NODES.length - 1;
           )
       }
     </g>
-    <g class="constellation" data-depth="deep">
+
+    <g class="cluster" data-depth="deep">
+      <ellipse
+        class="halo"
+        cx={CX}
+        cy={CY}
+        rx={R * 1.5}
+        ry={R * 1.2}
+        fill="url(#clusterHalo)"
+        style={`--hd:${HALO_AT}s`}
+      />
       {
-        segs.map((s) => (
-          <line
-            x1={s.x1}
-            y1={s.y1}
-            x2={s.x2}
-            y2={s.y2}
-            style={`--len:${s.len};--sd:${s.delay}s;--wd:${WARM_AT}s`}
-          />
-        ))
-      }
-      <polyline class="trace" points={TRACE_POINTS} style={`--total:${TOTAL_LEN}`} />
-      {
-        NODES.map((n, i) => (
+        cluster.map((p) => (
           <circle
-            cx={n.x}
-            cy={n.y}
-            r={i === last ? 3.4 : 2.4}
-            class={i === last ? "node core" : "node"}
-            style={`--nd:${(START + i * STEP - 0.15).toFixed(2)}s`}
+            cx={p.x}
+            cy={p.y}
+            r={p.size}
+            class:list={["signal", { core: p.core }]}
+            style={`--nd:${p.delay}s`}
           />
         ))
       }
@@ -192,7 +197,7 @@ const last = NODES.length - 1;
   }
 
   .ticks,
-  .constellation {
+  .cluster {
     will-change: transform;
   }
 
@@ -246,96 +251,52 @@ const last = NODES.length - 1;
     }
   }
 
-  /* the read pattern: draw steel, then warm to coral once confirmed */
-  .constellation line {
-    stroke: rgba(157, 184, 221, 0.65);
-    stroke-width: 1;
-    stroke-dasharray: var(--len);
-    stroke-dashoffset: var(--len);
-    animation:
-      seg-draw 0.55s ease-out var(--sd, 0s) forwards,
-      seg-warm 1.4s ease var(--wd, 4s) forwards;
-  }
-
-  @keyframes seg-draw {
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
-
-  @keyframes seg-warm {
-    to {
-      stroke: rgba(240, 138, 114, 0.8);
-    }
-  }
-
-  /* a highlight periodically re-traces the confirmed pattern */
-  .trace {
-    fill: none;
-    stroke: rgba(255, 214, 196, 0.9);
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    opacity: 0;
-    stroke-dasharray: 70 calc(var(--total) + 70);
-    stroke-dashoffset: calc(var(--total) + 70);
-    animation: trace-run 8s linear 6s infinite;
-    filter: drop-shadow(0 0 5px rgba(240, 138, 114, 0.8));
-  }
-
-  @keyframes trace-run {
-    0% {
-      stroke-dashoffset: calc(var(--total) + 70);
-      opacity: 0;
-    }
-    4% {
-      opacity: 0.9;
-    }
-    36% {
-      opacity: 0.9;
-    }
-    42%,
-    100% {
-      stroke-dashoffset: -70;
-      opacity: 0;
-    }
-  }
-
-  .node {
+  /* the confirmed region: ignites centre-out, then breathes */
+  .signal {
     fill: #5f95c2;
     opacity: 0;
-    animation: node-ignite 0.5s ease-out var(--nd, 0s) forwards;
+    animation:
+      signal-ignite 0.6s ease-out var(--nd, 0s) forwards,
+      signal-breathe 6s ease-in-out calc(var(--nd, 0s) + 4s) infinite;
   }
 
-  @keyframes node-ignite {
+  @keyframes signal-ignite {
     0% {
       opacity: 0;
       fill: #5f95c2;
     }
-    60% {
+    55% {
       opacity: 1;
       fill: #eef2ff;
     }
     100% {
-      opacity: 1;
+      opacity: 0.92;
       fill: #f08a72;
     }
   }
 
-  .node.core {
-    filter: drop-shadow(0 0 6px rgba(240, 138, 114, 0.9));
-    animation:
-      node-ignite 0.5s ease-out var(--nd, 0s) forwards,
-      core-pulse 3.5s ease-in-out 5s infinite;
-  }
-
-  @keyframes core-pulse {
+  @keyframes signal-breathe {
     0%,
     100% {
-      filter: drop-shadow(0 0 6px rgba(240, 138, 114, 0.9));
+      opacity: 0.92;
     }
     50% {
-      filter: drop-shadow(0 0 14px rgba(240, 138, 114, 1));
+      opacity: 0.55;
+    }
+  }
+
+  .signal.core {
+    filter: drop-shadow(0 0 6px rgba(240, 138, 114, 0.85));
+  }
+
+  .halo {
+    opacity: 0;
+    animation: halo-in 1.6s ease-out var(--hd, 2s) forwards;
+  }
+
+  @keyframes halo-in {
+    to {
+      opacity: 1;
     }
   }
 
@@ -345,20 +306,14 @@ const last = NODES.length - 1;
     .tick.flash {
       animation: none;
     }
-    .trace {
+    .signal {
       animation: none;
-      opacity: 0;
+      opacity: 0.92;
+      fill: #f08a72;
     }
-    .constellation line {
-      animation: none;
-      stroke-dashoffset: 0;
-      stroke: rgba(240, 138, 114, 0.7);
-    }
-    .node,
-    .node.core {
+    .halo {
       animation: none;
       opacity: 1;
-      fill: #f08a72;
     }
   }
 </style>

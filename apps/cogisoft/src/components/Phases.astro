@@ -1,0 +1,98 @@
+---
+/*
+  Phases.astro — the two-phase contract, which is the whole differentiator.
+
+  The two cards are told apart by STRUCTURE, not by colour: Phase 1 carries a
+  "fixed" chip and a closed list (it ends), Phase 2 carries a "monthly" chip and
+  a repeat marker (it doesn't). Coral stays out of both — the Corona Signal
+  grammar reserves it for evidence and the CTA, and a contract phase is neither.
+*/
+import Section from "./Section.astro";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+import type { UIKey } from "$i18n/ui";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const PHASE1: ReadonlyArray<UIKey> = ["phase1.1", "phase1.2", "phase1.3", "phase1.4", "phase1.5"];
+const PHASE2: ReadonlyArray<UIKey> = ["phase2.1", "phase2.2", "phase2.3", "phase2.4", "phase2.5"];
+---
+
+<Section id="phases" label={t("phases.label")}>
+  <p class="max-w-3xl font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
+    {t("phases.title")}
+  </p>
+  <p class="mt-4 max-w-2xl leading-relaxed text-muted-foreground">
+    {t("phases.intro")}
+  </p>
+
+  <div class="mt-10 grid gap-5 lg:grid-cols-2">
+    <article class="rounded-xl border border-border bg-card/50 p-6 sm:p-8">
+      <div class="flex items-baseline justify-between gap-4">
+        <span class="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
+          {t("phase1.label")}
+        </span>
+        <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          fixed
+        </span>
+      </div>
+      <h3 class="mt-3 font-display text-2xl font-bold tracking-tight">{t("phase1.title")}</h3>
+      <p class="mt-3 leading-relaxed text-muted-foreground">{t("phase1.body")}</p>
+      <ul class="mt-6 space-y-2.5">
+        {
+          PHASE1.map((key) => (
+            <li class="flex gap-3 text-sm">
+              <span class="mt-[0.6em] h-px w-3.5 shrink-0 bg-accent/60" aria-hidden="true" />
+              <span>{t(key)}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </article>
+
+    <article class="phase-recurring rounded-xl border border-border bg-card/50 p-6 sm:p-8">
+      <div class="flex items-baseline justify-between gap-4">
+        <span class="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
+          {t("phase2.label")}
+        </span>
+        <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          monthly · sla
+        </span>
+      </div>
+      <h3 class="mt-3 font-display text-2xl font-bold tracking-tight">{t("phase2.title")}</h3>
+      <p class="mt-3 leading-relaxed text-muted-foreground">{t("phase2.body")}</p>
+      <ul class="mt-6 space-y-2.5">
+        {
+          PHASE2.map((key) => (
+            <li class="flex gap-3 text-sm">
+              <span class="mt-[0.6em] h-px w-3.5 shrink-0 bg-accent/60" aria-hidden="true" />
+              <span>{t(key)}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </article>
+  </div>
+</Section>
+
+<style>
+  /* The recurring phase repeats visually: a hairline rail down its left edge,
+     ticked at even intervals — the month markers. Structure, not decoration. */
+  .phase-recurring {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase-recurring::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 2px;
+    background: repeating-linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--accent) 55%, transparent) 0 10px,
+      transparent 10px 20px
+    );
+  }
+</style>

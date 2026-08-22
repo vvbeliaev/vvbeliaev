@@ -1,0 +1,56 @@
+---
+/*
+  RootHero.astro — the hub's opening. Two columns: the thesis in words on the
+  left, the same thesis as a mechanism on the right (DemandLoop). The earlier
+  version was text-only and left half the width empty — quiet is not the same
+  as unfinished.
+
+  The page-wide Backdrop carries the atmosphere; SignalField stays on the offer
+  page, so the two heroes never compete.
+*/
+import { CONTACT_HREF } from "$lib/config";
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+import SolutionLoop from "./SolutionLoop.astro";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<section class="mx-auto max-w-6xl px-6 pt-32 pb-8 sm:pt-40 sm:pb-10">
+  <div class="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
+    <div class="min-w-0">
+      <p class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+        <span class="led-indicator" aria-hidden="true"></span>
+        {t("root.hero.eyebrow")}
+      </p>
+      <h1
+        class="mt-5 max-w-2xl font-display text-4xl leading-[1.08] font-extrabold tracking-tight text-pretty sm:text-5xl"
+      >
+        {t("root.hero.title")}<span class="full-stop" aria-hidden="true" />
+      </h1>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+        {t("root.hero.sub")}
+      </p>
+      <div class="mt-9 flex flex-wrap items-center gap-4">
+        <a
+          href={CONTACT_HREF}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="glow-primary rounded-lg bg-primary px-7 py-3.5 font-semibold text-primary-foreground transition-[filter] hover:brightness-110"
+        >
+          {t("root.hero.cta")}
+        </a>
+        <a
+          href="#phases"
+          class="rounded-lg border border-border px-7 py-3.5 text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+        >
+          {t("root.hero.secondary")} ↓
+        </a>
+      </div>
+    </div>
+
+    <div class="flex justify-center lg:justify-end lg:pl-4">
+      <SolutionLoop />
+    </div>
+  </div>
+</section>

@@ -1,5 +1,5 @@
 ---
-import { SITE } from "$lib/config";
+import { CONTACT_HREF } from "$lib/config";
 import { getLangFromUrl, useTranslations } from "$i18n/utils";
 
 const lang = getLangFromUrl(Astro.url);
@@ -11,16 +11,18 @@ const t = useTranslations(lang);
     {t("contact.label")}
   </h2>
   <p class="mt-5 font-display text-4xl font-extrabold tracking-tight text-balance sm:text-5xl">
-    {t("contact.title")}<span class="text-primary">.</span>
+    {t("contact.title")}<span class="full-stop" aria-hidden="true" />
   </p>
   <p class="mt-4 text-lg text-muted-foreground">
     {t("contact.sub")}
   </p>
   <a
-    href={`mailto:${SITE.email}`}
+    href={CONTACT_HREF}
+    target="_blank"
+    rel="noopener noreferrer"
     class="glow-primary mt-10 inline-block rounded-lg bg-primary px-8 py-4 font-mono text-sm font-semibold tracking-wide text-primary-foreground transition-[filter] hover:brightness-110"
   >
-    {SITE.email}
+    @vvbeliaevv
   </a>
   <p class="mt-6 text-sm text-muted-foreground">
     {t("contact.note")}

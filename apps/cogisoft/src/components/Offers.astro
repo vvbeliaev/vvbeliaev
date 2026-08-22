@@ -1,0 +1,69 @@
+---
+/*
+  Offers.astro — the offer list. An offer names a situation and a promise, not
+  a service; the card shows both so a reader can disqualify themselves before
+  clicking. New entries appear only once a case backs them — pages follow cases.
+*/
+import { OFFERS } from "$lib/config";
+import Section from "./Section.astro";
+import { getLangFromUrl, useTranslations, localizePath } from "$i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Section id="offers" label={t("offers.label")}>
+  <p class="max-w-3xl font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
+    {t("offers.title")}
+  </p>
+  <p class="mt-4 max-w-2xl leading-relaxed text-muted-foreground">
+    {t("offers.intro")}
+  </p>
+
+  <ul class="mt-10 space-y-4">
+    {
+      OFFERS.map((offer) => (
+        <li>
+          <a
+            href={localizePath(`/offers/${offer.slug}`, lang)}
+            class="offer-card group block rounded-xl border border-border bg-card/50 p-6 transition-[border-color,box-shadow] duration-300 hover:border-accent/60 sm:p-8"
+          >
+            <div class="flex flex-wrap items-baseline justify-between gap-3">
+              <h3 class="font-display text-2xl font-bold tracking-tight">{offer.name[lang]}</h3>
+              {offer.status === "proto" && (
+                <span class="rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  {t("offers.proto")}
+                </span>
+              )}
+            </div>
+            <dl class="mt-5 grid gap-4 sm:grid-cols-2 sm:gap-8">
+              <div>
+                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  pain
+                </dt>
+                <dd class="mt-1.5 text-muted-foreground">{offer.pain[lang]}</dd>
+              </div>
+              <div>
+                <dt class="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  promise
+                </dt>
+                <dd class="mt-1.5">{offer.promise[lang]}</dd>
+              </div>
+            </dl>
+            <span class="mt-6 inline-block font-mono text-[11px] uppercase tracking-[0.2em] text-accent transition-colors group-hover:text-foreground">
+              {t("offers.more")} →
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Section>
+
+<style>
+  .offer-card:hover,
+  .offer-card:focus-visible {
+    box-shadow: 0 0 var(--glow-blur, 24px) var(--glow-spread, -6px)
+      color-mix(in oklch, var(--accent) 40%, transparent);
+  }
+</style>

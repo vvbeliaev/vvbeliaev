@@ -1,0 +1,294 @@
+---
+/*
+  SolutionLoop.astro — the root's signature: "I build a tech solution, and I
+  stay to run it."
+
+  The picture argues the asymmetry rather than listing steps. On the left, four
+  kinds of thing converge into one junction — what gets built varies, and it
+  ends. On the right, a single ring turns with a pulse that never stops — how
+  it gets run is always the same, and it doesn't end. Variety and a deadline
+  meet uniformity and no deadline; that gap IS the offer.
+
+  Grammar (DESIGN.md §1): steel is structure — the thing being assembled.
+  Coral is evidence, so the ring is coral: it carries the numbers that come
+  back every month and keep proving the thing works. The ring stroke stays
+  faint so coral never turns ambient; the travelling pulse is the bright part.
+
+  Replaced DemandLoop, whose nodes (Traffic → Page → Lead → CRM) described one
+  lead-gen funnel — too narrow for the business, and it ended on the client's
+  CRM, i.e. on a handoff, which is the opposite of the thesis.
+*/
+import { getLangFromUrl, useTranslations } from "$i18n/utils";
+import type { UIKey } from "$i18n/ui";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// ── Left: what gets built. Varies, and it ends. ───────────────────────────
+const BUILD_KEYS: ReadonlyArray<UIKey> = ["build.1", "build.2", "build.3", "build.4"];
+const LABEL_X = 130;
+const JUNCTION = { x: 190, y: 116 };
+const BUILD_YS = [62, 98, 134, 170];
+
+const builds = BUILD_YS.map((y, i) => ({
+  y,
+  label: t(BUILD_KEYS[i]),
+  delay: +(0.3 + i * 0.18).toFixed(2),
+  drawAt: +(0.42 + i * 0.18).toFixed(2),
+}));
+
+// ── Right: how it is run. Always the same, and it doesn't end. ────────────
+const RING = { cx: 312, cy: 116, r: 64 };
+const RUN_KEYS: ReadonlyArray<UIKey> = ["run.1", "run.2", "run.3"];
+// -90° / 30° / 150° — top, lower-right, lower-left
+const RUN_NODES = [-90, 30, 150].map((deg, i) => {
+  const rad = (deg * Math.PI) / 180;
+  return {
+    x: +(RING.cx + Math.cos(rad) * RING.r).toFixed(1),
+    y: +(RING.cy + Math.sin(rad) * RING.r).toFixed(1),
+    label: t(RUN_KEYS[i]),
+    // labels sit outside the ring, pushed along the same radius
+    lx: +(RING.cx + Math.cos(rad) * (RING.r + 30)).toFixed(1),
+    ly: +(RING.cy + Math.sin(rad) * (RING.r + 30) + (deg === -90 ? -2 : 10)).toFixed(1),
+    delay: +(2.4 + i * 0.15).toFixed(2),
+  };
+});
+
+const RING_PATH = `M ${RING.cx} ${RING.cy - RING.r} A ${RING.r} ${RING.r} 0 1 1 ${RING.cx - 0.01} ${RING.cy - RING.r}`;
+const RING_LEN = Math.round(2 * Math.PI * RING.r);
+const FEED_FROM = JUNCTION.x + 12;
+const FEED_TO = RING.cx - RING.r - 6;
+---
+
+<figure class="solution-loop">
+  <svg viewBox="0 0 440 250" role="img" aria-labelledby="loopTitle" xmlns="http://www.w3.org/2000/svg">
+    <title id="loopTitle">{t("loop.title")}</title>
+
+    <!-- what gets built: many shapes, one junction, a finite job -->
+    <g class="build">
+      {
+        builds.map((b) => (
+          <>
+            <text class="build-label" x={LABEL_X} y={b.y} text-anchor="end" dominant-baseline="middle" style={`--d:${b.delay}s`}>
+              {b.label}
+            </text>
+            <path
+              class="feed"
+              d={`M ${LABEL_X + 10} ${b.y} H ${JUNCTION.x - 14} Q ${JUNCTION.x} ${b.y} ${JUNCTION.x} ${JUNCTION.y}`}
+              style={`--d:${b.drawAt}s`}
+            />
+          </>
+        ))
+      }
+      <rect
+        class="junction"
+        x={JUNCTION.x - 5}
+        y={JUNCTION.y - 5}
+        width="10"
+        height="10"
+        rx="1.5"
+        style="--d:1.15s"
+      />
+      <path class="handover" d={`M ${FEED_FROM} ${JUNCTION.y} H ${FEED_TO}`} style="--d:1.35s" />
+    </g>
+
+    <!-- how it is run: one shape, turning, no end -->
+    <g class="run">
+      <path class="ring" d={RING_PATH} style={`--len:${RING_LEN};--d:1.6s`} />
+      {
+        RUN_NODES.map((n) => (
+          <>
+            <circle class="run-node" cx={n.x} cy={n.y} r="4" style={`--d:${n.delay}s`} />
+            <text class="run-label" x={n.lx} y={n.ly} text-anchor="middle" style={`--d:${n.delay}s`}>
+              {n.label}
+            </text>
+          </>
+        ))
+      }
+      <circle class="pulse" r="3.4" style={`offset-path: path('${RING_PATH}'); --d:3s`} />
+    </g>
+
+    <!-- each half tagged with its contract phase, then the asymmetry said out
+         loud — so the picture needs no legend and maps onto the Phases section -->
+    <text class="phase-tag" x={LABEL_X} y="206" text-anchor="end" style="--d:1.2s">
+      {t("loop.phase1")}
+    </text>
+    <text class="caption" x={LABEL_X} y="226" text-anchor="end" style="--d:1.3s">
+      {t("loop.build.caption")}
+    </text>
+    <text class="phase-tag phase-tag-run" x={RING.cx} y="206" text-anchor="middle" style="--d:2.9s">
+      {t("loop.phase2")}
+    </text>
+    <text class="caption caption-run" x={RING.cx} y="226" text-anchor="middle" style="--d:3s">
+      {t("loop.run.caption")}
+    </text>
+  </svg>
+</figure>
+
+<style>
+  .solution-loop {
+    width: 100%;
+    max-width: 27rem;
+    margin: 0;
+  }
+
+  .solution-loop svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  text {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    text-transform: uppercase;
+  }
+
+  .build-label {
+    fill: var(--foreground);
+    opacity: 0;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    animation: fade-up 0.4s ease-out var(--d, 0s) forwards;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+    to {
+      opacity: 0.78;
+      transform: translateY(0);
+    }
+  }
+
+  .feed,
+  .handover {
+    fill: none;
+    stroke: color-mix(in oklch, var(--accent) 75%, transparent);
+    stroke-width: 1.2;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    animation: draw 0.5s ease-out var(--d, 0s) forwards;
+  }
+
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .junction {
+    fill: var(--background);
+    stroke: var(--accent);
+    stroke-width: 1.6;
+    opacity: 0;
+    animation: pop 0.35s ease-out var(--d, 0s) forwards;
+  }
+
+  @keyframes pop {
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* the ring is coral: it carries the numbers that keep proving it works.
+     Faint stroke so coral never becomes an ambient wash. */
+  .ring {
+    fill: none;
+    stroke: color-mix(in oklch, var(--primary) 55%, transparent);
+    stroke-width: 1.4;
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: var(--len);
+    animation: draw-ring 0.95s ease-in-out var(--d, 1.6s) forwards;
+  }
+
+  @keyframes draw-ring {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .run-node {
+    fill: var(--primary);
+    opacity: 0;
+    animation: pop 0.4s ease-out var(--d, 2.4s) forwards;
+  }
+
+  .run-label {
+    fill: var(--primary);
+    opacity: 0;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    animation: label-in 0.5s ease-out var(--d, 2.4s) forwards;
+  }
+
+  @keyframes label-in {
+    to {
+      opacity: 0.9;
+    }
+  }
+
+  .pulse {
+    fill: var(--primary);
+    offset-distance: 0%;
+    opacity: 0;
+    filter: drop-shadow(0 0 6px var(--primary));
+    animation:
+      pop 0.5s ease-out var(--d, 3s) forwards,
+      run 7s linear var(--d, 3s) infinite;
+  }
+
+  @keyframes run {
+    to {
+      offset-distance: 100%;
+    }
+  }
+
+  .phase-tag {
+    fill: var(--accent);
+    opacity: 0;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+    animation: label-in 0.6s ease-out var(--d, 1.2s) forwards;
+  }
+
+  .phase-tag-run {
+    fill: var(--primary);
+  }
+
+  .caption {
+    fill: var(--muted-foreground);
+    opacity: 0;
+    font-size: 9.5px;
+    letter-spacing: 0.24em;
+    animation: label-in 0.6s ease-out var(--d, 1.2s) forwards;
+  }
+
+  .caption-run {
+    fill: color-mix(in oklch, var(--primary) 80%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .build-label,
+    .junction,
+    .run-node,
+    .run-label,
+    .phase-tag,
+    .caption {
+      animation: none;
+      opacity: 0.85;
+    }
+    .feed,
+    .handover,
+    .ring {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+    .pulse {
+      display: none;
+    }
+  }
+</style>
