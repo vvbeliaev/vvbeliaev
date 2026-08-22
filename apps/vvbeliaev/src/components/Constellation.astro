@@ -16,8 +16,8 @@
 
   Copy (facet names/captions, subtitle) is routed through src/i18n.
 */
-import { SITE_I18N } from "$lib/config";
-import { getLangFromUrl, useTranslations } from "$i18n/utils";
+import { SITE_I18N, OPEN_TO_WORK, CONTACT_HREF } from "$lib/config";
+import { getLangFromUrl, useTranslations, localizePath } from "$i18n/utils";
 
 interface Props {
   avatar?: string;
@@ -26,7 +26,8 @@ const { avatar } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const name = SITE_I18N[lang].name;
+const { name, role, pitch, facts } = SITE_I18N[lang];
+const aboutHref = localizePath("/about", lang);
 
 const core = { x: 300, y: 180 };
 const R = 64; // avatar radius — the person is the core, facets orbit it
@@ -114,8 +115,49 @@ const monogram = name
     <h1 class="hero-name font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
       {name}
     </h1>
-    <p class="hero-sub mx-auto mt-4 max-w-xl text-balance leading-relaxed text-muted-foreground">
-      {t("hero.subtitle")}
+
+    <p class="hero-role mt-3 font-mono text-xs uppercase tracking-[0.28em] text-primary sm:text-sm">
+      {role}
+    </p>
+
+    <p class="hero-pitch mx-auto mt-5 max-w-lg text-balance leading-relaxed text-muted-foreground">
+      {pitch}
+    </p>
+
+    <div class="hero-actions mt-7 flex flex-wrap items-center justify-center gap-3">
+      <a
+        href={CONTACT_HREF}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="cta-primary rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-shadow duration-300"
+      >
+        {t("hero.cta.contact")}
+      </a>
+      <a
+        href={aboutHref}
+        class="rounded-lg border border-border bg-card/40 px-5 py-2.5 text-sm font-medium transition-colors hover:border-primary/40 hover:bg-card"
+      >
+        {t("hero.cta.about")}
+      </a>
+    </div>
+
+    <!-- HUD readout: the line a hiring reader scans first. The LED belongs
+         here because it modifies a status, not the job title. -->
+    <p
+      class="hero-facts mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-mono text-[11px] tracking-wider text-muted-foreground"
+    >
+      {
+        OPEN_TO_WORK && (
+          <>
+            <span class="inline-flex items-center gap-1.5 text-primary">
+              <span class="led-indicator" aria-hidden="true" />
+              {t("hero.status")}
+            </span>
+            <span aria-hidden="true">·</span>
+          </>
+        )
+      }
+      <span>{facts}</span>
     </p>
   </div>
 </section>
@@ -267,8 +309,24 @@ const monogram = name
   .bloom-copy .hero-name {
     animation: rise 0.7s ease-out 1.6s both;
   }
-  .bloom-copy .hero-sub {
-    animation: rise 0.7s ease-out 1.85s both;
+  .bloom-copy .hero-role {
+    animation: rise 0.7s ease-out 1.75s both;
+  }
+  .bloom-copy .hero-pitch {
+    animation: rise 0.7s ease-out 1.9s both;
+  }
+  .bloom-copy .hero-actions {
+    animation: rise 0.7s ease-out 2.05s both;
+  }
+  .bloom-copy .hero-facts {
+    animation: rise 0.7s ease-out 2.2s both;
+  }
+
+  /* Ember on hover only — the same gated glow as the Work entries. */
+  .cta-primary:hover,
+  .cta-primary:focus-visible {
+    box-shadow: 0 0 var(--glow-blur, 24px) var(--glow-spread, -6px)
+      color-mix(in oklch, var(--primary) 65%, transparent);
   }
 
   @keyframes appear {
@@ -341,7 +399,10 @@ const monogram = name
     .bloom .facet-name,
     .bloom .facet-cap,
     .bloom-copy .hero-name,
-    .bloom-copy .hero-sub {
+    .bloom-copy .hero-role,
+    .bloom-copy .hero-pitch,
+    .bloom-copy .hero-actions,
+    .bloom-copy .hero-facts {
       animation: none;
     }
     .bloom .base-link {

@@ -1,0 +1,9 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import AboutView from "../components/AboutView.astro";
+import { ui } from "$i18n/ui";
+---
+
+<BaseLayout title={ui.en["about.title"]}>
+  <AboutView />
+</BaseLayout>
