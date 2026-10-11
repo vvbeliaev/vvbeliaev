@@ -36,3 +36,8 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 110
+src = ["src"]
+
+[tool.ruff.lint.isort]
+# Модули вроде almanac.app появятся в следующих задачах; сортировка не должна зависеть от того, есть ли файл.
+known-first-party = ["almanac"]

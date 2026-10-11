@@ -38,10 +38,9 @@ class Database:
     @asynccontextmanager
     async def write(self) -> AsyncIterator[AsyncSession]:
         """Одна транзакция: вышли без исключения — коммит, с исключением — ничего не записано."""
-        async with self._write_lock:
-            async with self.sessions() as session:
-                yield session
-                await session.commit()
+        async with self._write_lock, self.sessions() as session:
+            yield session
+            await session.commit()
 
 
 def _sqlite_pragmas(dbapi_connection, _record) -> None:
