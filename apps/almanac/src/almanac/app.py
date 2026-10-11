@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from almanac import api, mcp, schema, tree, web
+from almanac import api, backup, mcp, schema, tree, web
 from almanac.auth import owner
 from almanac.auth.oauth import AlmanacOAuthProvider
 from almanac.config import Settings
@@ -67,8 +67,8 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         if db is None:
+            # Схему создаёт `alembic upgrade head` до старта процесса, не приложение.
             app.state.db = Database(settings.database_url)
-            await app.state.db.create_all()
         background: list[asyncio.Task] = []
         try:
             # Без токена и чата бот и цикл не запускаются: срабатывания копятся в базе.
@@ -79,6 +79,8 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
                     owner_chat_id=settings.telegram_owner_chat_id,
                 )
                 background = [asyncio.create_task(scheduler.run()), asyncio.create_task(scheduler.poll())]
+            if db is None and settings.backup_dir is not None:
+                background.append(asyncio.create_task(backup.run(app.state.db, settings.backup_dir)))
             async with app.state.mcp_app.lifespan(app):
                 yield
         finally:

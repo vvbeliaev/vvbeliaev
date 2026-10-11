@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     telegram_owner_chat_id: int = 0
     # Секрет в адресе ленты `/calendar/<токен>.ics`. Пусто — лента выключена.
     ics_token: str = ""
+    # Каталог суточных копий базы. Пусто — копии не делаются.
+    backup_dir: Path | None = None
 
     @field_validator("day_start")
     @classmethod

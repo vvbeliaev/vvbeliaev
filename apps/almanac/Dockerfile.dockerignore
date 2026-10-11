@@ -1,0 +1,20 @@
+# Контекст сборки — корень монорепы, но едет из него только нужное.
+# Этот файл сильнее корневого `.dockerignore`: BuildKit берёт `<Dockerfile>.dockerignore`.
+*
+
+# замок и манифесты всех участников uv-воркспейса: без них uv не узнаёт воркспейс
+!pyproject.toml
+!uv.lock
+!labs/*/pyproject.toml
+
+!apps/almanac
+
+# секреты, локальное и то, что рантайму не нужно. `*.md` внутри пакета нужны: это схема.
+apps/almanac/.env
+apps/almanac/.env.*
+apps/almanac/tests
+apps/almanac/SPEC.md
+apps/almanac/PLAN.md
+**/.venv
+**/__pycache__
+**/*.db

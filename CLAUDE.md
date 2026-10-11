@@ -68,7 +68,8 @@ Per-app specifics live in each app's own `CLAUDE.md`.
   an experiment carries its own lockfile and survives being split out. Root
   scripts: `pnpm dev` (site), and `pnpm build` / `pnpm check`
   across every app (`-r`), so a forgotten app cannot pass silently.
-- **Python — uv.** A workspace at the repo root, one `uv.lock`. Membership is an
+- **Python — uv.** A workspace at the repo root, one `uv.lock`. Members are the
+  Python labs and `apps/almanac`. Membership is an
   explicit list in `pyproject.toml`, not a glob — the labs tier is polyglot and
   uv demands a `pyproject.toml` from every member. Members share one resolution
   and one intersected `requires-python`; a lab with conflicting pins or a
@@ -110,7 +111,7 @@ reading the code. Otherwise it is a copy with a shelf life.
 GitHub. Description and inventory there; rules and procedures in the files above.
 
 What loads by itself: this file at launch, the nested `CLAUDE.md` files when a
-file in their directory is read (`apps/vvbeliaev/`, `labs/`, `workspace/`), and `.claude/rules/blog.md` whenever an article or a draft is
+file in their directory is read (`apps/vvbeliaev/`, `apps/almanac/`, `labs/`, `workspace/`), and `.claude/rules/blog.md` whenever an article or a draft is
 touched. Only this root file is re-injected after a compaction; the nested ones
 return when their directory is read again.
 
@@ -127,6 +128,9 @@ Read on purpose:
 Production: **https://vvbeliaev.dev**. Read the
 `vvbeliaev-ops` skill before touching CI, Coolify, Cloudflare, or the server.
 Why the pipeline looks like this: `docs/2026-08-15-deploy-pipeline.md`.
+
+`apps/almanac` ships the same way (`.github/workflows/almanac.yml`); its data
+lives on a Coolify volume, never in this repo.
 
 - **Pipeline:** push to `main` → GitHub Actions (`.github/workflows/<app>.yml`)
   runs `check` → builds the image → pushes to GHCR → triggers Coolify, which

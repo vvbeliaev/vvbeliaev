@@ -79,3 +79,37 @@ async def test_loops_stay_off_when_tests_bring_their_own_database(db, started, t
     async with LifespanManager(app):
         await _settle()
     assert started["built"] == []
+
+
+@pytest.fixture
+def backups(monkeypatch):
+    seen = {"started": [], "cancelled": 0}
+
+    async def forever(db, directory):
+        seen["started"].append(directory)
+        try:
+            await asyncio.sleep(3600)
+        except asyncio.CancelledError:
+            seen["cancelled"] += 1
+            raise
+
+    monkeypatch.setattr("almanac.app.backup.run", forever)
+    return seen
+
+
+async def test_backup_loop_runs_while_the_app_does(tmp_path, backups):
+    directory = tmp_path / "copies"
+    app = create_app(_settings(tmp_path, backup_dir=directory))
+    async with LifespanManager(app):
+        await _settle()
+        assert backups["started"] == [directory]
+        assert backups["cancelled"] == 0
+    assert backups["cancelled"] == 1
+
+
+async def test_backup_loop_stays_off_without_a_directory_or_with_a_borrowed_database(db, tmp_path, backups):
+    async with LifespanManager(create_app(_settings(tmp_path))):
+        await _settle()
+    async with LifespanManager(create_app(_settings(tmp_path, backup_dir=tmp_path / "copies"), db=db)):
+        await _settle()
+    assert backups["started"] == []
