@@ -126,3 +126,28 @@ async def test_replan_keeps_sent_and_manual_firings(db, now, monkeypatch):
     ]
     async with db.read() as session:
         assert [row.id for row in await firings.due(session, _utc(2026, 10, 12, 17, 0))] == ["r_manual01"]
+
+
+async def test_reopening_an_item_plans_its_firings_again(db, now):
+    async with db.write() as session:
+        item = await items.add(
+            session, client="claude", owner_tz=TZ, kind="task", title="Сдать отчёт", due=date(2026, 10, 14),
+            remind=["PT0M"], source=Source(said="отчёт к среде"), reason="срок",
+        )
+    async with db.write() as session:
+        await items.update(
+            session, client="claude", owner_tz=TZ, item_id=item.id, rev=1,
+            changes={"status": "done"}, reason="сдал",
+        )
+    assert await _pending(db) == [(_utc(2026, 10, 14, 7, 0), "skipped")]
+
+    async with db.write() as session:
+        await items.update(
+            session, client="claude", owner_tz=TZ, item_id=item.id, rev=2,
+            changes={"status": "open"}, reason="сдача не принята",
+        )
+    # Порядок двух срабатываний с одним моментом не задан, поэтому сравниваем отсортированно.
+    assert sorted(await _pending(db)) == [
+        (_utc(2026, 10, 14, 7, 0), "pending"),
+        (_utc(2026, 10, 14, 7, 0), "skipped"),
+    ]

@@ -23,7 +23,9 @@ async def replan(session: AsyncSession, item: Item, *, owner_tz: str, day_start:
         await session.execute(update(Firing).where(*pending).values(state="skipped"))
         return
     await session.execute(delete(Firing).where(*pending, Firing.manual.is_(False)))
-    taken = set((await session.scalars(select(Firing.fire_at).where(Firing.item_id == item.id))).all())
+    # Пропущенное не занимает момент: после повторного открытия элемент снова напомнит в тот же срок.
+    live = (Firing.item_id == item.id, Firing.state != "skipped")
+    taken = set((await session.scalars(select(Firing.fire_at).where(*live))).all())
     for occurrence, fire_at in plan.upcoming(item, owner_tz, day_start, utcnow()):
         if fire_at not in taken:
             session.add(
