@@ -1,5 +1,6 @@
 """Страницы, отрисованные сервером: вход и согласие OAuth. Остальное — API."""
 
+import asyncio
 from html import escape
 from typing import Annotated
 from urllib.parse import quote, urlsplit
@@ -80,7 +81,11 @@ async def login(
     target = safe_next(next)
     if not request.app.state.attempts.allow():
         return HTMLResponse(page("Слишком много попыток", "<p>Подождите минуту и попробуйте снова.</p>"), 429)
-    if not settings.owner_password_hash or not owner.verify_password(password, settings.owner_password_hash):
+    # scrypt занимает сотни миллисекунд и десятки мегабайт: в потоке, чтобы не вставал цикл событий.
+    known = bool(settings.owner_password_hash) and await asyncio.to_thread(
+        owner.verify_password, password, settings.owner_password_hash
+    )
+    if not known:
         return HTMLResponse(_login_page(target, "Неверный пароль"), 401)
     async with request.app.state.db.write() as session:
         token = await owner.open_session(session)
@@ -101,6 +106,13 @@ async def logout(request: Request) -> Response:
     return response
 
 
+def _who(name: str) -> str:
+    """Имя клиент выбирает сам и ничем не подтверждает: страница говорит об этом прямо."""
+    if not name:
+        return "Клиент не назвал себя."
+    return f"Клиент называет себя «{escape(name)}» (не проверено)."
+
+
 @router.get("/oauth/consent")
 async def consent_form(request: Request, txn: str) -> Response:
     if not await signed_in(request):
@@ -113,7 +125,8 @@ async def consent_form(request: Request, txn: str) -> Response:
     return HTMLResponse(
         page(
             "Доступ к almanac",
-            f"<p><b>{escape(view.client)}</b> ({escape(view.host)}) просит доступ на чтение и запись.</p>"
+            f"<p>Код доступа уйдёт на <b>{escape(view.host)}</b>. {_who(view.client)}</p>"
+            "<p>Клиент просит доступ на чтение и запись.</p>"
             f'<form method="post" action="/oauth/consent">{hidden}'
             '<button name="decision" value="allow">Разрешить</button>'
             '<button class="quiet" name="decision" value="deny">Отказать</button></form>',

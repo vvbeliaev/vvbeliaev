@@ -10,7 +10,8 @@ from almanac.db import Database
 from almanac.identity import Caller, caller
 
 PASSWORD = "correct horse battery"
-PASSWORD_HASH = owner.hash_password(PASSWORD)
+# Параметры слабее боевых (2**17), чтобы тесты шли быстро.
+PASSWORD_HASH = owner.hash_password(PASSWORD, n=2**14)
 
 
 @pytest.fixture

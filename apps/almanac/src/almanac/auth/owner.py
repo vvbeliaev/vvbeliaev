@@ -1,8 +1,8 @@
 """Вход владельца: пароль, сессия, ограничение попыток.
 
 Хэш пароля владелец получает сам: `python -m almanac.auth.owner` спросит пароль
-и напечатает строку для `OWNER_PASSWORD_HASH`. Разделитель — двоеточие: знак
-доллара в переменных окружения подставляется оболочкой.
+и напечатает строку для `OWNER_PASSWORD_HASH`: `scrypt:N:r:p:соль:хэш`. Разделитель —
+двоеточие: знак доллара в переменных окружения подставляется оболочкой.
 """
 
 import getpass
@@ -21,25 +21,32 @@ from almanac.models import Session
 
 SESSION_COOKIE = "almanac_session"
 SESSION_TTL = timedelta(days=30)
-N, R, P = 2**14, 8, 1
+# Боевые параметры scrypt (OWASP: N не ниже 2**17 при r=8, p=1). Они лежат в самой строке хэша,
+# так что стоимость можно поднять, не ломая старые хэши.
+N, R, P = 2**17, 8, 1
+MAX_N = 2**20
+MAX_MEMORY = 2**28
 
 
-def _digest(password: str, salt: bytes) -> bytes:
-    return hashlib.scrypt(password.encode(), salt=salt, n=N, r=R, p=P, dklen=32)
+def _digest(password: str, salt: bytes, n: int, r: int, p: int) -> bytes:
+    return hashlib.scrypt(password.encode(), salt=salt, n=n, r=r, p=p, maxmem=MAX_MEMORY, dklen=32)
 
 
-def hash_password(password: str) -> str:
+def hash_password(password: str, n: int = N) -> str:
     salt = secrets.token_bytes(16)
-    return f"scrypt:{salt.hex()}:{_digest(password, salt).hex()}"
+    return f"scrypt:{n}:{R}:{P}:{salt.hex()}:{_digest(password, salt, n, R, P).hex()}"
 
 
 def verify_password(password: str, stored: str) -> bool:
+    """Строка — `scrypt:N:r:p:соль:хэш`. Всё, что на неё не похоже, — `False`, не исключение."""
     try:
-        scheme, salt, expected = stored.split(":")
-        if scheme != "scrypt":
+        scheme, n, r, p, salt, expected = stored.split(":")
+        n, r, p = int(n), int(r), int(p)
+        if scheme != "scrypt" or n > MAX_N:
             return False
-        return hmac.compare_digest(_digest(password, bytes.fromhex(salt)), bytes.fromhex(expected))
-    except ValueError:
+        actual = _digest(password, bytes.fromhex(salt), n, r, p)
+        return hmac.compare_digest(actual, bytes.fromhex(expected))
+    except (ValueError, TypeError, OverflowError):  # не тот формат, не число, не hex, параметры scrypt вне границ
         return False
 
 

@@ -9,6 +9,7 @@
 новую пару, старая сгорает целиком.
 """
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -31,6 +32,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from almanac.auth.tokens import hash_token, new_token
 from almanac.clock import utcnow
+from almanac.config import LOOPBACK
 from almanac.db import Database
 from almanac.models import AuthPending, OAuthClient, OAuthCode, OAuthToken
 
@@ -41,10 +43,13 @@ CONSENT_TTL = timedelta(minutes=10)
 ACCESS_TTL = timedelta(hours=1)
 REFRESH_TTL = timedelta(days=30)
 # Имя клиента приходит от кого угодно: регистрация открытая. Это только данные.
-NAME_MAX = 60
-LOOPBACK = frozenset({"localhost", "127.0.0.1", "::1"})
-# Схемы, с которыми адрес возврата стал бы выполнением, а не возвратом.
-FORBIDDEN_SCHEMES = frozenset({"javascript", "data", "file", "vbscript", "blob", "about", "ftp"})
+NAME_MAX = 60  # на странице согласия
+LABEL_MAX = 40  # в журнале и в заголовке факта, который читает модель
+REGISTERED_NAME_MAX = 200
+LABEL_JUNK = re.compile(r"[^A-Za-z0-9 ._-]")
+# Свои схемы приложений, куда браузер вернёт код. Всё прочее — обработчики ОС (`ms-msdt:`, `search-ms:`),
+# и адрес возврата на них стал бы запуском, а не возвратом. Новый клиент — новая строка здесь.
+APP_SCHEMES = frozenset({"cursor", "vscode", "vscode-insiders", "claude", "windsurf"})
 CODE_FIELDS = ("redirect_uri", "redirect_uri_provided_explicitly", "scopes", "code_challenge", "resource")
 
 
@@ -52,21 +57,23 @@ CODE_FIELDS = ("redirect_uri", "redirect_uri_provided_explicitly", "scopes", "co
 class ConsentView:
     """Что показать владельцу на странице согласия."""
 
-    client: str
-    host: str
+    client: str  # как клиент называет себя сам; пусто, если не назвался
+    host: str  # куда уйдёт код: хост адреса возврата или `схема://` для приложения
 
 
 def _acceptable_redirect(uri: str) -> bool:
-    """https; http — только на себя (локальные клиенты вроде Claude Code); своя схема приложения."""
-    parts = urlsplit(uri)
-    scheme = parts.scheme.lower()
-    if not scheme or scheme in FORBIDDEN_SCHEMES:
+    """https с хостом; http — только на себя (локальные клиенты вроде Claude Code); схема приложения из
+    `APP_SCHEMES` и только в виде `схема://…`. Всё остальное — отказ."""
+    try:
+        parts = urlsplit(uri)
+        scheme, host = parts.scheme.lower(), parts.hostname
+    except ValueError:
         return False
     if scheme == "https":
-        return bool(parts.hostname)
+        return bool(host)
     if scheme == "http":
-        return parts.hostname in LOOPBACK
-    return True
+        return host in LOOPBACK
+    return scheme in APP_SCHEMES and uri.lower().startswith(f"{scheme}://")
 
 
 def _epoch(moment: datetime) -> int:
@@ -96,21 +103,33 @@ class AlmanacOAuthProvider(OAuthProvider):
             raise RegistrationError(
                 "invalid_redirect_uri", "redirect_uris: https, http on localhost, or the app's own scheme"
             )
+        if len(client_info.client_name or "") > REGISTERED_NAME_MAX:
+            raise RegistrationError(
+                "invalid_client_metadata", f"client_name: at most {REGISTERED_NAME_MAX} characters"
+            )
         async with self._db().write() as session:
             await session.merge(OAuthClient(client_id=client_info.client_id, info=client_info.model_dump(mode="json")))
 
     async def client_name(self, client_id: str) -> str:
-        """Имя клиента для журнала и внутреннего заголовка: только ASCII, не длиннее `NAME_MAX`."""
+        """Как клиент назван в журнале и в заголовке факта: `mcp:<имя>`.
+
+        Имя выбирает сам клиент, поэтому от него остаётся безобидная метка: латиница, цифры,
+        пробел, точка, подчёркивание и дефис, не длиннее `LABEL_MAX`. Префикс не даёт
+        клиенту назваться `site` и сойти за владельца в браузере.
+        """
         async with self._db().read() as session:
             row = await session.get(OAuthClient, client_id)
-        name = str((row.info if row else {}).get("client_name") or "").strip() or "mcp-client"
-        return name.encode("ascii", "replace").decode()[:NAME_MAX]
+        raw = str((row.info if row else {}).get("client_name") or "")
+        label = re.sub(" +", " ", LABEL_JUNK.sub("", raw)).strip()[:LABEL_MAX].strip()
+        return f"mcp:{label or 'client'}"
 
     # --- согласие ---
 
     async def authorize(self, client: OAuthClientInformationFull, params: AuthorizationParams) -> str:
         txn = new_token()
         async with self._db().write() as session:
+            # Регистрация и авторизация открыты всем: таблица не должна расти от брошенных запросов.
+            await session.execute(delete(AuthPending).where(AuthPending.expires_at <= utcnow()))
             session.add(
                 AuthPending(
                     state_hash=hash_token(txn), kind="consent", expires_at=utcnow() + CONSENT_TTL,
@@ -141,8 +160,9 @@ class AlmanacOAuthProvider(OAuthProvider):
         if pending is None or client is None:
             return None
         parts = urlsplit(pending.data["redirect_uri"])
-        name = str(client.info.get("client_name") or "").strip() or parts.hostname or "client"
-        return ConsentView(client=name[:NAME_MAX], host=parts.hostname or f"{parts.scheme}:")
+        name = str(client.info.get("client_name") or "").strip()[:NAME_MAX]
+        host = parts.hostname if parts.scheme in ("http", "https") else f"{parts.scheme}://"
+        return ConsentView(client=name, host=host or f"{parts.scheme}:")
 
     async def decide(self, txn: str, *, allow: bool) -> str | None:
         """Ответ владельца → куда вернуть браузер. Шаг срабатывает один раз; `None` — шага нет или он истёк."""

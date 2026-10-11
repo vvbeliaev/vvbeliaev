@@ -23,10 +23,16 @@ async def test_health(api):
     assert (response.status_code, response.json()) == (200, {"ok": True})
 
 
-async def test_tool_names_are_operation_ids(api):
-    spec = (await api.get("/openapi.json")).json()
+async def test_tool_names_are_operation_ids(app):
+    spec = app.openapi()
     names = {operation["operationId"] for methods in spec["paths"].values() for operation in methods.values()}
     assert names == TOOLS
+
+
+async def test_interactive_docs_are_off(anon):
+    # Схема нужна MCP и берётся из `app.openapi()`; наружу она не торчит.
+    for path in ("/docs", "/redoc", "/openapi.json"):
+        assert (await anon.get(path)).status_code == 404, path
 
 
 async def test_page_round_trip(api):
