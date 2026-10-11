@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -9,6 +10,8 @@ from almanac.auth.oauth import AlmanacOAuthProvider
 from almanac.config import Settings
 from almanac.db import Database
 from almanac.errors import Refused
+from almanac.telegram import Telegram
+from almanac.timeline.scheduler import Scheduler
 
 
 def create_app(settings: Settings | None = None, db: Database | None = None) -> FastAPI:
@@ -20,10 +23,25 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
         if db is None:
             app.state.db = Database(settings.database_url)
             await app.state.db.create_all()
-        async with app.state.mcp_app.lifespan(app):
-            yield
-        if db is None:
-            await app.state.db.dispose()
+        background: list[asyncio.Task] = []
+        try:
+            # Без токена и чата бот и цикл не запускаются: срабатывания копятся в базе.
+            if db is None and settings.telegram_bot_token and settings.telegram_owner_chat_id:
+                scheduler = Scheduler(
+                    app.state.db, Telegram(settings.telegram_bot_token, settings.telegram_owner_chat_id),
+                    owner_tz=settings.owner_tz, day_start=settings.day_start,
+                    owner_chat_id=settings.telegram_owner_chat_id,
+                )
+                background = [asyncio.create_task(scheduler.run()), asyncio.create_task(scheduler.poll())]
+            async with app.state.mcp_app.lifespan(app):
+                yield
+        finally:
+            for task in background:
+                task.cancel()
+            # Дожидаемся отмены, пока база ещё открыта: цикл мог быть посреди записи.
+            await asyncio.gather(*background, return_exceptions=True)
+            if db is None:
+                await app.state.db.dispose()
 
     app = FastAPI(title="almanac", lifespan=lifespan)
     app.state.settings = settings

@@ -45,6 +45,7 @@ dependencies = [
     { name = "aiosqlite" },
     { name = "fastapi" },
     { name = "fastmcp", extra = ["code-mode"] },
+    { name = "httpx" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dateutil" },
@@ -58,7 +59,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "asgi-lifespan" },
-    { name = "httpx" },
     { name = "httpx2" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -70,6 +70,7 @@ requires-dist = [
     { name = "aiosqlite", specifier = ">=0.20" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "fastmcp", extras = ["code-mode"], specifier = ">=4.0.5" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "pydantic", specifier = ">=2.9" },
     { name = "pydantic-settings", specifier = ">=2.6" },
     { name = "python-dateutil", specifier = ">=2.9" },
@@ -83,7 +84,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "asgi-lifespan", specifier = ">=2.1" },
-    { name = "httpx", specifier = ">=0.27" },
     { name = "httpx2", specifier = ">=2" },
     { name = "pytest", specifier = ">=8.3" },
     { name = "pytest-asyncio", specifier = ">=0.24" },

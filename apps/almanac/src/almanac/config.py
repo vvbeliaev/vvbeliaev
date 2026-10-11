@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     base_url: str = "http://127.0.0.1:8000"
     owner_password_hash: str = ""
     mcp_code_mode: bool = True
+    # Без токена и чата бот и цикл напоминаний не запускаются.
+    telegram_bot_token: str = ""
+    telegram_owner_chat_id: int = 0
 
     @field_validator("day_start")
     @classmethod

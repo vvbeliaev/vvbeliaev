@@ -1,0 +1,309 @@
+import asyncio
+from datetime import UTC, date, datetime, timedelta
+
+import pytest
+from sqlalchemy import select
+
+from almanac import clock
+from almanac.models import Fact, Firing, Item
+from almanac.store import items
+from almanac.store.source import Source
+from almanac.timeline import scheduler as scheduler_module
+from almanac.timeline.scheduler import Scheduler
+
+TZ = "Europe/Berlin"
+OWNER = 42
+
+
+class FakeMessenger:
+    def __init__(self):
+        self.sent, self.answers, self.cleared, self.fail = [], [], [], False
+
+    async def send(self, text, buttons=None):
+        if self.fail:
+            raise RuntimeError("telegram sendMessage: network")
+        self.sent.append((text, buttons))
+        return 100 + len(self.sent)
+
+    async def answer(self, callback_id, text=""):
+        self.answers.append((callback_id, text))
+
+    async def clear_buttons(self, message_id):
+        self.cleared.append(message_id)
+
+
+@pytest.fixture
+def messenger():
+    return FakeMessenger()
+
+
+@pytest.fixture
+def scheduler(db, messenger):
+    return Scheduler(db, messenger, owner_tz=TZ, day_start="09:00", owner_chat_id=OWNER)
+
+
+def _at(monkeypatch, *parts):
+    moment = datetime(*parts, tzinfo=UTC)
+    monkeypatch.setattr(clock, "_now", lambda: moment)
+    return moment
+
+
+async def _event(db, **over):
+    args = {
+        "client": "claude", "owner_tz": TZ, "kind": "event", "title": "Английский",
+        "at": datetime(2026, 10, 12, 18, 0), "remind": ["PT1H"],
+        "source": Source(said="английский в шесть"), "reason": "расписание",
+    }
+    args.update(over)
+    async with db.write() as session:
+        return await items.add(session, **args)
+
+
+async def _states(db):
+    async with db.read() as session:
+        rows = (await session.scalars(select(Firing).order_by(Firing.fire_at))).all()
+    return [row.state for row in rows]
+
+
+def _press(action, firing_id, user=OWNER):
+    return {"callback_query": {"id": "cb1", "from": {"id": user}, "data": f"{action}:{firing_id}"}}
+
+
+async def _only_firing(db):
+    async with db.read() as session:
+        return (await session.scalars(select(Firing))).one()
+
+
+async def test_nothing_is_sent_before_time(db, now, scheduler, messenger):
+    await _event(db)
+    assert await scheduler.tick() == 0
+    assert messenger.sent == []
+
+
+async def test_due_firing_is_sent_once_with_buttons(db, now, scheduler, messenger, monkeypatch):
+    await _event(db)
+    firing = await _only_firing(db)
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    assert await scheduler.tick() == 1
+    assert await scheduler.tick() == 0
+    text, buttons = messenger.sent[0]
+    assert text == "⏰ 12.10 18:00 · Английский"
+    assert buttons == [("Готово", f"done:{firing.id}"), ("+1 час", f"hour:{firing.id}"), ("Завтра", f"tomorrow:{firing.id}")]
+    assert await _states(db) == ["sent"]
+
+
+async def test_late_firing_says_so(db, now, scheduler, messenger, monkeypatch):
+    await _event(db)
+    _at(monkeypatch, 2026, 10, 12, 15, 20)
+    await scheduler.tick()
+    assert messenger.sent[0][0] == "⏰ 12.10 18:00 · Английский\nопоздало на 20 мин"
+
+
+async def test_stale_firing_is_skipped(db, now, scheduler, messenger, monkeypatch):
+    await _event(db)
+    _at(monkeypatch, 2026, 10, 14, 0, 0)
+    assert await scheduler.tick() == 0
+    assert messenger.sent == []
+    assert await _states(db) == ["skipped"]
+
+
+async def test_failed_send_is_retried_then_given_up(db, now, scheduler, messenger, monkeypatch):
+    await _event(db)
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    messenger.fail = True
+    for _ in range(9):
+        await scheduler.tick()
+    assert await _states(db) == ["pending"]
+    await scheduler.tick()
+    assert await _states(db) == ["skipped"]
+
+
+async def test_repeating_event_plans_the_next_week(db, now, scheduler, monkeypatch):
+    await _event(db, at=datetime(2026, 10, 5, 18, 0), rrule="FREQ=WEEKLY")
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    await scheduler.tick()
+    async with db.read() as session:
+        rows = (await session.scalars(select(Firing).order_by(Firing.fire_at))).all()
+    assert [(row.state, row.fire_at) for row in rows] == [
+        ("sent", datetime(2026, 10, 12, 15, 0, tzinfo=UTC)),
+        ("pending", datetime(2026, 10, 19, 15, 0, tzinfo=UTC)),
+    ]
+
+
+async def test_done_button_closes_the_task(db, now, scheduler, messenger, monkeypatch):
+    async with db.write() as session:
+        task = await items.add(
+            session, client="claude", owner_tz=TZ, kind="task", title="Сдать отчёт", due=date(2026, 10, 13),
+            remind=["PT0M"], source=Source(said="отчёт завтра"), reason="срок",
+        )
+    # Начало дня 13 октября в Берлине — 07:00 UTC.
+    _at(monkeypatch, 2026, 10, 13, 7, 0)
+    await scheduler.tick()
+    assert messenger.sent[0][0] == "⏰ срок 13.10 · Сдать отчёт"
+    firing = await _only_firing(db)
+
+    await scheduler.handle(_press("done", firing.id))
+    async with db.read() as session:
+        closed = await session.get(Item, task.id)
+    assert (closed.status, closed.rev) == ("done", 2)
+    assert await _states(db) == ["done"]
+    assert messenger.answers == [("cb1", "Готово")]
+    assert messenger.cleared == [firing.message_id]
+
+    await scheduler.handle(_press("done", firing.id))
+    assert messenger.answers[-1] == ("cb1", "Уже обработано")
+
+
+async def test_snooze_buttons_plan_a_manual_firing(db, now, scheduler, messenger, monkeypatch):
+    await _event(db)
+    moment = _at(monkeypatch, 2026, 10, 12, 15, 0)
+    await scheduler.tick()
+    first = await _only_firing(db)
+
+    await scheduler.handle(_press("hour", first.id))
+    async with db.read() as session:
+        rows = (await session.scalars(select(Firing).order_by(Firing.fire_at))).all()
+    assert [(row.state, row.manual) for row in rows] == [("snoozed", False), ("pending", True)]
+    assert rows[1].fire_at == moment + timedelta(hours=1)
+
+    _at(monkeypatch, 2026, 10, 12, 16, 0)
+    assert await scheduler.tick() == 1
+    again = messenger.sent[-1][1][2][1].split(":")[1]
+    await scheduler.handle(_press("tomorrow", again))
+    async with db.read() as session:
+        last = (await session.scalars(select(Firing).order_by(Firing.fire_at.desc()))).first()
+    # «Завтра» — начало следующего дня владельца: 09:00 в Берлине, 07:00 UTC.
+    assert (last.fire_at, last.manual, last.state) == (datetime(2026, 10, 13, 7, 0, tzinfo=UTC), True, "pending")
+
+
+async def test_stranger_presses_and_messages_are_ignored(db, now, scheduler, messenger, monkeypatch):
+    await _event(db)
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    await scheduler.tick()
+    firing = await _only_firing(db)
+    await scheduler.handle(_press("done", firing.id, user=666))
+    await scheduler.handle({"message": {"chat": {"id": 666}, "text": "запиши это"}})
+    assert await _states(db) == ["sent"]
+    assert messenger.answers == []
+    async with db.read() as session:
+        assert (await session.scalars(select(Fact).where(Fact.client == "telegram"))).all() == []
+
+
+async def test_owner_message_becomes_a_fact(db, now, scheduler, messenger):
+    await scheduler.handle({"message": {"chat": {"id": OWNER}, "text": "  купить лампочки  "}})
+    async with db.read() as session:
+        fact = (await session.scalars(select(Fact))).one()
+    assert (fact.text, fact.client, fact.origin) == ("купить лампочки", "telegram", "said")
+    assert messenger.sent[-1] == ("Записал.", None)
+
+    await scheduler.handle({"message": {"chat": {"id": OWNER}, "text": "/start"}})
+    await scheduler.handle({"message": {"chat": {"id": OWNER}, "text": "ключ " + "sk-" + "a" * 24}})
+    assert messenger.sent[-1][0].startswith("Не записал:")
+    async with db.read() as session:
+        assert len((await session.scalars(select(Fact))).all()) == 1
+
+
+class Feed(FakeMessenger):
+    """Бот с очередью ответов getUpdates: исключение в очереди — сбой сети."""
+
+    def __init__(self, batches):
+        super().__init__()
+        self.batches, self.offsets, self.drained = list(batches), [], asyncio.Event()
+
+    async def updates(self, offset=None, timeout=25):
+        self.offsets.append(offset)
+        if not self.batches:
+            self.drained.set()
+            await asyncio.sleep(3600)  # длинный опрос, в котором ничего нового
+        batch = self.batches.pop(0)
+        if isinstance(batch, Exception):
+            raise batch
+        return batch
+
+
+async def _stop(task):
+    task.cancel()
+    await asyncio.gather(task, return_exceptions=True)
+
+
+async def test_poll_survives_a_failure_and_moves_the_offset(db, now, monkeypatch):
+    monkeypatch.setattr(scheduler_module, "RETRY_PAUSE", 0)
+    owner = {"chat": {"id": OWNER}}
+    feed = Feed([
+        RuntimeError("telegram getUpdates: ConnectError"),
+        [{"update_id": 10, "message": {**owner, "text": "первое"}}, {"update_id": 11, "message": {**owner, "text": "второе"}}],
+    ])
+    poller = Scheduler(db, feed, owner_tz=TZ, day_start="09:00", owner_chat_id=OWNER)
+    task = asyncio.create_task(poller.poll())
+    await asyncio.wait_for(feed.drained.wait(), 2)
+    await _stop(task)
+    assert feed.offsets == [None, None, 12]
+    async with db.read() as session:
+        texts = [fact.text for fact in (await session.scalars(select(Fact).order_by(Fact.at, Fact.id))).all()]
+    assert sorted(texts) == ["второе", "первое"]
+
+
+async def test_run_keeps_ticking_after_a_failure(db, now, scheduler, monkeypatch):
+    calls, third = [], asyncio.Event()
+
+    async def tick():
+        calls.append(1)
+        if len(calls) == 1:
+            raise RuntimeError("database is locked")
+        if len(calls) == 3:
+            third.set()
+        return 0
+
+    monkeypatch.setattr(scheduler, "tick", tick)
+    task = asyncio.create_task(scheduler.run(seconds=0))
+    await asyncio.wait_for(third.wait(), 2)
+    await _stop(task)
+    assert len(calls) >= 3
+
+
+async def test_closed_item_is_skipped_not_sent(db, now, scheduler, messenger, monkeypatch):
+    task = await _event(db)
+    async with db.write() as session:
+        # Элемент закрыт в обход replan: срабатывание остаётся ожидающим.
+        (await session.get(Item, task.id)).status = "cancelled"
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    assert await scheduler.tick() == 0
+    assert messenger.sent == []
+    assert await _states(db) == ["skipped"]
+
+
+async def test_event_done_button_leaves_the_event_open(db, now, scheduler, messenger, monkeypatch):
+    event = await _event(db)
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    await scheduler.tick()
+    firing = await _only_firing(db)
+    await scheduler.handle(_press("done", firing.id))
+    async with db.read() as session:
+        assert (await session.get(Item, event.id)).status == "open"
+    assert await _states(db) == ["done"]
+    assert messenger.answers == [("cb1", "Готово")]
+
+
+async def test_unknown_button_is_answered_without_changes(db, now, scheduler, messenger, monkeypatch):
+    await _event(db)
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    await scheduler.tick()
+    firing = await _only_firing(db)
+    await scheduler.handle(_press("explode", firing.id))
+    await scheduler.handle(_press("done", "r_missing0"))
+    assert await _states(db) == ["sent"]
+    assert messenger.answers == [("cb1", "Уже обработано"), ("cb1", "Уже обработано")]
+    assert messenger.cleared == []
+
+
+async def test_repeated_failures_are_journaled_once(db, now, scheduler, messenger, monkeypatch):
+    from almanac.models import Journal
+
+    await _event(db)
+    _at(monkeypatch, 2026, 10, 12, 15, 0)
+    messenger.fail = True
+    for _ in range(12):
+        await scheduler.tick()
+    async with db.read() as session:
+        rows = (await session.scalars(select(Journal).where(Journal.op == "delivery_failed"))).all()
+    assert [(row.client, row.detail["attempts"]) for row in rows] == [("scheduler", 10)]
