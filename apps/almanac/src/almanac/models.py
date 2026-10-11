@@ -138,3 +138,44 @@ class Session(Base):
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
     expires_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+
+class OAuthClient(Base):
+    __tablename__ = "oauth_clients"
+
+    client_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    info: Mapped[dict] = mapped_column(JSON)
+
+
+class AuthPending(Base):
+    """Отложенный шаг согласия: живёт, пока владелец не ответил."""
+
+    __tablename__ = "auth_pending"
+
+    state_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(20))
+    expires_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    data: Mapped[dict] = mapped_column(JSON)
+
+
+class OAuthCode(Base):
+    __tablename__ = "oauth_codes"
+
+    code_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    client_id: Mapped[str] = mapped_column(String(200))
+    expires_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    data: Mapped[dict] = mapped_column(JSON)
+
+
+class OAuthToken(Base):
+    """Токен доступа или обновления. Пара живёт и умирает вместе (`pair_id`)."""
+
+    __tablename__ = "oauth_tokens"
+
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(10))
+    pair_id: Mapped[str] = mapped_column(String(64))
+    client_id: Mapped[str] = mapped_column(String(200))
+    scopes: Mapped[list[str]] = mapped_column(JSON)
+    resource: Mapped[str | None] = mapped_column(String(500))
+    expires_at: Mapped[datetime] = mapped_column(UtcDateTime)

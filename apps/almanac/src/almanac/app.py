@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from almanac import api, schema, tree, web
 from almanac.auth import owner
+from almanac.auth.oauth import AlmanacOAuthProvider
 from almanac.config import Settings
 from almanac.db import Database
 from almanac.errors import Refused
@@ -31,6 +32,7 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
     app.include_router(api.router, prefix="/api")
     app.state.attempts = owner.Attempts()
     app.include_router(web.router)
+    app.state.oauth = AlmanacOAuthProvider(base_url=f"{settings.base_url}/mcp", db=lambda: app.state.db)
 
     @app.get("/healthz", include_in_schema=False)
     async def healthz() -> dict:

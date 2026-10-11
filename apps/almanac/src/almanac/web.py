@@ -2,7 +2,7 @@
 
 from html import escape
 from typing import Annotated
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
@@ -99,3 +99,35 @@ async def logout(request: Request) -> Response:
     response = RedirectResponse("/login", status_code=303)
     response.delete_cookie(owner.SESSION_COOKIE, path="/")
     return response
+
+
+@router.get("/oauth/consent")
+async def consent_form(request: Request, txn: str) -> Response:
+    if not await signed_in(request):
+        back = quote(f"/oauth/consent?txn={txn}", safe="")
+        return RedirectResponse(f"/login?next={back}", status_code=303)
+    view = await request.app.state.oauth.consent_view(txn)
+    if view is None:
+        return HTMLResponse(page("Запрос устарел", "<p>Начните подключение заново в клиенте.</p>"), 400)
+    hidden = f'<input type="hidden" name="txn" value="{escape(txn, quote=True)}">'
+    return HTMLResponse(
+        page(
+            "Доступ к almanac",
+            f"<p><b>{escape(view.client)}</b> ({escape(view.host)}) просит доступ на чтение и запись.</p>"
+            f'<form method="post" action="/oauth/consent">{hidden}'
+            '<button name="decision" value="allow">Разрешить</button>'
+            '<button class="quiet" name="decision" value="deny">Отказать</button></form>',
+        )
+    )
+
+
+@router.post("/oauth/consent")
+async def consent(request: Request, txn: Annotated[str, Form()], decision: Annotated[str, Form()]) -> Response:
+    if not await signed_in(request):
+        return HTMLResponse(page("Нужен вход", "<p>Сессия закончилась.</p>"), 401)
+    if not same_origin(request):
+        return HTMLResponse(page("Отказано", "<p>Запрос пришёл с чужой страницы.</p>"), 403)
+    target = await request.app.state.oauth.decide(txn, allow=decision == "allow")
+    if target is None:
+        return HTMLResponse(page("Запрос устарел", "<p>Начните подключение заново в клиенте.</p>"), 400)
+    return RedirectResponse(target, status_code=303)

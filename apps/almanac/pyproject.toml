@@ -15,6 +15,8 @@ dependencies = [
   "tzdata>=2024.2",
   # Разбор HTML-форм входа и согласия.
   "python-multipart>=0.0.12",
+  # MCP-дверь. Extra code-mode тянет pydantic-monty: без него CodeMode падает на первом исполнении.
+  "fastmcp[code-mode]>=4.0.5",
 ]
 
 [dependency-groups]
