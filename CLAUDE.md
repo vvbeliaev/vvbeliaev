@@ -42,8 +42,8 @@ file into a public path "temporarily".
 
 `.github/workflows/guard.yml` fails a push on leaked secrets (gitleaks), on any
 tracked path under `workspace/private/`, on a phone number in a public file, on a
-lab missing its README or its registry row, and on a profile README whose facts
-have drifted from the site config.
+lab missing its README or its registry row, on a profile README whose facts
+have drifted from the site config, and on a tracked SQLite database file.
 
 ## Core rule: design & frontend
 
@@ -129,8 +129,11 @@ Production: **https://vvbeliaev.dev**. Read the
 `vvbeliaev-ops` skill before touching CI, Coolify, Cloudflare, or the server.
 Why the pipeline looks like this: `docs/2026-08-15-deploy-pipeline.md`.
 
-`apps/almanac` ships the same way (`.github/workflows/almanac.yml`); its data
-lives on a Coolify volume, never in this repo.
+`apps/almanac` ships the same way (`.github/workflows/almanac.yml`), with two
+differences: its build context is filtered by `apps/almanac/Dockerfile.dockerignore`
+(BuildKit prefers it to the root `.dockerignore`), and the `pyproject.toml` of
+every `labs/*` member travels into the image, because uv needs each workspace
+member's manifest. Its data lives on a Coolify volume, never in this repo.
 
 - **Pipeline:** push to `main` → GitHub Actions (`.github/workflows/<app>.yml`)
   runs `check` → builds the image → pushes to GHCR → triggers Coolify, which

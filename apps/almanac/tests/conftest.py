@@ -1,6 +1,10 @@
+import shutil
+import textwrap
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
+from alembic.config import Config
 from httpx import ASGITransport, AsyncClient
 
 from almanac import clock
@@ -67,3 +71,27 @@ async def api(app):
     app.dependency_overrides[caller] = lambda: Caller(client="local")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
+
+
+MIGRATIONS = Path(__file__).parents[1] / "migrations"
+
+
+@pytest.fixture
+def next_migration(tmp_path):
+    """Конфиг Alembic с временной копией миграций и лишней ревизией 0002 над 0001.
+
+    Тело `upgrade()` задаёт тест; в репозиторий такая ревизия не попадает.
+    """
+
+    def build(upgrade_body: str) -> Config:
+        scripts = tmp_path / "migrations"
+        shutil.copytree(MIGRATIONS, scripts, ignore=shutil.ignore_patterns("__pycache__"))
+        header = "import sqlalchemy as sa\nfrom alembic import op\n\n"
+        header += "revision = '0002'\ndown_revision = '0001'\nbranch_labels = None\ndepends_on = None\n"
+        body = textwrap.indent(textwrap.dedent(upgrade_body).strip(), "    ")
+        (scripts / "versions" / "0002_extra.py").write_text(f"{header}\n\ndef upgrade() -> None:\n{body}\n")
+        config = Config()
+        config.set_main_option("script_location", str(scripts))
+        return config
+
+    return build

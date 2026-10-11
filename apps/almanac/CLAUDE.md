@@ -13,9 +13,13 @@ Rules for working in this app. Repo-wide rules are in the root
   fix. Endpoint docstrings are tool descriptions: English, written for a model.
 - **One fact, one home.** The catalog, the inbox, the agenda and the item lines
   are projections computed in `tree.py`. Do not store a second copy of them.
-- **Schema changes need a migration**: `uv run alembic revision --autogenerate`,
-  then replace `almanac.models.UtcDateTime()` with `sa.DateTime()` in the file.
-  `tests/test_migrations.py` fails when models and migrations drift.
+- **Schema changes need a migration.** Autogenerate compares the models with a
+  live database, so first bring a scratch one to head, then generate against it
+  (same `DATABASE_URL` for both):
+  `DATABASE_URL=sqlite+aiosqlite:///scratch.db uv run alembic upgrade head`, then
+  `DATABASE_URL=sqlite+aiosqlite:///scratch.db uv run alembic revision --autogenerate -m "…"`.
+  In the new file replace `almanac.models.UtcDateTime()` with `sa.DateTime()`, and
+  delete `scratch.db`. `tests/test_migrations.py` fails when models and migrations drift.
 - **Secrets**: the owner's password, the bot token and the calendar secret come
   from the environment. Never print them, never put them in a test. The bot
   token must not reach logs or exception texts (`telegram.py`).

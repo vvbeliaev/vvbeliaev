@@ -35,6 +35,15 @@ pnpm-debug.log*
 .ruff_cache/
 __pycache__/
 
+# SQLite databases and their side files — personal data never enters git
+# (guard.yml fails a push that tracks one)
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.db.partial
+apps/almanac/backups/
+
 # os / editor
 .DS_Store
 *.local

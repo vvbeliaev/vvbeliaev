@@ -2,7 +2,9 @@
 # Этот файл сильнее корневого `.dockerignore`: BuildKit берёт `<Dockerfile>.dockerignore`.
 *
 
-# замок и манифесты всех участников uv-воркспейса: без них uv не узнаёт воркспейс
+# замок и манифесты всех участников uv-воркспейса: без них uv не узнаёт воркспейс.
+# Новому участнику-Python под `apps/` нужна своя строка `!apps/<имя>/pyproject.toml` здесь
+# и `COPY apps/<имя>/pyproject.toml apps/<имя>/` в Dockerfile, иначе `uv sync` не соберётся.
 !pyproject.toml
 !uv.lock
 !labs/*/pyproject.toml
@@ -10,11 +12,12 @@
 !apps/almanac
 
 # секреты, локальное и то, что рантайму не нужно. `*.md` внутри пакета нужны: это схема.
+# `apps/almanac/*.md` — только верхний уровень (README, CLAUDE.md, SPEC, PLAN): `*` не переходит
+# через `/`, так что `src/almanac/schema/guide.md` остаётся в контексте.
 apps/almanac/.env
 apps/almanac/.env.*
 apps/almanac/tests
-apps/almanac/SPEC.md
-apps/almanac/PLAN.md
+apps/almanac/*.md
 **/.venv
 **/__pycache__
-**/*.db
+**/*.db*
