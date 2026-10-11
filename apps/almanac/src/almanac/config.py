@@ -16,3 +16,4 @@ class Settings(BaseSettings):
     schema_dir: Path = PACKAGE / "schema"
     base_url: str = "http://127.0.0.1:8000"
     owner_password_hash: str = ""
+    mcp_code_mode: bool = True
