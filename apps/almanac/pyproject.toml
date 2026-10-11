@@ -21,6 +21,8 @@ dependencies = [
   "regex>=2024.11",
   # Клиент Bot API Telegram. Свой httpx, не httpx2 из fastmcp.
   "httpx>=0.27",
+  # Календарная лента: события и задачи со сроком в iCalendar.
+  "icalendar>=6.0",
 ]
 
 [dependency-groups]

@@ -1,6 +1,7 @@
 """Страницы, отрисованные сервером: вход и согласие OAuth. Остальное — API."""
 
 import asyncio
+import hmac
 from html import escape
 from typing import Annotated
 from urllib.parse import quote, urlsplit
@@ -8,7 +9,9 @@ from urllib.parse import quote, urlsplit
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
+from almanac import ics
 from almanac.auth import owner
+from almanac.store import items as items_store
 
 router = APIRouter(include_in_schema=False)
 
@@ -144,3 +147,14 @@ async def consent(request: Request, txn: Annotated[str, Form()], decision: Annot
     if target is None:
         return HTMLResponse(page("Запрос устарел", "<p>Начните подключение заново в клиенте.</p>"), 400)
     return RedirectResponse(target, status_code=303)
+
+
+@router.get("/calendar/{token}.ics")
+async def calendar(request: Request, token: str) -> Response:
+    """Секретный адрес вместо входа: календарные приложения не умеют OAuth."""
+    secret = request.app.state.settings.ics_token
+    if not secret or not hmac.compare_digest(token.encode(), secret.encode()):
+        return Response(status_code=404)
+    async with request.app.state.db.read() as session:
+        body = ics.render(await items_store.everything(session), request.app.state.settings.owner_tz)
+    return Response(body, media_type="text/calendar; charset=utf-8")
