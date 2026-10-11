@@ -3,11 +3,9 @@
 #
 #     docker build -f apps/almanac/Dockerfile -t almanac .
 #
-# Настройки приходят окружением контейнера (`almanac.config.Settings`); `.env` в образ не едет.
-# Данные — том `/data`: база и её копии. Том обязателен, и объявлять его здесь нельзя:
-# с `VOLUME /data` забытый том молча заменяется анонимным, и каждая выкладка стартует
-# на пустой базе. Вместо этого `python -m almanac.migrate` отказывается стартовать,
-# если `/data` не смонтирован (`DATA_MOUNT`).
+# Настройки приходят окружением контейнера (`almanac.config.Settings`), прежде всего `DATABASE_URL`:
+# адреса базы в образе нет, и `.env` в образ не едет. Данные живут в Postgres, контейнер без состояния:
+# тома ему не нужно, образ можно пересоздать в любой момент.
 
 FROM python:3.13-slim-bookworm AS base
 ENV PYTHONUNBUFFERED=1
@@ -27,13 +25,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --package almanac
 
 FROM base AS runtime
-RUN useradd --create-home --uid 1000 almanac \
-    && mkdir /data && chown almanac:almanac /data
+RUN useradd --create-home --uid 1000 almanac
 COPY --from=deps --chown=almanac:almanac /repo /repo
-ENV PATH=/repo/.venv/bin:$PATH \
-    DATABASE_URL=sqlite+aiosqlite:////data/almanac.db \
-    BACKUP_DIR=/data/backups \
-    DATA_MOUNT=/data
+ENV PATH=/repo/.venv/bin:$PATH
 WORKDIR /repo/apps/almanac
 USER almanac
 EXPOSE 8000
@@ -41,7 +35,8 @@ EXPOSE 8000
 # внахлёст: пока старый ещё жив, стартует новый. Два живых процесса на одной базе — это
 # двойные напоминания и миграция под работающим приложением. Старый должен остановиться
 # раньше, чем стартует новый. `/healthz` остаётся для ручной проверки.
-# Один воркер: замок записи, цикл напоминаний и бот живут в памяти процесса.
+# Один экземпляр и один воркер. Замок записи лежит в базе и держит и несколько процессов, но цикл
+# напоминаний и бот живут в памяти процесса: второй экземпляр прислал бы каждое напоминание дважды.
 # Без журнала доступа: секрет ленты и коды OAuth лежат в адресах запросов.
-# Сначала `almanac.migrate`: проверка тома, копия базы перед обновлением, `alembic upgrade head`.
-CMD ["sh", "-c", "python -m almanac.migrate && exec uvicorn almanac.app:create_app --factory --host 0.0.0.0 --port 8000 --workers 1 --no-access-log --timeout-graceful-shutdown 5"]
+# Сначала `alembic upgrade head`: схему ведёт миграция, не приложение. Не накатилась — контейнер не стартует.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn almanac.app:create_app --factory --host 0.0.0.0 --port 8000 --workers 1 --no-access-log --timeout-graceful-shutdown 5"]

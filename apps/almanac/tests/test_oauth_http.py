@@ -188,3 +188,14 @@ async def test_registration_route_refuses_a_very_long_client_name(door):
     assert refused.status_code == 400
     assert refused.json()["error"] == "invalid_client_metadata"
     assert (await door.register(name="x" * 200)).status_code == 201
+
+
+async def test_registration_route_refuses_a_nul_in_the_client_name(door):
+    refused = await door.register(name="Claude\x00")
+    assert refused.status_code == 400
+    assert refused.json()["error"] == "invalid_client_metadata"
+
+
+async def test_authorize_route_answers_an_unknown_client_with_a_nul_in_its_id_without_a_500(door):
+    unknown = await door.authorize({"client_id": "client\x00"}, secrets.token_urlsafe(48))
+    assert unknown.status_code == 400

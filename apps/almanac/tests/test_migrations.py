@@ -1,63 +1,73 @@
-import sqlite3
+"""Миграции на настоящем Postgres. Тесты синхронные: `alembic upgrade` зовёт `asyncio.run`."""
 
-import pytest
-from alembic import command
-from alembic.config import Config
+import asyncio
 
-from almanac.models import Base
+from alembic.autogenerate import compare_metadata
+from alembic.runtime.migration import MigrationContext
+from sqlalchemy import BigInteger, String, inspect, text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import create_async_engine
+
+from almanac.models import Base, UtcDateTime
 
 
-def test_migrations_build_the_schema_of_the_models(tmp_path, monkeypatch):
-    target = tmp_path / "migrated.db"
-    monkeypatch.setenv("DATABASE_URL", f"sqlite+aiosqlite:///{target}")
-    config = Config("alembic.ini")
+def _on(url, work):
+    """Результат `work(sync_connection)` на базе с этим адресом."""
 
-    command.upgrade(config, "head")
-    with sqlite3.connect(target) as connection:
-        tables = {row[0] for row in connection.execute("select name from sqlite_master where type = 'table'")}
+    async def go():
+        engine = create_async_engine(url)
+        try:
+            async with engine.connect() as connection:
+                return await connection.run_sync(work)
+        finally:
+            await engine.dispose()
+
+    return asyncio.run(go())
+
+
+def test_upgrade_builds_the_tables_of_the_models(fresh_database, migrate):
+    migrate(fresh_database)
+
+    tables = _on(fresh_database, lambda connection: set(inspect(connection).get_table_names()))
     assert set(Base.metadata.tables) <= tables
 
-    # Модели и миграции не разошлись: автогенерации нечего добавить.
-    command.check(config)
+    version = _on(fresh_database, lambda connection: connection.scalar(text("select version_num from alembic_version")))
+    assert version == "0001"
 
 
-def _tables(path):
-    with sqlite3.connect(path) as connection:
-        return {row[0] for row in connection.execute("select name from sqlite_master where type = 'table'")}
+def test_models_and_migrations_have_not_drifted_apart(fresh_database, migrate):
+    migrate(fresh_database)
+
+    def diff(connection):
+        return compare_metadata(MigrationContext.configure(connection, opts={"compare_type": True}), Base.metadata)
+
+    # Автогенерации нечего добавить: модель и миграция говорят одно и то же.
+    assert _on(fresh_database, diff) == []
 
 
-def _version(path):
-    with sqlite3.connect(path) as connection:
-        return connection.execute("select version_num from alembic_version").fetchone()[0]
-
-
-def test_a_migration_that_fails_halfway_leaves_nothing_behind(tmp_path, monkeypatch, next_migration):
-    target = tmp_path / "half.db"
-    monkeypatch.setenv("DATABASE_URL", f"sqlite+aiosqlite:///{target}")
-    config = next_migration(
-        """
-        op.create_table("half_done", sa.Column("id", sa.Integer(), primary_key=True))
-        raise RuntimeError("boom")
-        """
+def test_column_types_match_what_the_models_chose_for_postgres(fresh_database, migrate):
+    """Что `compare_metadata` не видит: пояс времени, JSONB, побайтовое сравнение строк, 64 бита."""
+    migrate(fresh_database)
+    query = text(
+        "select table_name, column_name, data_type, collation_name from information_schema.columns "
+        "where table_schema = 'public'"
     )
-    command.upgrade(config, "0001")
-    tables_before = _tables(target)
+    found = {(row.table_name, row.column_name): row for row in _on(fresh_database, lambda c: c.execute(query).all())}
 
-    with pytest.raises(RuntimeError, match="boom"):
-        command.upgrade(config, "head")
-
-    # DDL откатилась вместе с версией: следующий старт не упрётся в «table already exists».
-    assert _tables(target) == tables_before
-    assert "half_done" not in _tables(target)
-    assert _version(target) == "0001"
-
-
-def test_a_good_second_migration_applies_in_one_piece(tmp_path, monkeypatch, next_migration):
-    target = tmp_path / "good.db"
-    monkeypatch.setenv("DATABASE_URL", f"sqlite+aiosqlite:///{target}")
-    config = next_migration('op.create_table("extra", sa.Column("id", sa.Integer(), primary_key=True))')
-
-    command.upgrade(config, "head")
-
-    assert "extra" in _tables(target)
-    assert _version(target) == "0002"
+    checked = set()
+    for table in Base.metadata.sorted_tables:
+        for column in table.columns:
+            row = found[(table.name, column.name)]
+            if isinstance(column.type, UtcDateTime):
+                assert row.data_type == "timestamp with time zone", (table.name, column.name)
+                checked.add("timestamptz")
+            elif isinstance(column.type, JSONB):
+                assert row.data_type == "jsonb", (table.name, column.name)
+                checked.add("jsonb")
+            elif isinstance(column.type, BigInteger):
+                assert row.data_type == "bigint", (table.name, column.name)
+                checked.add("bigint")
+            elif isinstance(column.type, String) and column.type.collation:
+                assert row.collation_name == column.type.collation, (table.name, column.name)
+                checked.add("collation")
+    assert checked == {"timestamptz", "jsonb", "bigint", "collation"}

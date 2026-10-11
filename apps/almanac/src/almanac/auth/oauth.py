@@ -20,6 +20,7 @@ from fastmcp.server.auth.auth import ClientRegistrationOptions, RevocationOption
 from mcp.server.auth.provider import (
     AuthorizationCode,
     AuthorizationParams,
+    AuthorizeError,
     RefreshToken,
     RegistrationError,
     TokenError,
@@ -30,6 +31,7 @@ from mcp.shared.auth import OAuthToken as IssuedToken
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from almanac import checks
 from almanac.auth.tokens import hash_token, new_token
 from almanac.clock import utcnow
 from almanac.config import LOOPBACK
@@ -93,6 +95,8 @@ class AlmanacOAuthProvider(OAuthProvider):
     # --- клиенты ---
 
     async def get_client(self, client_id: str) -> OAuthClientInformationFull | None:
+        if checks.has_nul(client_id):
+            return None  # такого клиента не бывает; база не примет и условие с нулевым символом
         async with self._db().read() as session:
             row = await session.get(OAuthClient, client_id)
         return OAuthClientInformationFull.model_validate(row.info) if row else None
@@ -107,8 +111,11 @@ class AlmanacOAuthProvider(OAuthProvider):
             raise RegistrationError(
                 "invalid_client_metadata", f"client_name: at most {REGISTERED_NAME_MAX} characters"
             )
+        info = client_info.model_dump(mode="json")
+        if checks.has_nul(info):  # регистрация открыта всем, а Postgres не хранит нулевой символ
+            raise RegistrationError("invalid_client_metadata", "client metadata must not contain NUL characters")
         async with self._db().write() as session:
-            await session.merge(OAuthClient(client_id=client_info.client_id, info=client_info.model_dump(mode="json")))
+            await session.merge(OAuthClient(client_id=client_info.client_id, info=info))
 
     async def client_name(self, client_id: str) -> str:
         """Как клиент назван в журнале и в заголовке факта: `mcp:<имя>`.
@@ -126,6 +133,9 @@ class AlmanacOAuthProvider(OAuthProvider):
     # --- согласие ---
 
     async def authorize(self, client: OAuthClientInformationFull, params: AuthorizationParams) -> str:
+        resource = getattr(params, "resource", None)
+        if checks.has_nul([params.state, params.scopes, resource]):  # отказ вне `write()`: см. `exchange_authorization_code`
+            raise AuthorizeError("invalid_request", "the request must not contain NUL characters")
         txn = new_token()
         async with self._db().write() as session:
             # Регистрация и авторизация открыты всем: таблица не должна расти от брошенных запросов.
@@ -140,7 +150,7 @@ class AlmanacOAuthProvider(OAuthProvider):
                         "state": params.state,
                         "scopes": params.scopes or [],
                         "code_challenge": params.code_challenge,
-                        "resource": getattr(params, "resource", None),
+                        "resource": resource,
                     },
                 )
             )

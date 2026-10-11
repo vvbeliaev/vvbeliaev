@@ -15,6 +15,7 @@ from almanac.store import journal
 from almanac.store.source import Source, resolve
 
 MAX_BODY = 100_000
+REV_MAX = 2**31 - 1  # номер ревизии лежит в int32; больший в запрос не отправить: ответом будет ошибка базы
 # Подпись ограничена по длине и строке: без предела выражение на чужом теле квадратично.
 LINK = re.compile(r"\[\[([a-z0-9-]+/[a-z0-9-]+)(?:\|[^\]\n]{0,120})?\]\]")
 
@@ -45,7 +46,7 @@ async def get(session: AsyncSession, path: str) -> Page:
 
 
 async def revision(session: AsyncSession, path: str, rev: int) -> PageRevision:
-    row = await session.get(PageRevision, (path, rev))
+    row = await session.get(PageRevision, (path, rev)) if 0 < rev <= REV_MAX else None
     if row is None:
         raise NotFound(f"{path} has no rev {rev}")
     return row

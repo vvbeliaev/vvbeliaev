@@ -49,12 +49,16 @@ def _check(item: Item, owner_tz: str) -> None:
     if item.list_ is not None:
         if item.kind != "task":
             raise Refused("`list` is for tasks only")
+        if len(item.list_) > checks.LIST_LIMIT:
+            raise Refused(f"list is longer than {checks.LIST_LIMIT} characters")
         if not checks.LIST_SLUG.fullmatch(item.list_):
             raise Refused(f"bad list {item.list_!r}: lowercase a-z, 0-9 and single dashes, like shopping")
     if item.at is not None and item.at.tzinfo is not None:
         raise Refused("`at` is local time without an offset; put the zone name in `tz`")
     occur.zone(item.tz or owner_tz)
     if item.rrule is not None:
+        if len(item.rrule) > checks.RRULE_LIMIT:
+            raise Refused(f"rrule is longer than {checks.RRULE_LIMIT} characters")
         occur.rule(item.rrule, item.at)
     if item.remind:
         if item.at is None and item.due is None:
@@ -134,6 +138,9 @@ async def update(
     if not changes:
         raise Refused("nothing to change: name at least one field")
 
+    if changes.get("page") is not None:
+        # До правки полей: поиск сбрасывает правки в базу, а имя длиннее колонки она не примет.
+        await pages.get(session, changes["page"])
     before = {name: _plain(getattr(item, _attr(name))) for name in changes}
     for name, value in changes.items():
         if value is None and name in NOT_NULL:
@@ -144,8 +151,6 @@ async def update(
             value = list(value or ())
         setattr(item, _attr(name), value)
     _check(item, owner_tz)
-    if changes.get("page") is not None:
-        await pages.get(session, item.page)
     if "status" in changes:
         item.done_at = utcnow() if item.status == "done" else None
     item.rev += 1

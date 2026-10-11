@@ -1,7 +1,7 @@
 """Снять все допуски разом: `python -m almanac.auth.revoke`.
 
 Единственное средство против ошибочно одобренного клиента, и у него нет веб-поверхности:
-команда запускается там, где лежит база. Удаляет все токены, коды, ожидающие согласия,
+команда запускается там, откуда есть доступ к базе. Удаляет все токены, коды, ожидающие согласия,
 клиентов и сессии владельца. После неё каждый клиент проходит согласие заново, а браузер
 владельца входит по паролю.
 """
@@ -10,7 +10,7 @@ import asyncio
 import sys
 
 from sqlalchemy import delete
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import DBAPIError
 
 from almanac.config import Settings
 from almanac.db import Database
@@ -33,8 +33,8 @@ async def main() -> int:
     db = Database(Settings().database_url)
     try:
         removed = await revoke_all(db)
-    except OperationalError as error:
-        print(f"База не готова ({error.orig}): проверьте DATABASE_URL.", file=sys.stderr)
+    except (DBAPIError, OSError) as error:  # не отвечает, не пускает, нет таблиц; пароля в этих текстах нет
+        print(f"База не готова ({getattr(error, 'orig', error)}): проверьте DATABASE_URL и миграции.", file=sys.stderr)
         return 1
     finally:
         await db.dispose()

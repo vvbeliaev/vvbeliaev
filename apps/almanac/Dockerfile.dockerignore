@@ -22,4 +22,3 @@ apps/almanac/*.md
 **/__pycache__
 **/.pytest_cache
 **/.ruff_cache
-**/*.db*

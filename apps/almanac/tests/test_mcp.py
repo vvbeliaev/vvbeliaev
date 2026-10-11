@@ -14,7 +14,6 @@ from pydantic import AnyUrl
 from sqlalchemy import select
 
 from almanac.app import create_app
-from almanac.config import Settings
 from almanac.identity import INTERNAL_HEADER, acting, sign_internal
 from almanac.models import Journal
 
@@ -47,7 +46,7 @@ async def mcp(app):
 @pytest.fixture
 async def direct(db, settings, now):
     """Тот же сервер без Code Mode: инструменты видны напрямую."""
-    plain = Settings(_env_file=None, owner_tz="Europe/Berlin", mcp_code_mode=False)
+    plain = settings.model_copy(update={"mcp_code_mode": False})
     acting.set("claude-test")
     async with Client(create_app(plain, db=db).state.mcp) as client:
         yield client

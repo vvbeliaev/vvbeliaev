@@ -224,6 +224,14 @@ async def test_owner_message_becomes_a_fact(db, now, scheduler, messenger):
         assert len((await session.scalars(select(Fact))).all()) == 1
 
 
+async def test_message_with_a_nul_is_refused_and_the_owner_is_told(db, now, scheduler, messenger):
+    await scheduler.handle({"message": {"chat": {"id": OWNER}, "text": "купить\x00лампочки"}})
+
+    assert messenger.sent[-1][0].startswith("Не записал:") and "NUL" in messenger.sent[-1][0]
+    async with db.read() as session:
+        assert (await session.scalars(select(Fact))).all() == []
+
+
 class Feed(FakeMessenger):
     """Бот с очередью ответов getUpdates: исключение в очереди — сбой сети."""
 

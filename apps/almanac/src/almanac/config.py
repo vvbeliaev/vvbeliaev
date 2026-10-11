@@ -10,14 +10,17 @@ PACKAGE = Path(__file__).parent
 LOOPBACK = frozenset({"localhost", "127.0.0.1", "::1"})
 DAY_START = re.compile(r"([01][0-9]|2[0-3]):[0-5][0-9]")
 ICS_TOKEN_MIN = 32
+DATABASE_SCHEME = "postgresql+asyncpg://"
 
 
 class Settings(BaseSettings):
     """Настройки из окружения; имена переменных — те же, заглавными."""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Без значения во вводе: в адресе базы стоит пароль, а текст ошибки уходит в журнал запуска.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
 
-    database_url: str = "sqlite+aiosqlite:///almanac.db"
+    # Локальная база из compose: вход без пароля, порт открыт только на 127.0.0.1.
+    database_url: str = "postgresql+asyncpg://almanac@127.0.0.1:5434/almanac"
     owner_tz: str = "UTC"
     day_start: str = "09:00"
     schema_dir: Path = PACKAGE / "schema"
@@ -29,8 +32,15 @@ class Settings(BaseSettings):
     telegram_owner_chat_id: int = 0
     # Секрет в адресе ленты `/calendar/<токен>.ics`. Пусто — лента выключена.
     ics_token: str = ""
-    # Каталог суточных копий базы. Пусто — копии не делаются.
-    backup_dir: Path | None = None
+
+    @field_validator("database_url")
+    @classmethod
+    def _database_url(cls, value: str) -> str:
+        """Драйвер один — asyncpg, и сервер, и миграции идут на нём. Значение в ошибку не попадает: там пароль."""
+        if not value.startswith(DATABASE_SCHEME):
+            scheme = value.partition("://")[0] if "://" in value else "no scheme"
+            raise ValueError(f"DATABASE_URL must start with {DATABASE_SCHEME}, got {scheme!r}")
+        return value
 
     @field_validator("day_start")
     @classmethod

@@ -241,3 +241,39 @@ def test_rrule_until_must_not_be_a_bare_date(text):
 
 def test_rrule_until_as_local_date_time_stays_valid():
     assert occur.rule("FREQ=WEEKLY;UNTIL=20261231T235959", EVENING).count() == 12
+
+
+# Postgres проверяет длину колонок. Всё, что идёт в `String(n)` без своего предела, должно получить отказ
+# на входе, а не ошибку базы и 500.
+
+
+async def test_list_slug_is_limited_to_its_column(db, now):
+    item = await _add(db, list_="a" * 60)
+    assert item.list_ == "a" * 60
+    with pytest.raises(Refused, match="60 characters"):
+        await _add(db, list_="a" * 61)
+
+
+def _rule(length):
+    """Правило ровно такой длины: нули в `INTERVAL` ничего не меняют."""
+    base = "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO"
+    return base.replace("INTERVAL=1", "INTERVAL=" + "0" * (length - len(base)) + "1")
+
+
+async def test_rrule_is_limited_to_its_column(db, now):
+    assert len(_rule(300)) == 300
+    item = await _add(db, kind="event", at=EVENING, rrule=_rule(300))
+    assert item.rrule == _rule(300)
+    with pytest.raises(Refused, match="300 characters"):
+        await _add(db, kind="event", at=EVENING, rrule=_rule(301))
+
+
+async def test_page_name_longer_than_its_column_is_simply_not_found(db, now):
+    long = "pages/people/" + "a" * 200 + ".md"
+    with pytest.raises(NotFound):
+        await _add(db, page=long)
+    item = await _add(db)
+    with pytest.raises(NotFound):
+        await _update(db, item.id, item.rev, {"page": long})
+    async with db.read() as session:
+        assert (await session.get(type(item), item.id)).page is None

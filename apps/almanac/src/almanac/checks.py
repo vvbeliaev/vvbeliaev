@@ -10,6 +10,9 @@ from almanac.errors import Refused
 PAGE_PATH = re.compile(r"pages/([a-z0-9-]+)/([a-z0-9]+(?:-[a-z0-9]+)*)\.md")
 LIST_SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 SLUG_LIMIT = 60
+# Пределы колонок `items.list` и `items.rrule`: Postgres длину проверяет, и без отказа здесь запись упала бы в базе.
+LIST_LIMIT = 60
+RRULE_LIMIT = 300
 
 
 def page_path(path: str, types: Iterable[str]) -> tuple[str, str]:
@@ -26,6 +29,26 @@ def page_path(path: str, types: Iterable[str]) -> tuple[str, str]:
     if len(slug) > SLUG_LIMIT:
         raise Refused(f"slug is longer than {SLUG_LIMIT} characters")
     return kind, slug
+
+
+# Postgres не хранит нулевой символ в тексте и в JSON: без отказа здесь запись упала бы в базе, а ручка отдала 500.
+NUL = "\x00"
+
+
+def has_nul(value: object) -> bool:
+    """Есть ли нулевой символ в строке, а также в списках и словарях (ключи и значения) на любой глубине."""
+    if isinstance(value, str):
+        return NUL in value
+    if isinstance(value, dict):
+        return any(has_nul(key) or has_nul(item) for key, item in value.items())
+    if isinstance(value, (list, tuple)):
+        return any(has_nul(item) for item in value)
+    return False
+
+
+def no_nul(*values: object) -> None:
+    if any(has_nul(value) for value in values):
+        raise Refused("text contains a NUL character (\\x00), which cannot be stored; remove it and try again")
 
 
 def one_line(value: str, *, name: str, limit: int) -> str:

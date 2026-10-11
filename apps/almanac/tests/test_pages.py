@@ -238,3 +238,11 @@ async def test_reason_with_a_secret_is_refused_everywhere(db, now):
         page = await pages.get(session, ANNA)
         revisions = await pages.history(session, ANNA)
     assert (page.rev, len(revisions)) == (1, 1)
+
+
+@pytest.mark.parametrize("rev", [0, -1, 2**31, 2**63, 10**30])
+async def test_revision_number_no_column_can_hold_is_simply_not_found(db, now, rev):
+    await _write(db)
+    async with db.read() as session:
+        with pytest.raises(NotFound, match="has no rev"):
+            await pages.revision(session, ANNA, rev)

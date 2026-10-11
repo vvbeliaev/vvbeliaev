@@ -69,3 +69,35 @@ def test_empty_and_long_calendar_secrets_are_accepted():
     long = "feed-" + "a" * 27
     assert len(long) == 32
     assert Settings(_env_file=None, ics_token=long).ics_token == long
+
+
+def test_default_database_is_the_local_one_from_compose(monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    assert Settings(_env_file=None).database_url == "postgresql+asyncpg://almanac@127.0.0.1:5434/almanac"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "mysql+aiomysql://almanac@127.0.0.1/almanac",
+        "postgresql://almanac@127.0.0.1/almanac",  # без драйвера: SQLAlchemy взял бы psycopg2, которого нет
+        "postgres://almanac@127.0.0.1/almanac",  # так адрес выдаёт панель хостинга
+        "postgresql+psycopg://almanac@127.0.0.1/almanac",
+        "127.0.0.1:5434/almanac",
+        "",
+    ],
+)
+def test_database_url_must_name_the_asyncpg_driver(url):
+    with pytest.raises(ValidationError, match=r"DATABASE_URL must start with postgresql\+asyncpg://"):
+        Settings(_env_file=None, database_url=url)
+
+
+def test_a_refused_database_url_does_not_leak_its_password():
+    with pytest.raises(ValidationError) as refused:
+        Settings(_env_file=None, database_url="postgres://almanac:hunter2-not-a-real-one@db.example/almanac")
+    assert "hunter2" not in str(refused.value)
+
+
+def test_good_database_url_is_kept_as_is():
+    url = "postgresql+asyncpg://almanac:pw@db.example:5432/almanac"
+    assert Settings(_env_file=None, database_url=url).database_url == url

@@ -26,6 +26,8 @@ async def add(
     url: str | None = None,
     supersedes: str | None = None,
 ) -> Fact:
+    # Сюда приходят и слова модели через API, и сообщения владельца из Telegram: бот до API не доходит.
+    checks.no_nul(text, url, supersedes)
     body = (text or "").strip()
     if not body:
         raise Refused("fact text is empty")

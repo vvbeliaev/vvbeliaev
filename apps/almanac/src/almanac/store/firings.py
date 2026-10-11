@@ -50,7 +50,7 @@ async def unplanned(session: AsyncSession, *, owner_tz: str, day_start: str, now
     """
     waiting = exists().where(Firing.item_id == Item.id, Firing.state == "pending", Firing.manual.is_(False))
     statement = select(Item).where(
-        Item.status == "open", func.json_array_length(Item.remind) > 0, ~waiting
+        Item.status == "open", func.jsonb_array_length(Item.remind) > 0, ~waiting
     )
     lost = []
     for item in (await session.scalars(statement)).all():

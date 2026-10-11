@@ -1,31 +1,26 @@
-import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from sqlalchemy import event
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from almanac.models import Base
+# Ключ рекомендательного замка Postgres, один на всю базу. Значение произвольное: слово «almanac» байтами.
+WRITE_LOCK_KEY = int.from_bytes(b"almanac")
 
 
 class Database:
     """Движок, фабрика сессий и замок записи.
 
-    Писатель один: процесс один, и каждая запись идёт под `write()`. Поэтому
-    проверка версии и сама запись не расходятся, а SQLite не отвечает
-    «database is locked» на гонку двух транзакций.
+    Писатель один на базу, а не на процесс: каждая запись первым запросом берёт замок уровня
+    транзакции, и второй писатель ждёт, пока первый не закоммитит или не откатится. Поэтому
+    проверка версии и сама запись не расходятся, даже когда в базу пишут два процесса —
+    сервер и локальная дверь MCP. Замок снимает сама база в конце транзакции: оборвавшийся
+    процесс его не удержит.
     """
 
     def __init__(self, url: str) -> None:
         self.engine = create_async_engine(url)
-        if self.engine.dialect.name == "sqlite":
-            event.listen(self.engine.sync_engine, "connect", _sqlite_pragmas)
         self.sessions = async_sessionmaker(self.engine, expire_on_commit=False)
-        self._write_lock = asyncio.Lock()
-
-    async def create_all(self) -> None:
-        async with self.engine.begin() as connection:
-            await connection.run_sync(Base.metadata.create_all)
 
     async def dispose(self) -> None:
         await self.engine.dispose()
@@ -38,14 +33,8 @@ class Database:
     @asynccontextmanager
     async def write(self) -> AsyncIterator[AsyncSession]:
         """Одна транзакция: вышли без исключения — коммит, с исключением — ничего не записано."""
-        async with self._write_lock, self.sessions() as session:
+        async with self.sessions() as session:
+            # Замок первым запросом: всё, что код прочтёт дальше, он читает уже после чужого коммита.
+            await session.execute(text("select pg_advisory_xact_lock(:key)"), {"key": WRITE_LOCK_KEY})
             yield session
             await session.commit()
-
-
-def _sqlite_pragmas(dbapi_connection, _record) -> None:
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.execute("PRAGMA busy_timeout=5000")
-    cursor.close()

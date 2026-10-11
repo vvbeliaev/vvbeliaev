@@ -42,11 +42,8 @@ def started(monkeypatch):
     return seen
 
 
-def _settings(tmp_path, **over):
-    return Settings(
-        _env_file=None, database_url=f"sqlite+aiosqlite:///{tmp_path / 'life.db'}", owner_tz="Europe/Berlin",
-        **over,
-    )
+def _settings(url, **over):
+    return Settings(_env_file=None, database_url=url, owner_tz="Europe/Berlin", **over)
 
 
 async def _settle():
@@ -54,8 +51,8 @@ async def _settle():
         await asyncio.sleep(0)
 
 
-async def test_loops_start_with_the_app_and_stop_with_it(tmp_path, started):
-    app = create_app(_settings(tmp_path, telegram_bot_token=TOKEN, telegram_owner_chat_id=42))
+async def test_loops_start_with_the_app_and_stop_with_it(fresh_database, started):
+    app = create_app(_settings(fresh_database, telegram_bot_token=TOKEN, telegram_owner_chat_id=42))
     async with LifespanManager(app):
         await _settle()
         assert started["running"] == {"run", "poll"}
@@ -67,49 +64,15 @@ async def test_loops_start_with_the_app_and_stop_with_it(tmp_path, started):
 
 
 @pytest.mark.parametrize("over", [{}, {"telegram_bot_token": TOKEN}, {"telegram_owner_chat_id": 42}])
-async def test_loops_stay_off_without_both_token_and_chat(tmp_path, started, over):
-    app = create_app(_settings(tmp_path, **over))
+async def test_loops_stay_off_without_both_token_and_chat(fresh_database, started, over):
+    app = create_app(_settings(fresh_database, **over))
     async with LifespanManager(app):
         await _settle()
     assert (started["built"], started["running"]) == ([], set())
 
 
-async def test_loops_stay_off_when_tests_bring_their_own_database(db, started, tmp_path):
-    app = create_app(_settings(tmp_path, telegram_bot_token=TOKEN, telegram_owner_chat_id=42), db=db)
+async def test_loops_stay_off_when_tests_bring_their_own_database(db, started, pg_url):
+    app = create_app(_settings(pg_url, telegram_bot_token=TOKEN, telegram_owner_chat_id=42), db=db)
     async with LifespanManager(app):
         await _settle()
     assert started["built"] == []
-
-
-@pytest.fixture
-def backups(monkeypatch):
-    seen = {"started": [], "cancelled": 0}
-
-    async def forever(db, directory):
-        seen["started"].append(directory)
-        try:
-            await asyncio.sleep(3600)
-        except asyncio.CancelledError:
-            seen["cancelled"] += 1
-            raise
-
-    monkeypatch.setattr("almanac.app.backup.run", forever)
-    return seen
-
-
-async def test_backup_loop_runs_while_the_app_does(tmp_path, backups):
-    directory = tmp_path / "copies"
-    app = create_app(_settings(tmp_path, backup_dir=directory))
-    async with LifespanManager(app):
-        await _settle()
-        assert backups["started"] == [directory]
-        assert backups["cancelled"] == 0
-    assert backups["cancelled"] == 1
-
-
-async def test_backup_loop_stays_off_without_a_directory_or_with_a_borrowed_database(db, tmp_path, backups):
-    async with LifespanManager(create_app(_settings(tmp_path))):
-        await _settle()
-    async with LifespanManager(create_app(_settings(tmp_path, backup_dir=tmp_path / "copies"), db=db)):
-        await _settle()
-    assert backups["started"] == []

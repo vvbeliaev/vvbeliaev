@@ -2,15 +2,17 @@
 
 from datetime import UTC, date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
 
 
 class UtcDateTime(TypeDecorator):
-    """Момент в UTC. SQLite пояс не хранит: на входе нужно осведомлённое время, на выходе оно с UTC."""
+    """Момент (`timestamptz`). На входе нужно осведомлённое время: наивное — отказ, а не догадка о поясе;
+    на выходе оно в UTC."""
 
-    impl = DateTime
+    impl = DateTime(timezone=True)
     cache_ok = True
 
     def process_bind_param(self, value, dialect):
@@ -18,10 +20,10 @@ class UtcDateTime(TypeDecorator):
             return None
         if value.tzinfo is None:
             raise ValueError("naive datetime: pass an aware one")
-        return value.astimezone(UTC).replace(tzinfo=None)
+        return value.astimezone(UTC)
 
     def process_result_value(self, value, dialect):
-        return None if value is None else value.replace(tzinfo=UTC)
+        return None if value is None else value.astimezone(UTC)
 
 
 class Base(DeclarativeBase):
@@ -33,7 +35,8 @@ class Fact(Base):
 
     __tablename__ = "facts"
 
-    id: Mapped[str] = mapped_column(String(16), primary_key=True)
+    # Колонки, по которым SQL сортирует (`ORDER BY`), сравниваются побайтно: порядок не зависит от локали сервера.
+    id: Mapped[str] = mapped_column(String(16, collation="C"), primary_key=True)
     at: Mapped[datetime] = mapped_column(UtcDateTime)
     client: Mapped[str] = mapped_column(String(100))
     origin: Mapped[str] = mapped_column(String(8))
@@ -49,10 +52,10 @@ class Page(Base):
 
     __tablename__ = "pages"
 
-    path: Mapped[str] = mapped_column(String(120), primary_key=True)
+    path: Mapped[str] = mapped_column(String(120, collation="C"), primary_key=True)
     title: Mapped[str] = mapped_column(String(120))
     description: Mapped[str] = mapped_column(String(200))
-    aliases: Mapped[list[str]] = mapped_column(JSON)
+    aliases: Mapped[list[str]] = mapped_column(JSONB)
     body: Mapped[str] = mapped_column(Text)
     rev: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
@@ -69,7 +72,7 @@ class PageRevision(Base):
     rev: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(120))
     description: Mapped[str] = mapped_column(String(200))
-    aliases: Mapped[list[str]] = mapped_column(JSON)
+    aliases: Mapped[list[str]] = mapped_column(JSONB)
     body: Mapped[str] = mapped_column(Text)
     deleted: Mapped[bool] = mapped_column(Boolean, default=False)
     at: Mapped[datetime] = mapped_column(UtcDateTime)
@@ -90,7 +93,7 @@ class Item(Base):
 
     __tablename__ = "items"
 
-    id: Mapped[str] = mapped_column(String(16), primary_key=True)
+    id: Mapped[str] = mapped_column(String(16, collation="C"), primary_key=True)
     kind: Mapped[str] = mapped_column(String(8))
     title: Mapped[str] = mapped_column(String(200))
     note: Mapped[str] = mapped_column(Text, default="")
@@ -101,7 +104,7 @@ class Item(Base):
     at: Mapped[datetime | None] = mapped_column(DateTime)
     tz: Mapped[str | None] = mapped_column(String(60))
     rrule: Mapped[str | None] = mapped_column(String(300))
-    remind: Mapped[list[str]] = mapped_column(JSON)
+    remind: Mapped[list[str]] = mapped_column(JSONB)
     status: Mapped[str] = mapped_column(String(10))
     done_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     rev: Mapped[int] = mapped_column(Integer)
@@ -128,7 +131,8 @@ class Firing(Base):
     state: Mapped[str] = mapped_column(String(10))
     sent_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
-    message_id: Mapped[int | None] = mapped_column(Integer)
+    # Идентификатор сообщения Telegram: Bot API не обещает, что он уместится в int32.
+    message_id: Mapped[int | None] = mapped_column(BigInteger)
     manual: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -143,7 +147,7 @@ class Journal(Base):
     op: Mapped[str] = mapped_column(String(20))
     target: Mapped[str] = mapped_column(String(120))
     reason: Mapped[str] = mapped_column(String(200))
-    detail: Mapped[dict] = mapped_column(JSON)
+    detail: Mapped[dict] = mapped_column(JSONB)
 
 
 class Session(Base):
@@ -160,7 +164,7 @@ class OAuthClient(Base):
     __tablename__ = "oauth_clients"
 
     client_id: Mapped[str] = mapped_column(String(200), primary_key=True)
-    info: Mapped[dict] = mapped_column(JSON)
+    info: Mapped[dict] = mapped_column(JSONB)
 
 
 class AuthPending(Base):
@@ -171,7 +175,7 @@ class AuthPending(Base):
     state_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     kind: Mapped[str] = mapped_column(String(20))
     expires_at: Mapped[datetime] = mapped_column(UtcDateTime)
-    data: Mapped[dict] = mapped_column(JSON)
+    data: Mapped[dict] = mapped_column(JSONB)
 
 
 class OAuthCode(Base):
@@ -180,7 +184,7 @@ class OAuthCode(Base):
     code_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     client_id: Mapped[str] = mapped_column(String(200))
     expires_at: Mapped[datetime] = mapped_column(UtcDateTime)
-    data: Mapped[dict] = mapped_column(JSON)
+    data: Mapped[dict] = mapped_column(JSONB)
 
 
 class OAuthToken(Base):
@@ -192,6 +196,7 @@ class OAuthToken(Base):
     kind: Mapped[str] = mapped_column(String(10))
     pair_id: Mapped[str] = mapped_column(String(64))
     client_id: Mapped[str] = mapped_column(String(200))
-    scopes: Mapped[list[str]] = mapped_column(JSON)
-    resource: Mapped[str | None] = mapped_column(String(500))
+    scopes: Mapped[list[str]] = mapped_column(JSONB)
+    # Адрес приходит от клиента в запросе авторизации, длина ничем не ограничена.
+    resource: Mapped[str | None] = mapped_column(Text)
     expires_at: Mapped[datetime] = mapped_column(UtcDateTime)

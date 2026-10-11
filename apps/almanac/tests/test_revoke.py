@@ -1,7 +1,9 @@
 import asyncio
 import os
+import socket
 import sys
 
+import pytest
 from mcp.server.auth.provider import AuthorizationParams
 from mcp.shared.auth import OAuthClientInformationFull
 from pydantic import AnyUrl
@@ -79,14 +81,7 @@ async def test_revoke_all_on_an_empty_database_removes_nothing(db):
     assert await revoke_all(db) == dict.fromkeys(TABLES, 0)
 
 
-async def test_command_line_prints_what_it_removed(tmp_path):
-    url = f"sqlite+aiosqlite:///{tmp_path / 'cli.db'}"
-    database = Database(url)
-    await database.create_all()
-    async with database.write() as session:
-        await owner.open_session(session)
-    await database.dispose()
-
+async def _revoke_command(url, tmp_path):
     # Каталог запуска пустой, и `.env` оттуда не прочитается; переменные окружения задаём сами.
     env = {**os.environ, "DATABASE_URL": url}
     process = await asyncio.create_subprocess_exec(
@@ -94,6 +89,33 @@ async def test_command_line_prints_what_it_removed(tmp_path):
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
     )
     out, err = await process.communicate()
+    return process.returncode, out.decode(), err.decode()
 
-    assert process.returncode == 0, err.decode()
-    assert out.decode().splitlines() == [f"{table}: {1 if table == 'sessions' else 0}" for table in TABLES]
+
+async def test_command_line_prints_what_it_removed(migrated_database, tmp_path):
+    database = Database(migrated_database)
+    async with database.write() as session:
+        await owner.open_session(session)
+    await database.dispose()
+
+    code, out, err = await _revoke_command(migrated_database, tmp_path)
+
+    assert code == 0, err
+    assert out.splitlines() == [f"{table}: {1 if table == 'sessions' else 0}" for table in TABLES]
+
+
+def _closed_port():
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+@pytest.mark.parametrize("target", ["no tables", "nobody listens"])
+async def test_command_line_says_the_database_is_not_ready(target, fresh_database, tmp_path):
+    closed = f"postgresql+asyncpg://almanac@127.0.0.1:{_closed_port()}/almanac"
+
+    code, out, err = await _revoke_command(fresh_database if target == "no tables" else closed, tmp_path)
+
+    # Один понятный отказ вместо трассировки.
+    assert (code, out) == (1, "")
+    assert err.startswith("База не готова (") and "Traceback" not in err
