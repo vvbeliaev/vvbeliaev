@@ -84,3 +84,13 @@ async def test_the_refusal_reaches_the_model_through_the_mcp_door(db, settings, 
     async with Client(create_app(plain, db=db).state.mcp) as client:
         with pytest.raises(ToolError, match="NUL"):
             await client.call_tool("note", {"text": f"купить{NUL}лампочки"})
+
+
+async def test_half_of_a_surrogate_pair_is_refused_like_nul(api):
+    """Одиночный суррогат — допустимый JSON, но в UTF-8 его не закодировать: база ответила бы ошибкой."""
+    # Телом как есть: в JSON суррогат записан экранированным, а клиент сам такое не отправит.
+    response = await api.post(
+        "/api/facts", content=b'{"text": "a \\ud800 b"}', headers={"content-type": "application/json"}
+    )
+    assert response.status_code == 422
+    assert "cannot be stored" in response.json()["detail"]

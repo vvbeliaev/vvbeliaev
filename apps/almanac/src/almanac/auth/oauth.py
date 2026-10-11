@@ -134,7 +134,7 @@ class AlmanacOAuthProvider(OAuthProvider):
 
     async def authorize(self, client: OAuthClientInformationFull, params: AuthorizationParams) -> str:
         resource = getattr(params, "resource", None)
-        if checks.has_nul([params.state, params.scopes, resource]):  # отказ вне `write()`: см. `exchange_authorization_code`
+        if checks.has_nul([params.state, params.scopes, resource, params.code_challenge]):  # отказ вне `write()`: см. `exchange_authorization_code`
             raise AuthorizeError("invalid_request", "the request must not contain NUL characters")
         txn = new_token()
         async with self._db().write() as session:

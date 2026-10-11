@@ -2,7 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from starlette.datastructures import MutableHeaders
 from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
@@ -36,7 +36,7 @@ SITE_CSP = (
 
 
 class Site(StaticFiles):
-    """Собранный сайт (`web/dist`): файлы и своя, более строгая политика содержимого."""
+    """Файлы собранного сайта (`web/dist/assets`) со своей, более строгой политикой содержимого."""
 
     async def get_response(self, path: str, scope: Scope) -> Response:
         response = await super().get_response(path, scope)
@@ -62,8 +62,8 @@ class SecureHeaders:
             if message["type"] == "http.response.start":
                 headers = MutableHeaders(scope=message)
                 for name, value in FIXED_HEADERS.items():
-                    # Свою политику содержимого ставит только сайт, и она строже общей.
-                    if name != CSP or CSP not in headers:
+                    # Своя политика содержимого остаётся только у сайта: она строже общей.
+                    if name != CSP or headers.get(CSP) != SITE_CSP:
                         headers[name] = value
                 if "cache-control" not in headers:
                     headers["Cache-Control"] = "no-store"
@@ -139,8 +139,16 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
     async def refused(_request: Request, error: Refused) -> JSONResponse:
         return JSONResponse({"detail": str(error)}, status_code=error.status)
 
-    # Сайт — последним: ему достаётся только то, что не взял ни один адрес выше.
-    if settings.site_dir.is_dir():
-        app.mount("/", Site(directory=settings.site_dir, html=True), name="site")
+    # Сайт — одна страница на корне и каталог её файлов. Монтировать его на корень целиком нельзя:
+    # такое монтирование совпадает с любым адресом и отнимает у роутера редирект `/mcp` → `/mcp/`
+    # и ответы «метод не тот».
+    index, assets = settings.site_dir / "index.html", settings.site_dir / "assets"
+    if index.is_file() and assets.is_dir():
+
+        @app.get("/", include_in_schema=False)
+        async def site() -> FileResponse:
+            return FileResponse(index, headers={CSP: SITE_CSP})
+
+        app.mount("/assets", Site(directory=assets), name="site")
 
     return app

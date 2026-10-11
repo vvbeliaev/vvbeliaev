@@ -33,12 +33,15 @@ def page_path(path: str, types: Iterable[str]) -> tuple[str, str]:
 
 # Postgres не хранит нулевой символ в тексте и в JSON: без отказа здесь запись упала бы в базе, а ручка отдала 500.
 NUL = "\x00"
+# То, что Postgres не сохранит: нулевой символ и одиночный суррогат — половина пары UTF-16,
+# которую в UTF-8 не закодировать. Оба проходят как допустимый JSON.
+UNSTORABLE = re.compile("[\x00\ud800-\udfff]")
 
 
 def has_nul(value: object) -> bool:
-    """Есть ли нулевой символ в строке, а также в списках и словарях (ключи и значения) на любой глубине."""
+    """Есть ли несохраняемый символ в строке, а также в списках и словарях (ключи и значения) на любой глубине."""
     if isinstance(value, str):
-        return NUL in value
+        return UNSTORABLE.search(value) is not None
     if isinstance(value, dict):
         return any(has_nul(key) or has_nul(item) for key, item in value.items())
     if isinstance(value, (list, tuple)):
@@ -48,7 +51,10 @@ def has_nul(value: object) -> bool:
 
 def no_nul(*values: object) -> None:
     if any(has_nul(value) for value in values):
-        raise Refused("text contains a NUL character (\\x00), which cannot be stored; remove it and try again")
+        raise Refused(
+            "text contains a character that cannot be stored: NUL (\\x00) or half of a surrogate pair; "
+            "remove it and try again"
+        )
 
 
 def one_line(value: str, *, name: str, limit: int) -> str:

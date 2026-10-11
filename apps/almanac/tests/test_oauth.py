@@ -190,7 +190,9 @@ async def test_a_client_id_with_a_nul_is_just_unknown(oauth):
     assert await oauth.get_client("client-1\x00") is None
 
 
-@pytest.mark.parametrize("over", [{"state": "s\x00"}, {"resource": "https://almanac.example/\x00"}])
+@pytest.mark.parametrize(
+    "over", [{"state": "s\x00"}, {"resource": "https://almanac.example/\x00"}, {"code_challenge": "c" * 42 + "\x00"}]
+)
 async def test_authorization_refuses_a_nul_and_leaves_nothing_pending(oauth, db, over):
     client = _client()
     await oauth.register_client(client)

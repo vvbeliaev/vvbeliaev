@@ -23,7 +23,11 @@ class Database:
     """
 
     def __init__(self, url: str) -> None:
-        self.engine = create_async_engine(url, connect_args={"server_settings": SESSION_LIMITS})
+        # `pool_pre_ping`: база перезапустилась или машина проснулась — мёртвое соединение из пула
+        # заменяется молча, а не роняет первый же запрос.
+        self.engine = create_async_engine(
+            url, pool_pre_ping=True, connect_args={"server_settings": SESSION_LIMITS}
+        )
         self.sessions = async_sessionmaker(self.engine, expire_on_commit=False)
 
     async def dispose(self) -> None:

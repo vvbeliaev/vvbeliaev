@@ -4,10 +4,13 @@
 #   scripts/procs.sh up|down|restart|status|logs|migrate|dump
 #
 # Сервер опознаётся по командной строке, а не по pid-файлу: так виден и поднятый
-# руками или из другой копии репозитория. На этом держится защита бота — второй
-# сервер не поднимется, пока жив первый: два опроса одного бота Telegram отвергнет,
-# а напоминания ушли бы дважды.
+# руками или из другой копии репозитория. Второй сервер рядом с первым — это два
+# опроса одного бота Telegram и напоминания дважды, поэтому `up` не поднимает сервер,
+# пока жив другой или занят порт. Проверка идёт до запуска: uvicorn запускает бота
+# раньше, чем занимает порт, и проигравший успел бы опросить Telegram.
 set -euo pipefail
+# Журнал, .env и дампы — личное: всё, что создаёт скрипт, читает только владелец.
+umask 077
 
 APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$APP_DIR"
@@ -31,16 +34,26 @@ if [ -z "${BASE_URL:-}" ] && ! grep -qs '^BASE_URL=' .env; then
   fi
 fi
 
-# Первый запуск: пояс владельца — пояс этой машины. Без него «сегодня» и время напоминаний
-# считались бы по UTC. Файл читают и сервер, и локальная дверь MCP, поэтому пояс лежит в нём,
-# а не в окружении сервера. Дальше .env — дело владельца: скрипт его не переписывает.
+# .env читают сервер, локальная дверь MCP и compose. Скрипт только дописывает то, чего в нём
+# нет, и ничего не меняет.
+#   OWNER_TZ — пояс этой машины: без него «сегодня» и время напоминаний считались бы по UTC.
+#   POSTGRES_PASSWORD, DATABASE_URL — пароль локальной базы; он нигде не печатается.
 ensure_env() {
-  [ -e .env ] && return 0
-  local zone
-  zone="$(readlink /etc/localtime 2> /dev/null | sed 's|.*/zoneinfo/||')"
-  [ -n "$zone" ] || zone=UTC
-  (umask 077 && printf 'OWNER_TZ=%s\n' "$zone" > .env)
-  echo ".env: создан, OWNER_TZ=$zone"
+  local zone secret
+  if [ ! -e .env ]; then
+    zone="$(readlink /etc/localtime 2> /dev/null | sed 's|.*/zoneinfo/||' || true)"
+    printf 'OWNER_TZ=%s\n' "${zone:-UTC}" > .env
+    echo ".env: создан, OWNER_TZ=${zone:-UTC}"
+  fi
+  if ! grep -qs '^POSTGRES_PASSWORD=' .env; then
+    # Последняя строка без перевода — дописанное приклеилось бы к ней.
+    [ -z "$(tail -c 1 .env)" ] || echo >> .env
+    secret="$(openssl rand -hex 24)"
+    printf 'POSTGRES_PASSWORD=%s\n' "$secret" >> .env
+    grep -qs '^DATABASE_URL=' .env \
+      || printf 'DATABASE_URL=postgresql+asyncpg://almanac:%s@127.0.0.1:5434/almanac\n' "$secret" >> .env
+    echo ".env: добавлен пароль локальной базы"
+  fi
 }
 
 # pid самого python-процесса: обёртки caffeinate и uv выходят вслед за ним.
@@ -89,7 +102,7 @@ dump() {
   mkdir -p "$BACKUPS"
   chmod 700 "$BACKUPS"
   file="$BACKUPS/$label-$(date +%Y%m%d-%H%M%S).dump"
-  (umask 077 && "${COMPOSE[@]}" exec -T db pg_dump -U almanac -Fc almanac > "$file")
+  "${COMPOSE[@]}" exec -T db pg_dump -U almanac -Fc almanac > "$file"
   [ -s "$file" ] || die "дамп пустой — дальше не иду: $file"
   echo "дамп: $file"
 }
@@ -106,6 +119,10 @@ start() {
   mkdir -p "$RUN_DIR"
   rev="$(git rev-parse --short HEAD)"
   echo "--- up $(date -u +%Y-%m-%dT%H:%M:%SZ) $rev" >> "$LOG"
+  # В журнал при ошибке базы попадает текст запроса: каталог и файл — только владельцу,
+  # в том числе созданные раньше с правами пошире.
+  chmod 700 "$RUN_DIR"
+  chmod 600 "$LOG"
   # Своя сессия (setsid) и nohup: сервер не зависит ни от терминала, ни от того, кто
   # его поднял. caffeinate -i не даёт маку уснуть, пока сервер жив: спящая машина
   # напоминаний не шлёт. SIGINT и SIGQUIT — снова по умолчанию: фоновая команда
@@ -123,6 +140,8 @@ start() {
 }
 
 healthy() { curl -fs --max-time 2 "http://127.0.0.1:$PORT/healthz" > /dev/null; }
+
+port_free() { ! lsof -nP -iTCP:"$PORT" -sTCP:LISTEN > /dev/null 2>&1; }
 
 check_started() {
   local i
@@ -174,6 +193,7 @@ up() {
     echo "сервер: уже идёт (pid $(tr "\n" " " <<< "$running"))"
     return 0
   fi
+  port_free || die "порт $PORT занят другим процессом — сервер не поднимаю. Другой порт: PORT=8920 make up"
   ensure_env
   site_built
   db_up
@@ -223,10 +243,12 @@ case "${1:-status}" in
     ;;
   migrate)
     [ -z "$(pids)" ] || die "сервер идёт — сначала make down"
+    ensure_env
     db_up
     if at_head; then echo "база уже на последней миграции"; else upgrade; fi
     ;;
   dump)
+    ensure_env
     db_up
     dump manual
     ;;

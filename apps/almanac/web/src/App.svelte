@@ -109,7 +109,7 @@
     position: sticky;
     top: 0;
     align-self: start;
-    max-height: 100dvh;
+    height: 100dvh;
     overflow-y: auto;
     padding: 1.6rem 1.25rem 2.5rem 2.1rem;
     border-right: 1px solid var(--border);
@@ -192,7 +192,7 @@
 
     aside {
       position: static;
-      max-height: none;
+      height: auto;
       padding: 1rem 1rem 1rem 1.85rem;
       border-right: 0;
       border-bottom: 1px solid var(--border);

@@ -59,3 +59,21 @@ async def test_own_cache_control_is_kept():
     assert kept.headers["cache-control"] == "public, max-age=60"
     assert kept.headers["x-frame-options"] == "DENY"
     assert added.headers["cache-control"] == "no-store"
+
+
+async def test_a_weaker_policy_of_its_own_is_replaced_and_the_site_one_is_kept():
+    from almanac.app import SITE_CSP
+
+    async def weak(_request):
+        return PlainTextResponse("ok", headers={"Content-Security-Policy": "default-src *"})
+
+    async def site(_request):
+        return PlainTextResponse("ok", headers={"Content-Security-Policy": SITE_CSP})
+
+    wrapped = SecureHeaders(Starlette(routes=[Route("/weak", weak), Route("/site", site)]))
+    async with AsyncClient(transport=ASGITransport(app=wrapped), base_url="http://test") as client:
+        replaced = await client.get("/weak")
+        kept = await client.get("/site")
+    assert replaced.headers["content-security-policy"] == "frame-ancestors 'none'"
+    assert kept.headers["content-security-policy"] == SITE_CSP
+

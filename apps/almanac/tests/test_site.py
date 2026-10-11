@@ -53,6 +53,13 @@ async def test_a_request_made_by_another_site_does_not_get_in(local):
         assert (await client.get("/api/tree")).status_code == 200
 
 
+@pytest.mark.parametrize("header", ["x-forwarded-for", "forwarded", "x-real-ip", "via", "cf-connecting-ip"])
+async def test_a_proxy_or_a_tunnel_in_front_does_not_get_in(local, header):
+    """Перед сервером прокси: соединение местное, Host может совпасть, а человек — где угодно."""
+    async with _client(local, **{header: "203.0.113.7"}) as client:
+        assert (await client.get("/api/tree")).status_code == 401
+
+
 async def test_without_the_setting_this_machine_signs_in_like_anyone(db, settings, now):
     app = create_app(settings.model_copy(update={"base_url": HERE}), db=db)
     async with _client(app) as client:
@@ -97,6 +104,20 @@ async def test_the_built_site_is_served_at_the_root_with_a_strict_policy(db, set
     assert api.status_code == 401
     assert api.headers["content-security-policy"] == "frame-ancestors 'none'"
     assert health.json() == {"ok": True}
+
+
+async def test_the_site_takes_nothing_from_the_other_addresses(db, settings, now, built):
+    """Сайт на корне не должен съесть редирект на дверь MCP и ответы «метод не тот»."""
+    app = create_app(settings.model_copy(update={"site_dir": built}), db=db)
+    async with _client(app, base_url="http://test") as client:
+        door = await client.get("/mcp")
+        wrong_method = await client.head("/healthz")
+        missing = await client.get("/no-such-page")
+        outside = await client.get("/assets/../index.html")
+    assert door.status_code == 307 and door.headers["location"].endswith("/mcp/")
+    assert wrong_method.status_code == 405
+    assert missing.status_code == 404
+    assert outside.status_code in (200, 404)  # нормализуется до `/index.html`, которого вне корня нет
 
 
 async def test_no_built_site_no_root(anon):

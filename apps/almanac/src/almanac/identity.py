@@ -25,6 +25,8 @@ READING = frozenset({"GET", "HEAD"})
 LOOPBACK_PEERS = frozenset({"127.0.0.1", "::1"})
 # Браузер подписывает запрос тем, откуда он сделан. Без заголовка — не браузер (curl).
 OWN_FETCH = frozenset({"same-origin", "none"})
+# Заголовки, которые дописывает прокси или туннель. С ними соединение местное, а человек — где угодно.
+FORWARDED = ("forwarded", "x-forwarded-for", "x-forwarded-host", "x-real-ip", "via", "cf-connecting-ip")
 _KEY = secrets.token_bytes(32)
 
 # Имя клиента для вызовов MCP в памяти процесса, без HTTP и токена: тесты и бот.
@@ -57,9 +59,13 @@ def read_internal(value: str | None) -> str | None:
 def _reads_from_here(request: Request) -> bool:
     """Чтение без входа с этой же машины, когда владелец включил `LOCAL_SITE`.
 
-    Условия — все разом. Запрос только читает. Соединение пришло с самой машины. Host —
-    ровно адрес сервера: страница чужого сайта, чьё имя направили на 127.0.0.1, придёт со
-    своим именем и не пройдёт. И запрос сделан самим сайтом, а не чужой страницей.
+    Условия — все разом. Запрос только читает. Соединение пришло с самой машины, и не через
+    прокси. Host — ровно адрес сервера: страница чужого сайта, чьё имя направили на 127.0.0.1,
+    придёт со своим именем и не пройдёт. И запрос сделан самим сайтом, а не чужой страницей.
+
+    От чего это не защищает: от любой другой программы на этой машине, включая контейнеры
+    Docker, — они тоже приходят «с самой машины» и заголовки ставят какие хотят. Послабление
+    отличает чужой сайт в браузере владельца, а не чужой код на его машине.
     """
     settings = request.app.state.settings
     if not settings.local_site or request.method not in READING:
@@ -69,6 +75,7 @@ def _reads_from_here(request: Request) -> bool:
         peer in LOOPBACK_PEERS
         and request.headers.get("host") == urlsplit(settings.base_url).netloc
         and request.headers.get("sec-fetch-site", "none") in OWN_FETCH
+        and not any(name in request.headers for name in FORWARDED)
     )
 
 

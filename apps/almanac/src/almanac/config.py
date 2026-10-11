@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     # Без значения во вводе: в адресе базы стоит пароль, а текст ошибки уходит в журнал запуска.
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
 
-    # Локальная база из compose: вход без пароля, порт открыт только на 127.0.0.1.
+    # Локальная база из compose. Пароль сюда не вписан: адрес с ним лежит в `.env` (`make up`).
     database_url: str = "postgresql+asyncpg://almanac@127.0.0.1:5434/almanac"
     owner_tz: str = "UTC"
     day_start: str = "09:00"

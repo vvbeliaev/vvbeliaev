@@ -67,8 +67,9 @@ def upgrade(url: str, revision: str = "head") -> None:
 
 @pytest.fixture(autouse=True)
 def _no_ambient_database(monkeypatch):
-    """Адрес базы тесты берут только у своего контейнера: переменная окружения разработчика им не указ."""
-    monkeypatch.delenv("DATABASE_URL", raising=False)
+    """Адрес базы тесты берут только у своего контейнера. Переменная окружения разработчика им не указ,
+    а умолчание настроек — рабочая база на этой машине: тест, забывший адрес, должен упасть, а не писать в неё."""
+    monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://nobody@127.0.0.1:1/none")
 
 
 @pytest.fixture(scope="session")

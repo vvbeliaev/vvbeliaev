@@ -31,7 +31,10 @@ Rules for working in this app. Repo-wide rules are in the root
   migrations drift.
 - **The site only reads.** `web/` issues `GET` requests and nothing else. `LOCAL_SITE`
   (`identity.py`) lets a browser on the same machine read without signing in; it never
-  covers a write, and the config refuses it on a public `BASE_URL`. The page renders
+  covers a write, and the config refuses it on a public `BASE_URL`. It tells the owner's
+  browser from a foreign site, not from foreign code: any local process or Docker
+  container can read through it, which is why the local database has a password
+  (`.env`, written by `make up`). The page renders
   third-party text, so Markdown goes through DOMPurify (`web/src/lib/markdown.ts`) and the
   server sends the site with a strict `Content-Security-Policy` (`SITE_CSP` in `app.py`).
 - **The site follows the root `DESIGN.md`** (Corona Bloom). The `:root` block in
