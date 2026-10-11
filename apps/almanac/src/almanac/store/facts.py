@@ -13,7 +13,7 @@ from almanac.ids import new_id
 from almanac.models import Fact, ItemFact, RevisionFact
 from almanac.store import journal
 
-ORIGINS = ("said", "web", "file")
+ORIGINS = ("said", "web", "file", "forward")
 MAX_TEXT = 200_000
 
 

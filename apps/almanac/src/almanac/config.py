@@ -9,6 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 PACKAGE = Path(__file__).parent
 LOOPBACK = frozenset({"localhost", "127.0.0.1", "::1"})
 DAY_START = re.compile(r"([01][0-9]|2[0-3]):[0-5][0-9]")
+ICS_TOKEN_MIN = 32
 
 
 class Settings(BaseSettings):
@@ -36,6 +37,14 @@ class Settings(BaseSettings):
     def _day_start(cls, value: str) -> str:
         if not DAY_START.fullmatch(value):
             raise ValueError(f"DAY_START must be HH:MM from 00:00 to 23:59, got {value!r}")
+        return value
+
+    @field_validator("ics_token")
+    @classmethod
+    def _ics_token(cls, value: str) -> str:
+        """Секрет в адресе — единственная защита ленты: короткий угадывается. Пусто — лента выключена."""
+        if value and len(value) < ICS_TOKEN_MIN:
+            raise ValueError(f"ICS_TOKEN must be empty or at least {ICS_TOKEN_MIN} characters, got {len(value)}")
         return value
 
     @field_validator("base_url")

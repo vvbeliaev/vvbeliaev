@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from httpx import ASGITransport, AsyncClient
 from icalendar import Calendar
@@ -9,7 +9,7 @@ from almanac.store import items
 from almanac.store.source import Source
 
 TZ = "Europe/Berlin"
-SECRET = "feed-" + "a" * 24
+SECRET = "feed-" + "a" * 32
 
 
 async def _seed(db):
@@ -65,3 +65,43 @@ async def test_feed_is_off_without_a_token(app):
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as http:
         assert (await http.get("/calendar/.ics")).status_code == 404
         assert (await http.get("/calendar/anything.ics")).status_code == 404
+
+
+async def _feed(db, items_to_add):
+    async with db.write() as session:
+        for args in items_to_add:
+            await items.add(session, client="claude", owner_tz=TZ, source=Source(said="так сказал владелец"), reason="тест", **args)
+    app = create_app(Settings(_env_file=None, owner_tz=TZ, ics_token=SECRET), db=db)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as http:
+        return await http.get(f"/calendar/{SECRET}.ics")
+
+
+async def test_task_with_a_time_is_a_timed_event_of_half_an_hour(db, now):
+    feed = await _feed(db, [{"kind": "task", "title": "Позвонить маме", "at": datetime(2026, 10, 14, 15, 0)}])
+    events = {str(event["summary"]): event for event in Calendar.from_ical(feed.content).walk("VEVENT")}
+    call = events["☐ Позвонить маме"]
+    assert call["dtstart"].dt.replace(tzinfo=None) == datetime(2026, 10, 14, 15, 0)
+    assert call["dtstart"].params["TZID"] == TZ
+    assert call["dtend"].dt - call["dtstart"].dt == timedelta(minutes=30)
+
+
+async def test_task_with_a_time_and_a_due_date_is_timed(db, now):
+    feed = await _feed(
+        db, [{"kind": "task", "title": "Сдать отчёт", "at": datetime(2026, 10, 14, 15, 0), "due": date(2026, 10, 16)}]
+    )
+    (event,) = Calendar.from_ical(feed.content).walk("VEVENT")
+    assert event["dtstart"].dt.replace(tzinfo=None) == datetime(2026, 10, 14, 15, 0)
+
+
+async def test_until_is_written_in_utc(db, now):
+    feed = await _feed(
+        db,
+        [{
+            "kind": "event", "title": "Английский", "at": datetime(2026, 10, 5, 18, 0),
+            "rrule": "FREQ=WEEKLY;UNTIL=20261231T235959",
+        }],
+    )
+    # Берлин зимой — UTC+1: 23:59:59 местного — это 22:59:59 UTC. RFC 5545 требует UTC при DTSTART с поясом.
+    assert b"UNTIL=20261231T225959Z" in feed.content
+    (event,) = Calendar.from_ical(feed.content).walk("VEVENT")
+    assert event["rrule"]["UNTIL"][0].utcoffset() == timedelta(0)

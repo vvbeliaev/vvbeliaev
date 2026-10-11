@@ -1,3 +1,5 @@
+import traceback
+
 import httpx
 import pytest
 
@@ -30,13 +32,15 @@ async def test_errors_never_carry_the_token():
         return httpx.Response(200, json={"ok": False, "description": "chat not found"})
 
     def explode(request):
-        raise httpx.ConnectError("boom", request=request)
+        # Настоящие ошибки httpx нередко несут адрес запроса, а в адресе стоит токен.
+        raise httpx.ConnectError(f"cannot reach {request.url}", request=request)
 
     for handler in (refuse, explode):
         with pytest.raises(RuntimeError) as failure:
             await _client(handler).send("текст")
         assert TOKEN not in str(failure.value)
-        assert TOKEN not in repr(failure.value.__cause__)
+        # В полном выводе исключения есть и цепочка причин: токен не должен всплыть и там.
+        assert TOKEN not in "".join(traceback.format_exception(failure.value))
 
 
 async def test_requests_do_not_log_the_token(caplog):

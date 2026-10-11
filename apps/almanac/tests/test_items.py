@@ -63,6 +63,7 @@ async def test_add_needs_a_source(db, now):
         ({"list_": "shopping\n"}, "bad list"),
         ({"reason": "ключ " + "sk-" + "a" * 24}, "looks like a secret"),
         ({"kind": "event", "at": EVENING, "rrule": "FREQ=WEEKLY;UNTIL=20261231T000000Z"}, "without Z"),
+        ({"kind": "event", "at": EVENING, "rrule": "FREQ=WEEKLY;UNTIL=20261231"}, "UNTIL as local date-time"),
         ({"remind": ["PT1H"]}, "needs `at` or `due`"),
         ({"due": date(2026, 10, 14), "remind": ["1 hour"]}, "bad duration"),
         ({"tz": "Mars/Olympus"}, "unknown time zone"),
@@ -228,3 +229,15 @@ def test_rrule_until_must_be_local_time():
     with pytest.raises(Refused, match="write UNTIL as local time without Z"):
         occur.rule("FREQ=WEEKLY;UNTIL=20261231T000000Z", EVENING)
     assert occur.rule("FREQ=WEEKLY;UNTIL=20261231T000000", EVENING).count() == 12
+
+
+@pytest.mark.parametrize(
+    "text", ["FREQ=WEEKLY;UNTIL=20261231", "RRULE:FREQ=WEEKLY;until=20261231", "FREQ=WEEKLY;UNTIL=20261231;BYDAY=MO"]
+)
+def test_rrule_until_must_not_be_a_bare_date(text):
+    with pytest.raises(Refused, match="write UNTIL as local date-time like 20261231T235959"):
+        occur.rule(text, EVENING)
+
+
+def test_rrule_until_as_local_date_time_stays_valid():
+    assert occur.rule("FREQ=WEEKLY;UNTIL=20261231T235959", EVENING).count() == 12

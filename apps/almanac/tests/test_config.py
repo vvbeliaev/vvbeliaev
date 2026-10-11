@@ -54,3 +54,18 @@ def test_good_base_url_is_accepted_without_a_trailing_slash(base_url, expected):
 
 def test_default_base_url_is_loopback():
     assert Settings(_env_file=None).base_url == "http://127.0.0.1:8000"
+
+
+@pytest.mark.parametrize("token", ["a", "feed-" + "a" * 26])
+def test_short_calendar_secret_is_refused(token):
+    assert len(token) < 32
+    with pytest.raises(ValidationError, match="ICS_TOKEN"):
+        Settings(_env_file=None, ics_token=token)
+
+
+def test_empty_and_long_calendar_secrets_are_accepted():
+    assert Settings(_env_file=None, ics_token="").ics_token == ""
+    assert Settings(_env_file=None).ics_token == ""
+    long = "feed-" + "a" * 27
+    assert len(long) == 32
+    assert Settings(_env_file=None, ics_token=long).ics_token == long

@@ -12,7 +12,10 @@ class NoteIn(Strict):
     text: str = Field(description="What was said or found, verbatim.")
     origin: str = Field(
         default="said",
-        description="`said` — the owner's words; `web` — text from the web; `file` — text from a document.",
+        description=(
+            "`said` — the owner's words; `web` — text from the web; `file` — text from a document; "
+            "`forward` — someone else's message the owner forwarded."
+        ),
     )
     url: str | None = Field(default=None, description="Where third-party text came from.")
     supersedes: str | None = Field(default=None, description="Id of the fact this one corrects.")

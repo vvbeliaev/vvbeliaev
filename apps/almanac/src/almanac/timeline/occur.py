@@ -19,6 +19,8 @@ def zone(name: str) -> ZoneInfo:
 # Лишние строки и даты `rrulestr` принимает молча: второе правило, свой DTSTART, исключения.
 EXTRA = re.compile(r"DTSTART|EXDATE|RDATE", re.IGNORECASE)
 UTC_UNTIL = re.compile(r"UNTIL=[0-9T]*Z", re.IGNORECASE)
+# `UNTIL=20261231` без времени dateutil читает как полночь: последний день выпал бы из повтора целиком.
+DATE_UNTIL = re.compile(r"UNTIL=[0-9]{8}(?![0-9T])", re.IGNORECASE)
 
 
 def rule(text: str, start: datetime):
@@ -30,6 +32,8 @@ def rule(text: str, start: datetime):
         raise Refused(f"bad rrule {text!r}: one rule only, no DTSTART, EXDATE or RDATE")
     if UTC_UNTIL.search(text):
         raise Refused(f"bad rrule {text!r}: write UNTIL as local time without Z")
+    if DATE_UNTIL.search(text):
+        raise Refused(f"bad rrule {text!r}: write UNTIL as local date-time like 20261231T235959")
     try:
         return rrulestr(text, dtstart=start)
     except (ValueError, TypeError, KeyError) as error:

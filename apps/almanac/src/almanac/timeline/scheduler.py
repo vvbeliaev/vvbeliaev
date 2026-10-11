@@ -1,7 +1,8 @@
 """Цикл напоминаний и приём из Telegram. Живёт в процессе сервера.
 
 Доставка at-least-once: отметка «отправлено» ставится после успешной отправки.
-Пропущенное напоминание хуже дубля.
+Пропущенное напоминание хуже дубля: сбой отправки не отменяет срабатывание, а цепочка
+повторов не рвётся — ни после пропуска, ни после простоя.
 """
 
 import asyncio
@@ -21,9 +22,11 @@ log = logging.getLogger(__name__)
 
 LATE_AFTER = timedelta(minutes=5)
 STALE_AFTER = timedelta(hours=24)
-MAX_ATTEMPTS = 10
+ALERT_AFTER = 10  # неудачных отправок подряд: в журнал идёт одна запись, а попытки продолжаются
 RETRY_PAUSE = 5  # секунд до новой попытки опроса после сбоя
 BUTTONS = (("Готово", "done"), ("+1 час", "hour"), ("Завтра", "tomorrow"))
+# Признаки пересланного сообщения: новый `forward_origin` и старые поля Bot API.
+FORWARD_KEYS = ("forward_origin", "forward_date", "forward_from", "forward_from_chat")
 
 
 class Messenger(Protocol):
@@ -46,21 +49,46 @@ class Scheduler:
     # --- отправка ---
 
     async def tick(self) -> int:
-        """Отправить всё созревшее. Возвращает число отправленных."""
+        """Починить план, затем отправить всё созревшее. Возвращает число отправленных."""
         now = utcnow()
+        await self._heal(now)
         async with self.db.read() as session:
             ready = [firing.id for firing in await firings.due(session, now)]
         sent = 0
         for firing_id in ready:
-            sent += await self._fire(firing_id, now)
+            try:
+                sent += await self._fire(firing_id, now)
+            except Exception:
+                log.exception("reminder %s failed", firing_id)
         return sent
+
+    async def _heal(self, now: datetime) -> None:
+        """Вернуть план элементам, у которых цепочка напоминаний оборвалась.
+
+        Обычно искать нечего: запрос отбирает только открытые элементы с напоминаниями и без
+        ожидающего срабатывания, а замок записи берётся, лишь когда по плану что-то есть.
+        """
+        try:
+            async with self.db.read() as session:
+                lost = await firings.unplanned(session, owner_tz=self.owner_tz, day_start=self.day_start, now=now)
+            if not lost:
+                return
+            async with self.db.write() as session:
+                for item_id in lost:
+                    item = await session.get(Item, item_id)
+                    if item is not None:
+                        await firings.replan(session, item, owner_tz=self.owner_tz, day_start=self.day_start)
+        except Exception:
+            log.exception("reminder plan repair failed")
 
     async def _fire(self, firing_id: str, now: datetime) -> int:
         async with self.db.read() as session:
             firing = await session.get(Firing, firing_id)
-            item = await session.get(Item, firing.item_id)
+            item = await session.get(Item, firing.item_id) if firing is not None else None
+        if firing is None or firing.state != "pending":
+            return 0  # срабатывание убрали или обработали, пока цикл шёл по списку
         stale = not firing.manual and now - firing.occurrence > STALE_AFTER
-        if item.status != "open" or stale:
+        if item is None or item.status != "open" or stale:
             await self._settle(firing_id, "skipped")
             return 0
         buttons = [(label, f"{action}:{firing.id}") for label, action in BUTTONS]
@@ -72,9 +100,10 @@ class Scheduler:
             return 0
         async with self.db.write() as session:
             row = await session.get(Firing, firing_id)
-            row.state, row.sent_at, row.message_id = "sent", utcnow(), message_id
-            current = await session.get(Item, row.item_id)
-            await firings.replan(session, current, owner_tz=self.owner_tz, day_start=self.day_start)
+            if row is not None and row.state == "pending":
+                row.state, row.sent_at, row.message_id = "sent", utcnow(), message_id
+                current = await session.get(Item, row.item_id)
+                await firings.replan(session, current, owner_tz=self.owner_tz, day_start=self.day_start)
         return 1
 
     def _text(self, item: Item, firing: Firing, now: datetime) -> str:
@@ -85,15 +114,26 @@ class Scheduler:
         return f"⏰ {when} · {item.title}{suffix}"
 
     async def _settle(self, firing_id: str, state: str) -> None:
-        async with self.db.write() as session:
-            (await session.get(Firing, firing_id)).state = state
-
-    async def _failed(self, firing_id: str, reason: str) -> None:
+        """Закрыть ожидающее срабатывание. Пропущенное плановое тянет за собой пересчёт:
+        иначе цепочка следующих повторений оборвалась бы здесь."""
         async with self.db.write() as session:
             row = await session.get(Firing, firing_id)
+            if row is None or row.state != "pending":
+                return
+            row.state = state
+            if state == "skipped" and not row.manual:
+                item = await session.get(Item, row.item_id)
+                if item is not None:
+                    await firings.replan(session, item, owner_tz=self.owner_tz, day_start=self.day_start)
+
+    async def _failed(self, firing_id: str, reason: str) -> None:
+        """Записать неудачную отправку. Срабатывание остаётся ожидающим: его снимет только срок давности."""
+        async with self.db.write() as session:
+            row = await session.get(Firing, firing_id)
+            if row is None or row.state != "pending":
+                return
             row.attempts += 1
-            if row.attempts >= MAX_ATTEMPTS:
-                row.state = "skipped"
+            if row.attempts == ALERT_AFTER:
                 journal.record(
                     session, client="scheduler", op="delivery_failed", target=row.item_id,
                     reason=reason[:200], detail={"firing": row.id, "attempts": row.attempts},
@@ -114,9 +154,11 @@ class Scheduler:
         text = (message.get("text") or "").strip()
         if not text or text.startswith("/"):
             return
+        # Пересланное — чужие слова, а не слова владельца: «said» им не бывает.
+        origin = "forward" if any(key in message for key in FORWARD_KEYS) else "said"
         try:
             async with self.db.write() as session:
-                await facts.add(session, client="telegram", text=text)
+                await facts.add(session, client="telegram", text=text, origin=origin)
         except Refused as refusal:
             await self.messenger.send(f"Не записал: {refusal}")
             return
