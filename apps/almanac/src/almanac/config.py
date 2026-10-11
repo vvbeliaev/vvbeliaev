@@ -3,7 +3,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PACKAGE = Path(__file__).parent
@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     base_url: str = "http://127.0.0.1:8000"
     owner_password_hash: str = ""
     mcp_code_mode: bool = True
+    # Сайт на этой же машине читает без входа (`identity.py`). Только при BASE_URL на саму машину.
+    local_site: bool = False
+    # Собранный сайт (`make web`). Каталога нет — сайта нет.
+    site_dir: Path = PACKAGE.parents[1] / "web" / "dist"
     # Без токена и чата бот и цикл напоминаний не запускаются.
     telegram_bot_token: str = ""
     telegram_owner_chat_id: int = 0
@@ -71,6 +75,13 @@ class Settings(BaseSettings):
         if not host or not (parts.scheme == "https" or (parts.scheme == "http" and host in LOOPBACK)):
             raise ValueError(f"BASE_URL must be https://…, or http:// on localhost, got {value!r}")
         return value
+
+    @model_validator(mode="after")
+    def _local_site(self) -> "Settings":
+        """Чтение без входа — только для сервера, который виден лишь со своей машины."""
+        if self.local_site and urlsplit(self.base_url).hostname not in LOOPBACK:
+            raise ValueError("LOCAL_SITE works only when BASE_URL points at this machine (localhost, 127.0.0.1)")
+        return self
 
     @field_validator("owner_tz")
     @classmethod

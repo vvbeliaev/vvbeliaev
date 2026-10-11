@@ -24,6 +24,11 @@ die() { echo "$*" >&2; exit 1; }
 # сверяется Origin формы входа. Свой BASE_URL — из окружения или из .env — старше.
 if [ -z "${BASE_URL:-}" ] && ! grep -qs '^BASE_URL=' .env; then
   export BASE_URL="http://127.0.0.1:$PORT"
+  # Такой сервер виден только с этой машины, поэтому сайт читает без входа (только читает).
+  # Выключить: LOCAL_SITE=0 в .env.
+  if [ -z "${LOCAL_SITE:-}" ] && ! grep -qs '^LOCAL_SITE=' .env; then
+    export LOCAL_SITE=1
+  fi
 fi
 
 # Первый запуск: пояс владельца — пояс этой машины. Без него «сегодня» и время напоминаний
@@ -151,6 +156,17 @@ stop() {
   return 1
 }
 
+# Сайт сервер отдаёт из web/dist. Здесь он собирается только в первый раз; после правок — make web.
+site_built() {
+  [ -f web/dist/index.html ] && return 0
+  if command -v pnpm > /dev/null 2>&1; then
+    echo "сайт: собираю"
+    (cd web && pnpm install --frozen-lockfile && pnpm build) > /dev/null || echo "сайт не собрался — make web покажет почему" >&2
+  else
+    echo "сайт: не собран, pnpm не найден — сервер поднимется без него"
+  fi
+}
+
 up() {
   local running
   running="$(pids)"
@@ -159,6 +175,7 @@ up() {
     return 0
   fi
   ensure_env
+  site_built
   db_up
   at_head || upgrade
   start

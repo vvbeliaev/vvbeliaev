@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
+from starlette.responses import Response
+from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from almanac import api, mcp, schema, tree, web
@@ -15,13 +17,31 @@ from almanac.errors import Refused
 from almanac.telegram import Telegram
 from almanac.timeline.scheduler import Scheduler
 
+CSP = "Content-Security-Policy"
 # `form-action` намеренно нет: браузер применяет его и к редиректу после формы согласия,
 # а он ведёт на адрес клиента OAuth.
 FIXED_HEADERS = {
     "X-Frame-Options": "DENY",
-    "Content-Security-Policy": "frame-ancestors 'none'",
+    CSP: "frame-ancestors 'none'",
     "Referrer-Policy": "no-referrer",
 }
+
+
+# Сайт показывает и чужой текст — пересланное, сохранённое с веба. Поэтому всё только своё:
+# ни встроенных скриптов, ни чужих адресов.
+SITE_CSP = (
+    "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; "
+    "connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+)
+
+
+class Site(StaticFiles):
+    """Собранный сайт (`web/dist`): файлы и своя, более строгая политика содержимого."""
+
+    async def get_response(self, path: str, scope: Scope) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers[CSP] = SITE_CSP
+        return response
 
 
 class SecureHeaders:
@@ -42,7 +62,9 @@ class SecureHeaders:
             if message["type"] == "http.response.start":
                 headers = MutableHeaders(scope=message)
                 for name, value in FIXED_HEADERS.items():
-                    headers[name] = value
+                    # Свою политику содержимого ставит только сайт, и она строже общей.
+                    if name != CSP or CSP not in headers:
+                        headers[name] = value
                 if "cache-control" not in headers:
                     headers["Cache-Control"] = "no-store"
             await send(message)
@@ -116,5 +138,9 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
     @app.exception_handler(Refused)
     async def refused(_request: Request, error: Refused) -> JSONResponse:
         return JSONResponse({"detail": str(error)}, status_code=error.status)
+
+    # Сайт — последним: ему достаётся только то, что не взял ни один адрес выше.
+    if settings.site_dir.is_dir():
+        app.mount("/", Site(directory=settings.site_dir, html=True), name="site")
 
     return app

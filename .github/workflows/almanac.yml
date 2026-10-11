@@ -11,6 +11,8 @@ on:
       - 'apps/almanac/**'
       # Правка README или CLAUDE.md не пересобирает образ и не перезапускает сервер.
       - '!apps/almanac/*.md'
+      # Сайт в образ пока не едет.
+      - '!apps/almanac/web/**'
       - 'pyproject.toml'
       - 'uv.lock'
       - '.github/workflows/almanac.yml'

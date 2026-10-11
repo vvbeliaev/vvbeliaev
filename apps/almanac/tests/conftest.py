@@ -139,7 +139,11 @@ def password():
 
 @pytest.fixture
 def settings(pg_url):
-    return Settings(_env_file=None, database_url=pg_url, owner_tz="Europe/Berlin", owner_password_hash=PASSWORD_HASH)
+    return Settings(
+        _env_file=None, database_url=pg_url, owner_tz="Europe/Berlin", owner_password_hash=PASSWORD_HASH,
+        # Собран ли сайт на машине разработчика, тестам не важно: каталога с таким именем нет.
+        site_dir=Path(__file__).parent / "no-site",
+    )
 
 
 @pytest.fixture

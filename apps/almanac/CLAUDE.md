@@ -29,6 +29,15 @@ Rules for working in this app. Repo-wide rules are in the root
   template adds the imports a column type needs; read the generated file anyway, and
   drop the scratch database. `tests/test_migrations.py` fails when models and
   migrations drift.
+- **The site only reads.** `web/` issues `GET` requests and nothing else. `LOCAL_SITE`
+  (`identity.py`) lets a browser on the same machine read without signing in; it never
+  covers a write, and the config refuses it on a public `BASE_URL`. The page renders
+  third-party text, so Markdown goes through DOMPurify (`web/src/lib/markdown.ts`) and the
+  server sends the site with a strict `Content-Security-Policy` (`SITE_CSP` in `app.py`).
+- **The site follows the root `DESIGN.md`** (Corona Bloom). The `:root` block in
+  `web/src/app.css` is that palette rendered into CSS; no colors or fonts outside it.
+  `web/` is its own pnpm root with its own lockfile: `pnpm check`, `pnpm test`,
+  `pnpm build` from `web/`.
 - **Secrets**: the owner's password, the bot token and the calendar secret come
   from the environment. Never print them, never put them in a test. The bot
   token must not reach logs or exception texts (`telegram.py`).
