@@ -1,5 +1,5 @@
 # Python side of the monorepo. The JS side is pnpm (`pnpm-workspace.yaml`,
-# glob `apps/*`); this is its counterpart for the Python labs.
+# glob `apps/*`); this is its counterpart for the Python labs and apps.
 #
 # Membership is an explicit list, not a `labs/*` glob: the tier is polyglot by
 # design, and uv requires every workspace member to carry a `pyproject.toml`.
@@ -13,6 +13,7 @@
 # itself.
 [tool.uv.workspace]
 members = [
+  "apps/almanac",
   "labs/social-kit",
   "labs/backbone-check",
 ]
