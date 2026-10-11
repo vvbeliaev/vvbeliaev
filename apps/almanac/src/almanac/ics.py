@@ -40,4 +40,6 @@ def render(items: list[Item], owner_tz: str) -> bytes:
         if item.note:
             event.add("description", item.note)
         calendar.add_component(event)
+    # `TZID=…` без VTIMEZONE клиенты читают по-разному: описание пояса едет в самой ленте.
+    calendar.add_missing_timezones()
     return calendar.to_ical()
