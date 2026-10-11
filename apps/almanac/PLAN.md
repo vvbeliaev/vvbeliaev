@@ -6136,9 +6136,11 @@ git commit -m "feat(almanac): миграции, суточные копии, о�
 
 Эту задачу исполнители не выполняют. Каждый шаг меняет живую систему или требует секрета владельца; главный поток делает их по одному, называя ресурс и получив явное «да».
 
+Отложена решением владельца от 2026-10-12: пока идёт активная разработка, контур живёт на его машине (`make up`, раздел «Локально» в `README.md`). К моменту запуска изменилось два условия. Хранилище — Postgres, а не файл на томе (шаги 2 и 3 ниже переписаны). И вход владельца по паролю до публичного адреса заменяется входом через Telegram, как в overture: это отдельная работа перед шагом 4.
+
 - [ ] **Step 1: Слить ветку и запушить.** Пуш `main` запускает `almanac.yml`; `vvbeliaev.yml` не срабатывает, пока не тронут его пути. Проверить: `gh run watch --exit-status`. Первый запуск `deploy` упадёт, пока нет секрета `COOLIFY_ALMANAC_APP_UUID` — это ожидаемо.
-- [ ] **Step 2: Копия базы вне сервера.** Владелец выбирает, куда. Без неё настоящие записи не вносить.
-- [ ] **Step 3: Приложение в Coolify.** Проект `portfolio`, тип Docker Image, образ `ghcr.io/vvbeliaev/almanac:latest`, порт 8000, постоянный том на `/data`, один экземпляр. Окружение задаёт владелец: `BASE_URL=https://almanac.vvbeliaev.dev`, `OWNER_PASSWORD_HASH`, `OWNER_TZ`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_OWNER_CHAT_ID`, `ICS_TOKEN`.
+- [ ] **Step 2: База и её копии.** База Postgres в Coolify (проект `portfolio`) с расписанием дампов в хранилище вне сервера; куда — выбирает владелец. Без копий вне сервера настоящие записи не вносить. Записи с локальной машины переносятся дампом (`make dump`, затем `pg_restore`).
+- [ ] **Step 3: Приложение в Coolify.** Проект `portfolio`, тип Docker Image, образ `ghcr.io/vvbeliaev/almanac:latest`, порт 8000, без тома, один экземпляр. Окружение задаёт владелец: `DATABASE_URL` базы из шага 2, `BASE_URL=https://almanac.vvbeliaev.dev`, `OWNER_PASSWORD_HASH`, `OWNER_TZ`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_OWNER_CHAT_ID`, `ICS_TOKEN`.
 - [ ] **Step 4: Адрес.** Имя `almanac.vvbeliaev.dev` в туннеле `vvbeliaev-01` и CNAME. Порядок — в скилле `vvbeliaev-ops`.
 - [ ] **Step 5: Секрет репозитория** `COOLIFY_ALMANAC_APP_UUID` и повторный запуск `deploy`.
 - [ ] **Step 6: Критерии готовности из спеки.**

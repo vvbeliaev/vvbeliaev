@@ -6,6 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 # Ключ рекомендательного замка Postgres, один на всю базу. Значение произвольное: слово «almanac» байтами.
 WRITE_LOCK_KEY = int.from_bytes(b"almanac")
+# Замок общий для процессов, и один зависший писатель остановил бы всех. Поэтому два срока, в
+# миллисекундах: ждущий замка получает ошибку, а не висит; соединение, застывшее посреди
+# транзакции, база закрывает сама — и замок вместе с ним.
+SESSION_LIMITS = {"lock_timeout": "10000", "idle_in_transaction_session_timeout": "60000"}
 
 
 class Database:
@@ -19,7 +23,7 @@ class Database:
     """
 
     def __init__(self, url: str) -> None:
-        self.engine = create_async_engine(url)
+        self.engine = create_async_engine(url, connect_args={"server_settings": SESSION_LIMITS})
         self.sessions = async_sessionmaker(self.engine, expire_on_commit=False)
 
     async def dispose(self) -> None:

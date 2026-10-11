@@ -30,6 +30,13 @@ async def test_naive_moment_is_refused(db):
             session.add(_fact("f_test0002", datetime(2026, 10, 12, 10, 0)))
 
 
+async def test_sessions_carry_the_limits_that_keep_a_stuck_writer_from_stopping_everyone(db):
+    async with db.read() as session:
+        waiting = await session.scalar(text("show lock_timeout"))
+        idle = await session.scalar(text("show idle_in_transaction_session_timeout"))
+    assert (waiting, idle) == ("10s", "1min")
+
+
 async def test_failed_write_leaves_nothing(db, now):
     with pytest.raises(RuntimeError):
         async with db.write() as session:

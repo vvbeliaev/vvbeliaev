@@ -15,16 +15,48 @@
 
 ## Запуск у себя
 
+Нужны Docker, `uv` и `make`.
+
 ```bash
 cd apps/almanac
-uv run pytest -q                             # поднимает свой Postgres в Docker (postgres:18-alpine)
-uv run python -m almanac.auth.owner          # спросит пароль, напечатает хэш для OWNER_PASSWORD_HASH
-uv run alembic upgrade head                  # создаёт и обновляет схему базы из DATABASE_URL
-uv run uvicorn almanac.app:create_app --factory --port 8000
+make up        # база в Docker, миграции, сервер на http://127.0.0.1:8910
+make status    # идёт ли сервер, с какого коммита, ревизия базы
+make logs      # хвост журнала .run/server.log
+make down      # останавливает сервер; база остаётся
+make dump      # дамп базы в ~/almanac-backups
+make test      # ruff и pytest; тесты поднимают свой Postgres и рабочую базу не трогают
 ```
 
-Серверу нужен Postgres по адресу `DATABASE_URL`. Приложение само таблиц не
-создаёт: схему ведёт Alembic. В образе перед каждым стартом идёт
+- **База** — Postgres 18 в контейнере (`compose.yml`). Порт открыт только на
+  `127.0.0.1:5434`, вход без пароля: до базы дотянется лишь процесс этой машины.
+  Данные лежат в томе Docker `almanac_almanac-pg` и переживают `make down` и
+  перезапуск Docker.
+- **Настройки.** Первый `make up` создаёт `.env` с одной строкой — `OWNER_TZ`,
+  поясом машины. Остальное (бот Telegram, `ICS_TOKEN`, пароль) дописывает
+  владелец; таблица ниже.
+- **Миграции.** `make up` и `make migrate` перед обновлением схемы снимают дамп
+  в `~/almanac-backups`. Вернуть базу из дампа: `make down`, затем
+  `docker compose exec -T db pg_restore -U almanac -d almanac --clean --if-exists < файл.dump`.
+- **Сон.** Пока сервер идёт, мак не засыпает от простоя (`caffeinate -i`):
+  спящая машина напоминаний не шлёт. Закрытая крышка усыпляет всё равно.
+
+### Claude Code на этой машине
+
+Локальная дверь MCP — тот же сервер по stdio: Code Mode, те же инструменты и
+отказы, но без OAuth и пароля. Процесс запускает сам клиент; кто может его
+запустить, тот и так читает базу. В журнале такие записи подписаны клиентом
+`local`.
+
+```bash
+claude mcp add almanac --scope user -- uv run --directory /полный/путь/к/apps/almanac python -m almanac.local
+```
+
+Двери нужна только база: сервер может идти рядом, может стоять. Бот и
+напоминания она не запускает — это дело сервера (`make up`).
+
+Сервер без `make` — те же шаги руками: `uv run alembic upgrade head`, затем
+`uv run uvicorn almanac.app:create_app --factory --port 8910`. Приложение само
+таблиц не создаёт: схему ведёт Alembic. В образе перед каждым стартом идёт
 `alembic upgrade head`; не накатилась — контейнер не стартует.
 
 ## Окружение
