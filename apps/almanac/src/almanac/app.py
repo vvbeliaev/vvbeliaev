@@ -27,7 +27,9 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
 
     app = FastAPI(title="almanac", lifespan=lifespan)
     app.state.settings = settings
-    app.state.ctx = tree.Context(schema=schema.load(settings.schema_dir), owner_tz=settings.owner_tz)
+    app.state.ctx = tree.Context(
+        schema=schema.load(settings.schema_dir), owner_tz=settings.owner_tz, day_start=settings.day_start
+    )
     if db is not None:
         app.state.db = db
     app.include_router(api.router, prefix="/api")

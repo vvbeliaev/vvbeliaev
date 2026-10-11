@@ -70,9 +70,9 @@ async def item_add(body: ItemAddIn, db: Db, ctx: Ctx, who: Who) -> dict:
     `list: "shopping"`. An event needs `at`. Needs a source: `said` or `facts`."""
     async with db.write() as session:
         item = await store.add(
-            session, client=who.client, owner_tz=ctx.owner_tz, kind=body.kind, title=body.title, note=body.note,
-            list_=body.list_, page=body.page, due=body.due, at=body.at, tz=body.tz, rrule=body.rrule,
-            remind=body.remind, source=body.source(), reason=body.reason,
+            session, client=who.client, owner_tz=ctx.owner_tz, day_start=ctx.day_start, kind=body.kind,
+            title=body.title, note=body.note, list_=body.list_, page=body.page, due=body.due, at=body.at,
+            tz=body.tz, rrule=body.rrule, remind=body.remind, source=body.source(), reason=body.reason,
         )
     return item_out(item)
 
@@ -84,7 +84,7 @@ async def item_update(item: str, body: ItemUpdateIn, db: Db, ctx: Ctx, who: Who)
     changes = body.model_dump(exclude_unset=True, by_alias=True, exclude={"rev", "reason"})
     async with db.write() as session:
         changed = await store.update(
-            session, client=who.client, owner_tz=ctx.owner_tz, item_id=item, rev=body.rev,
+            session, client=who.client, owner_tz=ctx.owner_tz, day_start=ctx.day_start, item_id=item, rev=body.rev,
             changes=changes, reason=body.reason,
         )
     return item_out(changed)

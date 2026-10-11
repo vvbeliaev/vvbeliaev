@@ -44,6 +44,7 @@ class Context:
 
     schema: Schema
     owner_tz: str
+    day_start: str = "09:00"
 
 
 @dataclass(frozen=True)

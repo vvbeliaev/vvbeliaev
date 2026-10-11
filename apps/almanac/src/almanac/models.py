@@ -116,6 +116,22 @@ class ItemFact(Base):
     fact_id: Mapped[str] = mapped_column(ForeignKey("facts.id"), primary_key=True)
 
 
+class Firing(Base):
+    """Одно срабатывание напоминания. `manual` — отложенное кнопкой: пересчёт его не трогает."""
+
+    __tablename__ = "firings"
+
+    id: Mapped[str] = mapped_column(String(16), primary_key=True)
+    item_id: Mapped[str] = mapped_column(ForeignKey("items.id"))
+    occurrence: Mapped[datetime] = mapped_column(UtcDateTime)
+    fire_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    state: Mapped[str] = mapped_column(String(10))
+    sent_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    message_id: Mapped[int | None] = mapped_column(Integer)
+    manual: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
 class Journal(Base):
     """Журнал записей. Пишет сервер, в той же транзакции, что и изменение."""
 

@@ -12,7 +12,7 @@ from almanac.clock import utcnow
 from almanac.errors import Conflict, NotFound, Refused
 from almanac.ids import new_id
 from almanac.models import Item, ItemFact
-from almanac.store import journal, pages
+from almanac.store import firings, journal, pages
 from almanac.store.source import Source, resolve
 from almanac.timeline import occur
 
@@ -72,6 +72,7 @@ async def add(
     *,
     client: str,
     owner_tz: str,
+    day_start: str = "09:00",
     kind: str,
     title: str,
     note: str = "",
@@ -105,11 +106,20 @@ async def add(
         session, client=client, op="item_add", target=item.id, reason=why, detail={"kind": kind, "facts": fact_ids}
     )
     await session.flush()
+    await firings.replan(session, item, owner_tz=owner_tz, day_start=day_start)
     return item
 
 
 async def update(
-    session: AsyncSession, *, client: str, owner_tz: str, item_id: str, rev: int, changes: dict[str, Any], reason: str
+    session: AsyncSession,
+    *,
+    client: str,
+    owner_tz: str,
+    day_start: str = "09:00",
+    item_id: str,
+    rev: int,
+    changes: dict[str, Any],
+    reason: str,
 ) -> Item:
     """Изменить поля элемента. Источник не нужен: смена статуса или срока знания не добавляет."""
     item = await session.get(Item, item_id)
@@ -146,6 +156,7 @@ async def update(
         detail={"before": before, "after": after},
     )
     await session.flush()
+    await firings.replan(session, item, owner_tz=owner_tz, day_start=day_start)
     return item
 
 
