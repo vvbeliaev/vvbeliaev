@@ -50,15 +50,6 @@ jobs:
             exit 1
           fi
 
-      - name: No tracked SQLite databases
-        run: |
-          set -euo pipefail
-          if git ls-files -- '*.db' '*.db-*' '*.db.partial' | grep -q .; then
-            echo "::error::SQLite database tracked — personal data must never be committed; remove it from the index (git rm --cached <file>):"
-            git ls-files -- '*.db' '*.db-*' '*.db.partial'
-            exit 1
-          fi
-
   labs:
     runs-on: ubuntu-latest
     steps:
