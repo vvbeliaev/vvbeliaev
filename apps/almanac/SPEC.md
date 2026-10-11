@@ -369,4 +369,4 @@ pytest, база во временном файле, часы и транспо�
 (`users/adapters/_in/mcp_oauth.py`, `agent/adapters/_in/mcp.py`). Владелец
 разрешил брать оттуда всё полезное.
 
-Планы по этапам лежат в [`plans/`](./plans/).
+План реализации — [`PLAN.md`](./PLAN.md).
