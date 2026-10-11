@@ -20,6 +20,20 @@ KINDS = ("task", "event")
 STATUSES = {"task": ("open", "done", "cancelled"), "event": ("open", "cancelled")}
 FIELDS = ("title", "note", "list", "page", "due", "at", "tz", "rrule", "remind", "status")
 NOT_NULL = ("title", "status")
+STATUS_FILTERS = ("open", "done", "cancelled", "any")
+
+
+def _attr(field: str) -> str:
+    return "list_" if field == "list" else field
+
+
+def _plain(value: Any) -> Any:
+    """Значение поля для журнала: даты и время строкой, список копией."""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    if isinstance(value, list):
+        return list(value)
+    return value
 
 
 def _check(item: Item, owner_tz: str) -> None:
@@ -35,7 +49,7 @@ def _check(item: Item, owner_tz: str) -> None:
     if item.list_ is not None:
         if item.kind != "task":
             raise Refused("`list` is for tasks only")
-        if not checks.LIST_SLUG.match(item.list_):
+        if not checks.LIST_SLUG.fullmatch(item.list_):
             raise Refused(f"bad list {item.list_!r}: lowercase a-z, 0-9 and single dashes, like shopping")
     if item.at is not None and item.at.tzinfo is not None:
         raise Refused("`at` is local time without an offset; put the zone name in `tz`")
@@ -71,7 +85,7 @@ async def add(
     source: Source,
     reason: str,
 ) -> Item:
-    why = checks.one_line(reason, name="reason", limit=200)
+    why = checks.reason(reason)
     now = utcnow()
     item = Item(
         id=new_id("i"), kind=kind, title=title, note=(note or "").strip(), list_=list_, page=page,
@@ -103,13 +117,14 @@ async def update(
         raise NotFound(f"item {item_id} does not exist")
     if rev != item.rev:
         raise Conflict(f"item changed: current rev is {item.rev}, read it again")
-    why = checks.one_line(reason, name="reason", limit=200)
+    why = checks.reason(reason)
     unknown = sorted(set(changes) - set(FIELDS))
     if unknown:
         raise Refused(f"unknown fields: {', '.join(unknown)}; known: {', '.join(FIELDS)}")
     if not changes:
         raise Refused("nothing to change: name at least one field")
 
+    before = {name: _plain(getattr(item, _attr(name))) for name in changes}
     for name, value in changes.items():
         if value is None and name in NOT_NULL:
             raise Refused(f"{name} cannot be null")
@@ -117,7 +132,7 @@ async def update(
             value = (value or "").strip()
         if name == "remind":
             value = list(value or ())
-        setattr(item, "list_" if name == "list" else name, value)
+        setattr(item, _attr(name), value)
     _check(item, owner_tz)
     if changes.get("page") is not None:
         await pages.get(session, item.page)
@@ -125,8 +140,10 @@ async def update(
         item.done_at = utcnow() if item.status == "done" else None
     item.rev += 1
     item.updated_at = utcnow()
+    after = {name: _plain(getattr(item, _attr(name))) for name in changes}
     journal.record(
-        session, client=client, op="item_update", target=item.id, reason=why, detail={"fields": sorted(changes)}
+        session, client=client, op="item_update", target=item.id, reason=why,
+        detail={"before": before, "after": after},
     )
     await session.flush()
     return item
@@ -160,6 +177,10 @@ async def query(
     """Выборка элементов. Окно `start..end` (оба конца включены) оставляет то, что приходится на эти дни."""
     if (start is None) != (end is None):
         raise Refused("a window needs both ends: pass `from` and `to` together")
+    if kind is not None and kind not in KINDS:
+        raise Refused(f"unknown kind {kind!r}; one of: {', '.join(KINDS)}")
+    if status is not None and status not in STATUS_FILTERS:
+        raise Refused(f"unknown status {status!r}; one of: {', '.join(STATUS_FILTERS)}")
     statement = select(Item).order_by(Item.created_at, Item.id)
     if kind is not None:
         statement = statement.where(Item.kind == kind)

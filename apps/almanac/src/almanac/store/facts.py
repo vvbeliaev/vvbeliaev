@@ -33,6 +33,8 @@ async def add(
         raise Refused(f"fact text is longer than {MAX_TEXT} characters")
     if origin not in ORIGINS:
         raise Refused(f"unknown origin {origin!r}; one of: {', '.join(ORIGINS)}")
+    if url is not None:
+        checks.web_url(url)
     checks.no_secret(body, url)
     if supersedes is not None and await session.get(Fact, supersedes) is None:
         raise Refused(f"the fact to replace, {supersedes}, does not exist")
@@ -50,7 +52,7 @@ async def dismiss(session: AsyncSession, *, client: str, fact_id: str, reason: s
     fact = await session.get(Fact, fact_id)
     if fact is None:
         raise NotFound(f"fact {fact_id} does not exist")
-    why = checks.one_line(reason, name="reason", limit=200)
+    why = checks.reason(reason)
     fact.dismissed_at = utcnow()
     fact.dismiss_reason = why
     journal.record(session, client=client, op="dismiss", target=fact.id, reason=why)

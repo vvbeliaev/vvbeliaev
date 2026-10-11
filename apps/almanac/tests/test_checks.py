@@ -18,6 +18,7 @@ def test_page_path_accepts_type_and_slug():
         "people/anna.md",
         "pages/people/Anna.md",
         "pages/people/anna",
+        "pages/people/anna.md\n",
         "pages/people/anna--b.md",
         "pages/people/sub/anna.md",
         "pages/people/" + "a" * 61 + ".md",
@@ -62,6 +63,13 @@ def test_fragment_must_be_unique():
         "-----BEGIN RSA " + "PRIVATE KEY-----",
         "карта 4111 1111 1111 1111",
         "карта 4111-1111-1111-1111",
+        "карта 4111 1111 1111 1111 123",
+        "4111111111111111 12/25",
+        "exp 12/25 4111 1111 1111 1111",
+        "2 4111111111111111",
+        "4111.1111.1111.1111",
+        "4111  1111  1111  1111",
+        "3782 822463 10005",
         "бот " + "1234567890" + ":" + "A" * 35,
     ],
 )
@@ -76,6 +84,8 @@ def test_secret_is_refused(text):
         "встреча 2026-10-14 в 18:00",
         "заказ 4111 1111 1111 1112",
         "отметка 1760263200000",
+        "отпуск 2026-10-14 - 2026-10-21",
+        "2026-10-14 2026-10-21 2026-10-28",
         None,
         "",
     ],
@@ -93,7 +103,18 @@ def test_duration_parses_offsets():
     assert checks.duration("P1W") == timedelta(weeks=1)
 
 
-@pytest.mark.parametrize("value", ["", "P", "PT", "P1DT", "1H", "PT1S", "-PT1H", "PT1.5H"])
+@pytest.mark.parametrize(
+    "value", ["", "P", "PT", "P1DT", "1H", "PT1S", "-PT1H", "PT1.5H", "P99999999999D", "P10000W", "PT1H\n"]
+)
 def test_duration_refuses_bad_values(value):
     with pytest.raises(Refused, match="bad duration"):
         checks.duration(value)
+
+
+def test_reason_is_one_line_without_secrets():
+    assert checks.reason("  правка  ") == "правка"
+    for bad in ("", "две\nстроки", "x" * 201):
+        with pytest.raises(Refused, match="reason"):
+            checks.reason(bad)
+    with pytest.raises(Refused, match="looks like a secret"):
+        checks.reason("ключ " + "sk-" + "a" * 24)

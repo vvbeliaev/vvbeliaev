@@ -17,6 +17,8 @@ dependencies = [
   "python-multipart>=0.0.12",
   # MCP-дверь. Extra code-mode тянет pydantic-monty: без него CodeMode падает на первом исполнении.
   "fastmcp[code-mode]>=4.0.5",
+  # grep принимает выражение от модели; `re` не умеет прерываться по времени, `regex` умеет.
+  "regex>=2024.11",
 ]
 
 [dependency-groups]
@@ -27,6 +29,8 @@ dev = [
   "ruff>=0.8",
   # Запускает lifespan приложения в тестах HTTP-двери MCP.
   "asgi-lifespan>=2.1",
+  # test_mcp.py импортирует httpx2 напрямую; без явной зависимости тест держится на транзитивной.
+  "httpx2>=2",
 ]
 
 [build-system]

@@ -15,7 +15,8 @@ from almanac.store import journal
 from almanac.store.source import Source, resolve
 
 MAX_BODY = 100_000
-LINK = re.compile(r"\[\[([a-z0-9-]+/[a-z0-9-]+)(?:\|[^\]]*)?\]\]")
+# Подпись ограничена по длине и строке: без предела выражение на чужом теле квадратично.
+LINK = re.compile(r"\[\[([a-z0-9-]+/[a-z0-9-]+)(?:\|[^\]\n]{0,120})?\]\]")
 
 
 @dataclass(frozen=True)
@@ -120,7 +121,7 @@ async def write(
     checks.page_path(path, set(types))
     title = checks.one_line(title, name="title", limit=120)
     description = checks.one_line(description, name="description", limit=200)
-    why = checks.one_line(reason, name="reason", limit=200)
+    why = checks.reason(reason)
     names = [checks.one_line(alias, name="alias", limit=120) for alias in aliases]
     if len(body) > MAX_BODY:
         raise Refused(f"body is longer than {MAX_BODY} characters; split the page")
@@ -160,7 +161,7 @@ async def edit(
     """Заменить один фрагмент тела. Фрагмент должен встречаться ровно один раз."""
     page = await get(session, path)
     _same_rev(page, rev)
-    why = checks.one_line(reason, name="reason", limit=200)
+    why = checks.reason(reason)
     checks.fragment(page.body, old)
     body = page.body.replace(old, new, 1)
     if len(body) > MAX_BODY:
@@ -182,7 +183,7 @@ async def remove(session: AsyncSession, *, client: str, path: str, rev: int, rea
     """Убрать страницу. Строка и ревизии остаются; путь можно занять снова."""
     page = await get(session, path)
     _same_rev(page, rev)
-    why = checks.one_line(reason, name="reason", limit=200)
+    why = checks.reason(reason)
     now = utcnow()
     page.rev += 1
     page.updated_at = now

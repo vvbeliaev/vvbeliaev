@@ -111,3 +111,33 @@ async def test_restructure_needs_no_facts(db, now):
     async with db.write() as session:
         ids = await resolve(session, client="claude", source=Source(restructure=True), allow_restructure=True)
     assert ids == []
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        pytest.param("https://a.example\n## x", id="newline-in-the-middle"),
+        pytest.param("https://a.example\r## x", id="carriage-return"),
+        pytest.param("https://a.example\n", id="trailing-newline"),
+        pytest.param("javascript:alert(1)", id="javascript"),
+        pytest.param("ftp://a.example", id="ftp"),
+        pytest.param("https://" + "a" * 1993, id="2001-characters"),
+        pytest.param("", id="empty"),
+    ],
+)
+async def test_note_refuses_bad_url(db, now, url):
+    with pytest.raises(Refused, match="url must be a single-line http\\(s\\) address"):
+        await _note(db, origin="web", url=url)
+
+
+async def test_note_keeps_good_url(db, now):
+    fact = await _note(db, origin="web", url="http://a.example/x?y=1")
+    assert fact.url == "http://a.example/x?y=1"
+    assert (await _note(db, origin="web", url="https://" + "a" * 1992)).url.startswith("https://aaa")
+
+
+async def test_dismiss_refuses_a_secret_in_reason(db, now):
+    fact = await _note(db)
+    with pytest.raises(Refused, match="looks like a secret"):
+        async with db.write() as session:
+            await facts.dismiss(session, client="claude", fact_id=fact.id, reason="ключ " + "sk-" + "a" * 24)

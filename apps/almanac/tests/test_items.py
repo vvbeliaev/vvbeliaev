@@ -60,6 +60,9 @@ async def test_add_needs_a_source(db, now):
         ({"kind": "event", "at": EVENING, "rrule": "FREQ=SOMETIMES"}, "bad rrule"),
         ({"kind": "event", "at": EVENING, "list_": "shopping"}, "tasks only"),
         ({"list_": "Shopping List"}, "bad list"),
+        ({"list_": "shopping\n"}, "bad list"),
+        ({"reason": "ключ " + "sk-" + "a" * 24}, "looks like a secret"),
+        ({"kind": "event", "at": EVENING, "rrule": "FREQ=WEEKLY;UNTIL=20261231T000000Z"}, "without Z"),
         ({"remind": ["PT1H"]}, "needs `at` or `due`"),
         ({"due": date(2026, 10, 14), "remind": ["1 hour"]}, "bad duration"),
         ({"tz": "Mars/Olympus"}, "unknown time zone"),
@@ -169,3 +172,59 @@ def test_single_event_is_in_window_only_at_its_moment():
 
     assert len(occur.occurrences(EVENING, None, TZ, midnight(12), midnight(13))) == 1
     assert occur.occurrences(EVENING, None, TZ, midnight(13), midnight(14)) == []
+
+
+async def test_update_journals_old_and_new_values(db, now):
+    item = await _add(db, list_="shopping", due=date(2026, 10, 14))
+    await _update(db, item.id, 1, {"due": date(2026, 10, 20), "list": None, "note": "  у метро "})
+    event = await _add(db, kind="event", title="Английский", at=EVENING)
+    await _update(db, event.id, 1, {"at": datetime(2026, 10, 12, 19, 30)})
+    async with db.read() as session:
+        entries = (await session.scalars(select(Journal).where(Journal.op == "item_update").order_by(Journal.id))).all()
+    assert [entry.detail for entry in entries] == [
+        {
+            "before": {"due": "2026-10-14", "list": "shopping", "note": ""},
+            "after": {"due": "2026-10-20", "list": None, "note": "у метро"},
+        },
+        {"before": {"at": "2026-10-12T18:00:00"}, "after": {"at": "2026-10-12T19:30:00"}},
+    ]
+
+
+async def test_update_with_a_secret_in_reason_is_refused(db, now):
+    item = await _add(db)
+    with pytest.raises(Refused, match="looks like a secret"):
+        async with db.write() as session:
+            await items.update(
+                session, client="claude", owner_tz=TZ, item_id=item.id, rev=1,
+                changes={"status": "done"}, reason="ключ " + "sk-" + "a" * 24,
+            )
+
+
+async def test_query_refuses_unknown_kind_and_status(db, now):
+    async with db.read() as session:
+        with pytest.raises(Refused, match="unknown kind 'habit'; one of: task, event"):
+            await items.query(session, owner_tz=TZ, kind="habit")
+        with pytest.raises(Refused, match="unknown status 'closed'; one of: open, done, cancelled, any"):
+            await items.query(session, owner_tz=TZ, status="closed")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "FREQ=WEEKLY\nFREQ=DAILY",
+        "FREQ=WEEKLY\r\nCOUNT=3",
+        "FREQ=WEEKLY\nEXDATE:20261019T180000",
+        "FREQ=WEEKLY;EXDATE=20261019T180000",
+        "DTSTART:20261012T180000\nRRULE:FREQ=WEEKLY",
+        "FREQ=WEEKLY;rdate=20261019T180000",
+    ],
+)
+def test_rrule_is_one_rule_without_dates(text):
+    with pytest.raises(Refused, match="one rule only, no DTSTART, EXDATE or RDATE"):
+        occur.rule(text, EVENING)
+
+
+def test_rrule_until_must_be_local_time():
+    with pytest.raises(Refused, match="write UNTIL as local time without Z"):
+        occur.rule("FREQ=WEEKLY;UNTIL=20261231T000000Z", EVENING)
+    assert occur.rule("FREQ=WEEKLY;UNTIL=20261231T000000", EVENING).count() == 12

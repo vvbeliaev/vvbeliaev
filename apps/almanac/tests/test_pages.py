@@ -1,3 +1,6 @@
+import asyncio
+import time
+
 import pytest
 from sqlalchemy import select
 
@@ -176,3 +179,62 @@ async def test_history_of_unknown_page(db, now):
     async with db.read() as session:
         with pytest.raises(NotFound):
             await pages.history(session, ANNA)
+
+
+def test_links_are_found_with_and_without_label():
+    assert pages.links("см. [[people/anna]] и [[people/anna|Аня]], [[topics/berlin|Берлин]]") == [
+        "pages/people/anna.md",
+        "pages/topics/berlin.md",
+    ]
+    assert pages.links("[[people/anna|Аня]]") == ["pages/people/anna.md"]
+
+
+def test_links_do_not_slow_down_on_a_crafted_body():
+    started = time.perf_counter()
+    assert pages.links("[[a/b|" * 16000) == []
+    assert time.perf_counter() - started < 1.0
+
+
+async def test_two_edits_at_the_same_rev_one_wins(db, now):
+    await _write(db)
+    results = await asyncio.gather(
+        _edit(db, old="Берлине", new="Мюнхене"),
+        _edit(db, old="Берлине", new="Гамбурге"),
+        return_exceptions=True,
+    )
+    failed = [result for result in results if isinstance(result, BaseException)]
+    won = [result for result in results if not isinstance(result, BaseException)]
+    assert len(won) == 1 and won[0].rev == 2
+    assert len(failed) == 1 and isinstance(failed[0], Conflict)
+    async with db.read() as session:
+        page = await pages.get(session, ANNA)
+        revisions = await pages.history(session, ANNA)
+    assert page.rev == 2
+    assert [revision.rev for revision in revisions] == [2, 1]
+
+
+async def test_edit_refuses_a_secret_in_new(db, now):
+    await _write(db)
+    with pytest.raises(Refused, match="looks like a secret"):
+        await _edit(db, new="ключ " + "sk-" + "a" * 24)
+    async with db.read() as session:
+        page = await pages.get(session, ANNA)
+    assert (page.rev, page.body) == (1, "Живёт в Берлине.\n")
+
+
+SECRET_REASON = "ключ " + "sk-" + "a" * 24
+
+
+async def test_reason_with_a_secret_is_refused_everywhere(db, now):
+    await _write(db)
+    with pytest.raises(Refused, match="looks like a secret"):
+        await _write(db, reason=SECRET_REASON, rev=1, body="Новый текст.\n")
+    with pytest.raises(Refused, match="looks like a secret"):
+        await _edit(db, reason=SECRET_REASON)
+    with pytest.raises(Refused, match="looks like a secret"):
+        async with db.write() as session:
+            await pages.remove(session, client="claude", path=ANNA, rev=1, reason=SECRET_REASON)
+    async with db.read() as session:
+        page = await pages.get(session, ANNA)
+        revisions = await pages.history(session, ANNA)
+    assert (page.rev, len(revisions)) == (1, 1)
