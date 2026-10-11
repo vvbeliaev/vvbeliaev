@@ -37,6 +37,16 @@ colors:
   chart-3: "#cfa878"         # muted gold
   chart-4: "#9a86c4"         # muted violet
   chart-5: "#5fb0a4"         # muted teal
+  # Surface chrome for dense application UI (dashboards, consoles). Same
+  # palette, named separately because shadcn components expect these keys.
+  sidebar: "#0a0c14"
+  sidebar-foreground: "#e3e5ee"
+  sidebar-primary: "#f08a72"
+  sidebar-primary-foreground: "#1a0d07"
+  sidebar-accent: "#13161f"
+  sidebar-accent-foreground: "#e3e5ee"
+  sidebar-border: "#1a2034"
+  sidebar-ring: "#f08a72"
 glow:
   blur: 24px                 # luminous halo — alive, not faded; still not neon
   spread: -6px
@@ -87,6 +97,10 @@ The signature: a soft painterly **skybox** under a crisp **HUD**.
   `#5f95c2` (accent). Muted secondary hues in charts: gold, violet, teal.
 - `destructive` is a muted rose (`#cf6178`), never a hot fire-red.
 - Borders/inputs are low-contrast cool slate (`#1a2034`).
+- **Sidebar tokens** (`--sidebar-*`) carry the same palette under the names
+  shadcn components expect. They existed in `global.css` from the start and
+  were written down here on 2026-09-21, when a second surface needed them: a
+  value that lives only in the CSS is a value that drifts.
 - **Glow**: a luminous halo via `glow-primary` / `glow-accent`, driven by
   `--glow-blur` (24px) / `--glow-spread` (-6px). Apply to the primary CTA and
   the accent block only — it should glow like an ember, alive but not neon.
@@ -103,10 +117,12 @@ The signature: a soft painterly **skybox** under a crisp **HUD**.
   in Sora bold with the leading `vv` in steel accent (`#5f95c2`). The site
   mark / favicon is a solid steel chip — `vb` set in JetBrains Mono 800,
   letters converted to paths, dark letters `#060f18` on `#5f95c2`, radius
-  14/64. It replaces the earlier V-constellation mark. The chip is one half
-  of a two-brand system: cogisoft carries the mirror chip — `cs` in coral
-  (`#f08a72`). Chips are the only place a brand color is allowed to be a
-  background; on page surfaces the color grammar still applies.
+  14/64. It replaces the earlier V-constellation mark. The chip was one
+  half of a two-brand system with cogisoft's coral `cs` chip; since
+  2026-10-02 cogisoft has its own mark and system,
+  and the `vb` chip stands alone. Chips are the only place a brand color is
+  allowed to be a background; on page surfaces the color grammar still
+  applies.
 
 ## 5. Atmosphere (skybox) recipe
 

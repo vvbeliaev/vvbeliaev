@@ -10,7 +10,6 @@
   "packageManager": "pnpm@10.33.2",
   "scripts": {
     "dev": "pnpm --filter vvbeliaev dev",
-    "dev:cogisoft": "pnpm --filter cogisoft dev",
     "build": "pnpm -r build",
     "preview": "pnpm --filter vvbeliaev preview",
     "check": "pnpm -r check"

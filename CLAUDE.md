@@ -5,10 +5,11 @@ Instructions for agents working in this repository.
 ## What this is
 
 The workshop of Vladimir Beliaev (AI Full Stack Engineer · Product Lead ·
-Analytics Engineer): two sites, the experiments around them, and the non-code
-material they come from. **Own work only.** Client projects get their own
-private repositories; infrastructure lives in `vvbeliaev/infra`. Neither belongs
-here, and neither arrives here "for a moment".
+Analytics Engineer): the personal site, the experiments around it, and the
+non-code material they come from. **Personal work only.** Cogisoft — its site,
+its products and the infrastructure — lives in its own private repository, and
+client projects get theirs. Neither belongs here, and neither arrives here "for
+a moment".
 
 This is also the GitHub profile repository — the root `README.md` renders on the
 profile page. The root is a shopfront: keep stray files out of it.
@@ -20,7 +21,7 @@ profile page. The root is a shopfront: keep stray files out of it.
 | `apps/<name>/` | Things that ship | Dockerfile, a workflow with a `paths:` filter, a Coolify app, a domain. In the pnpm workspace (glob `apps/*`). |
 | `labs/<name>/` | Experiments | A `README.md` with a status. Nothing else is required — no CI, no deploy. |
 | `workspace/` | Non-code | Texts, brand assets, strategy, CV. `assets/` is public, `private/` is never in git. |
-| `docs/` | Specs and the decision journal | — |
+| `docs/` | The decision journal | One dated, append-only file per decision. |
 
 The line between `labs/` and `workspace/` is **code versus non-code**, not raw
 versus finished. Both are places where work happens; only one is executable.
@@ -40,8 +41,9 @@ GitHub secrets for CI). When in doubt, put it in `private/`. Never move a privat
 file into a public path "temporarily".
 
 `.github/workflows/guard.yml` fails a push on leaked secrets (gitleaks), on any
-tracked path under `workspace/private/`, on a phone number in a public file, and
-on a lab without a status in its README.
+tracked path under `workspace/private/`, on a phone number in a public file, on a
+lab missing its README or its registry row, and on a profile README whose facts
+have drifted from the site config.
 
 ## Core rule: design & frontend
 
@@ -52,9 +54,8 @@ both the values and the grammar that says what they mean. The `:root` block in
 each app's `global.css` is that palette rendered into CSS, not a second opinion —
 if the two disagree, the document wins and the CSS is wrong.
 
-- Root `DESIGN.md` is **Corona Bloom**, the parent system;
-  `apps/cogisoft/DESIGN.md` is **Corona Signal**, its agency variant.
-- Don't introduce colors/fonts/tokens outside those documents. Update the
+- Root `DESIGN.md` is **Corona Bloom**, the personal site's system.
+- Don't introduce colors/fonts/tokens outside that document. Update the
   document in lockstep with the change, and record the rationale in
   the journal in `docs/`.
 - Themes are single and fixed dark, with no runtime toggle.
@@ -65,12 +66,13 @@ Per-app specifics live in each app's own `CLAUDE.md`.
 
 - **JS — pnpm.** The workspace glob is `apps/*` only; `labs/` stays out so that
   an experiment carries its own lockfile and survives being split out. Root
-  scripts: `pnpm dev` (site), `pnpm dev:cogisoft`, and `pnpm build` / `pnpm check`
+  scripts: `pnpm dev` (site), and `pnpm build` / `pnpm check`
   across every app (`-r`), so a forgotten app cannot pass silently.
-- **Python — uv.** A workspace at the repo root (`pyproject.toml`), members
-  `labs/*`, one `uv.lock`. Members share one resolution and one intersected
-  `requires-python`; a lab with conflicting pins or a different Python goes into
-  `exclude` and locks for itself.
+- **Python — uv.** A workspace at the repo root, one `uv.lock`. Membership is an
+  explicit list in `pyproject.toml`, not a glob — the labs tier is polyglot and
+  uv demands a `pyproject.toml` from every member. Members share one resolution
+  and one intersected `requires-python`; a lab with conflicting pins or a
+  different Python stays out of the list and locks for itself.
 - Node version comes from `.nvmrc`. Fonts are self-hosted via
   `@fontsource-variable/*`.
 - `pnpm build` in an app directory is the final source of truth for correctness —
@@ -108,8 +110,7 @@ reading the code. Otherwise it is a copy with a shelf life.
 GitHub. Description and inventory there; rules and procedures in the files above.
 
 What loads by itself: this file at launch, the nested `CLAUDE.md` files when a
-file in their directory is read (`apps/vvbeliaev/`, `apps/cogisoft/`, `labs/`,
-`workspace/`), and `.claude/rules/blog.md` whenever an article or a draft is
+file in their directory is read (`apps/vvbeliaev/`, `labs/`, `workspace/`), and `.claude/rules/blog.md` whenever an article or a draft is
 touched. Only this root file is re-injected after a compaction; the nested ones
 return when their directory is read again.
 
@@ -123,7 +124,7 @@ Read on purpose:
 
 ## Deploy & ops
 
-Production: **https://vvbeliaev.dev** and **https://cogisoft.dev**. Read the
+Production: **https://vvbeliaev.dev**. Read the
 `vvbeliaev-ops` skill before touching CI, Coolify, Cloudflare, or the server.
 Why the pipeline looks like this: `docs/2026-08-15-deploy-pipeline.md`.
 

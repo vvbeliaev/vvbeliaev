@@ -47,3 +47,5 @@ __pycache__/
 # private workspace — the only place for anything not meant to be public.
 # Résumés (with contacts), raw drafts, strategy, project notes. See workspace/README.md.
 workspace/private/
+
+delete*

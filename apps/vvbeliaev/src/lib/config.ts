@@ -153,8 +153,8 @@ export const PARKED_PROJECTS: ReadonlyArray<Project> = [
     backboneId: "traffhub",
     kind: "role",
     tag: {
-      en: "Lead Engineer · Media buying",
-      ru: "Lead Engineer · Медиабаинг",
+      en: "Full Stack Engineer · Media buying",
+      ru: "Full Stack Engineer · Медиабаинг",
     },
     description: {
       en: "Internal product platform for a Tier-1 media-buying team: site, season leaderboard, story tooling.",
