@@ -128,3 +128,13 @@ class Journal(Base):
     target: Mapped[str] = mapped_column(String(120))
     reason: Mapped[str] = mapped_column(String(200))
     detail: Mapped[dict] = mapped_column(JSON)
+
+
+class Session(Base):
+    """Сессия владельца: в базе хэш токена, сам токен — только в cookie."""
+
+    __tablename__ = "sessions"
+
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    expires_at: Mapped[datetime] = mapped_column(UtcDateTime)

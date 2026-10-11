@@ -14,3 +14,5 @@ class Settings(BaseSettings):
     owner_tz: str = "UTC"
     day_start: str = "09:00"
     schema_dir: Path = PACKAGE / "schema"
+    base_url: str = "http://127.0.0.1:8000"
+    owner_password_hash: str = ""

@@ -3,7 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from almanac import api, schema, tree
+from almanac import api, schema, tree, web
+from almanac.auth import owner
 from almanac.config import Settings
 from almanac.db import Database
 from almanac.errors import Refused
@@ -28,6 +29,8 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
     if db is not None:
         app.state.db = db
     app.include_router(api.router, prefix="/api")
+    app.state.attempts = owner.Attempts()
+    app.include_router(web.router)
 
     @app.get("/healthz", include_in_schema=False)
     async def healthz() -> dict:

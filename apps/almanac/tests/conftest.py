@@ -1,10 +1,16 @@
 from datetime import UTC, datetime
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 
 from almanac import clock
+from almanac.auth import owner
 from almanac.config import Settings
 from almanac.db import Database
+from almanac.identity import Caller, caller
+
+PASSWORD = "correct horse battery"
+PASSWORD_HASH = owner.hash_password(PASSWORD)
 
 
 @pytest.fixture
@@ -24,8 +30,13 @@ def now(monkeypatch):
 
 
 @pytest.fixture
+def password():
+    return PASSWORD
+
+
+@pytest.fixture
 def settings():
-    return Settings(_env_file=None, owner_tz="Europe/Berlin")
+    return Settings(_env_file=None, owner_tz="Europe/Berlin", owner_password_hash=PASSWORD_HASH)
 
 
 @pytest.fixture
@@ -36,11 +47,22 @@ def ctx(settings):
 
 
 @pytest.fixture
-async def api(db, settings, now):
-    from httpx import ASGITransport, AsyncClient
-
+def app(db, settings, now):
     from almanac.app import create_app
 
-    app = create_app(settings, db=db)
+    return create_app(settings, db=db)
+
+
+@pytest.fixture
+async def anon(app):
+    """Клиент без личности: то, что видит посторонний."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client
+
+
+@pytest.fixture
+async def api(app):
+    """Клиент с личностью `local`: тесты ядра не про вход."""
+    app.dependency_overrides[caller] = lambda: Caller(client="local")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client

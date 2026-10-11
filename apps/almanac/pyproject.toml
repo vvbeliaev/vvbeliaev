@@ -13,6 +13,8 @@ dependencies = [
   "python-dateutil>=2.9",
   # В slim-образе системной базы поясов нет, zoneinfo берёт её отсюда.
   "tzdata>=2024.2",
+  # Разбор HTML-форм входа и согласия.
+  "python-multipart>=0.0.12",
 ]
 
 [dependency-groups]
