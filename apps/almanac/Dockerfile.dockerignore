@@ -23,6 +23,7 @@ apps/almanac/.run
 apps/almanac/Makefile
 apps/almanac/compose.yml
 apps/almanac/scripts
+apps/almanac/coolify.env
 apps/almanac/*.md
 **/.venv
 **/__pycache__
