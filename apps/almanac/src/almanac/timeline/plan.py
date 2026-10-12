@@ -1,5 +1,6 @@
 """Когда напоминать. Чистые функции: без базы и без часов."""
 
+import re
 from collections.abc import Iterator
 from datetime import UTC, datetime, time, timedelta
 
@@ -9,11 +10,23 @@ from almanac.timeline import occur
 
 # Сколько повторений просматривает `upcoming`: у любого смещения из `checks.duration` хватает с запасом.
 MAX_OCCURRENCES = 60
+# Повтор по часам: единственный ряд чаще раза в день, где часы не названы поимённо.
+HOURLY = re.compile(r"FREQ=HOURLY", re.IGNORECASE)
 
 
 def parse_day_start(text: str) -> time:
     hours, minutes = text.split(":")
     return time(int(hours), int(minutes))
+
+
+def quiet(moment: datetime, window: str, tz: str) -> bool:
+    """Приходится ли момент на тихие часы `HH:MM-HH:MM` в поясе `tz`. Окно может идти через полночь;
+    конец в него не входит. Пустое окно — тихих часов нет."""
+    if not window:
+        return False
+    start, end = (parse_day_start(part) for part in window.split("-"))
+    local = moment.astimezone(occur.zone(tz)).time()
+    return start <= local < end if start <= end else local >= start or local < end
 
 
 def anchors(item: Item, owner_tz: str, day_start: str, after: datetime) -> Iterator[datetime]:

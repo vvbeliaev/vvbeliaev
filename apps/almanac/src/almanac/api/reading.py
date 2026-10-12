@@ -19,7 +19,8 @@ async def guide(ctx: Ctx) -> GuideOut:
     moment = tree.local_now(ctx.owner_tz)
     now = f"{moment:%Y-%m-%dT%H:%M}"
     return GuideOut(
-        text=ctx.schema.guide, types=ctx.schema.types, now=now, tz=ctx.owner_tz, day_start=ctx.day_start
+        text=ctx.schema.guide, types=ctx.schema.types, now=now, tz=ctx.owner_tz, day_start=ctx.day_start,
+        quiet=ctx.quiet_hours,
     )
 
 

@@ -60,7 +60,9 @@ async def test_loops_start_with_the_app_and_stop_with_it(fresh_database, started
     assert sorted(started["cancelled"]) == ["poll", "run"]
     messenger, options = started["built"][0]
     assert (messenger.token, messenger.chat_id) == (TOKEN, 42)
-    assert options == {"owner_tz": "Europe/Berlin", "day_start": "09:00", "owner_chat_id": 42}
+    assert options == {
+        "owner_tz": "Europe/Berlin", "day_start": "09:00", "owner_chat_id": 42, "quiet_hours": "23:00-08:00",
+    }
 
 
 @pytest.mark.parametrize("over", [{}, {"telegram_bot_token": TOKEN}, {"telegram_owner_chat_id": 42}])

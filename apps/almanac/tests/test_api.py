@@ -197,6 +197,7 @@ async def test_guide_says_what_time_it_is_for_the_owner(api, now):
     guide = (await api.get("/api/guide")).json()
     assert (guide["now"], guide["tz"]) == ("2026-10-12T12:00", "Europe/Berlin")
     assert guide["day_start"] == "09:00"  # от него считают напоминания целого дня и задачи со сроком
+    assert guide["quiet"] == "23:00-08:00"  # ночь владельца: почасовой повтор в неё молчит
 
 
 async def test_every_answer_is_an_object_with_named_fields(app):

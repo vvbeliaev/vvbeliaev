@@ -31,6 +31,9 @@ class GuideOut(Shape):
     day_start: str = Field(
         description="The owner's morning, HH:MM: whole-day events and tasks with only `due` remind from it."
     )
+    quiet: str = Field(
+        description="The owner's night, HH:MM-HH:MM: an hourly repeat sends nothing then. Empty: no quiet hours."
+    )
 
 
 class EntryOut(Shape):

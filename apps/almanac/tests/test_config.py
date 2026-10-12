@@ -101,3 +101,15 @@ def test_a_refused_database_url_does_not_leak_its_password():
 def test_good_database_url_is_kept_as_is():
     url = "postgresql+asyncpg://almanac:pw@db.example:5432/almanac"
     assert Settings(_env_file=None, database_url=url).database_url == url
+
+
+@pytest.mark.parametrize("quiet_hours", ["23-8", "23:00", "23:00-8:00", "23:00-24:00", "23:00–08:00", "ночью"])
+def test_bad_quiet_hours_are_refused(quiet_hours):
+    with pytest.raises(ValidationError, match="QUIET_HOURS"):
+        Settings(_env_file=None, quiet_hours=quiet_hours)
+
+
+def test_quiet_hours_default_to_the_night_and_can_be_switched_off():
+    assert Settings(_env_file=None).quiet_hours == "23:00-08:00"
+    assert Settings(_env_file=None, quiet_hours="").quiet_hours == ""
+    assert Settings(_env_file=None, quiet_hours="00:30-07:00").quiet_hours == "00:30-07:00"

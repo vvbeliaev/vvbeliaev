@@ -38,13 +38,15 @@ class Messenger(Protocol):
 
 class Scheduler:
     def __init__(
-        self, db: Database, messenger: Messenger, *, owner_tz: str, day_start: str, owner_chat_id: int
+        self, db: Database, messenger: Messenger, *, owner_tz: str, day_start: str, owner_chat_id: int,
+        quiet_hours: str = "",
     ) -> None:
         self.db = db
         self.messenger = messenger
         self.owner_tz = owner_tz
         self.day_start = day_start
         self.owner_chat_id = owner_chat_id
+        self.quiet_hours = quiet_hours
 
     # --- отправка ---
 
@@ -88,7 +90,7 @@ class Scheduler:
         if firing is None or firing.state != "pending":
             return 0  # срабатывание убрали или обработали, пока цикл шёл по списку
         stale = not firing.manual and now - firing.occurrence > STALE_AFTER
-        if item is None or item.status != "open" or stale:
+        if item is None or item.status != "open" or stale or self._hushed(item, firing, now):
             await self._settle(firing_id, "skipped")
             return 0
         buttons = [(label, f"{action}:{firing.id}") for label, action in BUTTONS]
@@ -105,6 +107,17 @@ class Scheduler:
                 current = await session.get(Item, row.item_id)
                 await firings.replan(session, current, owner_tz=self.owner_tz, day_start=self.day_start)
         return 1
+
+    def _hushed(self, item: Item, firing: Firing, now: datetime) -> bool:
+        """Почасовой повтор ночью молчит: «попить воды» в три часа никому не нужно.
+
+        Время, названное явно, приходит и ночью: разовое, ежедневное, отложенное кнопкой. Смотрим и на
+        запланированный момент, и на настоящий: ночное напоминание, до которого очередь дошла утром
+        после простоя, тоже лишнее. Ночь считается по поясу владельца, а не элемента: спит он.
+        """
+        if firing.manual or not item.rrule or not plan.HOURLY.search(item.rrule):
+            return False
+        return any(plan.quiet(moment, self.quiet_hours, self.owner_tz) for moment in (firing.fire_at, now))
 
     def _text(self, item: Item, firing: Firing, now: datetime) -> str:
         local = firing.occurrence.astimezone(occur.zone(item.tz or self.owner_tz))

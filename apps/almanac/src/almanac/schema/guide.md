@@ -20,6 +20,10 @@ Pages and items are projections: each names the facts it was built from.
 their zone. Item times are written in that zone unless the item names another
 `tz`. Never take the time from your own clock.
 
+If the owner says they are somewhere else, or your own context shows a zone
+other than `tz`, pass that zone as `tz` on the items you create there: the
+times then mean what the owner means. `in` needs no zone.
+
 - A moment: `at: "2026-10-14T18:00"`. A whole-day event: `at: "2026-10-14"`.
   A task's date is `due`.
 - "In twenty minutes", "in two days": `in: "PT20M"`, `in: "P2D"` — the server
@@ -56,7 +60,9 @@ their zone. Item times are written in that zone unless the item names another
   occurrence. `status: "done"` records the completion and moves it to the next
   one; `cancelled` ends the series.
 - A periodic reminder with nothing to tick off is an event with `rrule` and
-  `remind`.
+  `remind`. Several times a day: name the hours, `FREQ=DAILY;BYHOUR=10,13,16,19`,
+  or repeat by the hour, `FREQ=HOURLY;INTERVAL=2` — an hourly repeat sends
+  nothing during `quiet` in this guide's answer, the owner's night.
 
 ## Projects
 

@@ -9,6 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 PACKAGE = Path(__file__).parent
 LOOPBACK = frozenset({"localhost", "127.0.0.1", "::1"})
 DAY_START = re.compile(r"([01][0-9]|2[0-3]):[0-5][0-9]")
+QUIET_HOURS = re.compile(rf"{DAY_START.pattern}-{DAY_START.pattern}")
 ICS_TOKEN_MIN = 32
 DATABASE_SCHEME = "postgresql+asyncpg://"
 
@@ -23,6 +24,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://almanac@127.0.0.1:5434/almanac"
     owner_tz: str = "UTC"
     day_start: str = "09:00"
+    # Ночь владельца, `HH:MM-HH:MM`: почасовой повтор в эти часы не напоминает. Пусто — тихих часов нет.
+    quiet_hours: str = "23:00-08:00"
     schema_dir: Path = PACKAGE / "schema"
     base_url: str = "http://127.0.0.1:8000"
     owner_password_hash: str = ""
@@ -51,6 +54,13 @@ class Settings(BaseSettings):
     def _day_start(cls, value: str) -> str:
         if not DAY_START.fullmatch(value):
             raise ValueError(f"DAY_START must be HH:MM from 00:00 to 23:59, got {value!r}")
+        return value
+
+    @field_validator("quiet_hours")
+    @classmethod
+    def _quiet_hours(cls, value: str) -> str:
+        if value and not QUIET_HOURS.fullmatch(value):
+            raise ValueError(f"QUIET_HOURS must be empty or HH:MM-HH:MM, got {value!r}")
         return value
 
     @field_validator("ics_token")

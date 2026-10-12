@@ -110,7 +110,7 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
                 scheduler = Scheduler(
                     app.state.db, Telegram(settings.telegram_bot_token, settings.telegram_owner_chat_id),
                     owner_tz=settings.owner_tz, day_start=settings.day_start,
-                    owner_chat_id=settings.telegram_owner_chat_id,
+                    owner_chat_id=settings.telegram_owner_chat_id, quiet_hours=settings.quiet_hours,
                 )
                 background = [asyncio.create_task(scheduler.run()), asyncio.create_task(scheduler.poll())]
             async with app.state.mcp_app.lifespan(app):
@@ -126,7 +126,8 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
     app = Almanac(title="almanac", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.settings = settings
     app.state.ctx = tree.Context(
-        schema=schema.load(settings.schema_dir), owner_tz=settings.owner_tz, day_start=settings.day_start
+        schema=schema.load(settings.schema_dir), owner_tz=settings.owner_tz, day_start=settings.day_start,
+        quiet_hours=settings.quiet_hours,
     )
     if db is not None:
         app.state.db = db

@@ -764,3 +764,85 @@ async def test_done_button_still_closes_a_task_that_does_not_repeat_after_its_da
 
     assert (await _item(db, task.id)).status == "done"
     assert messenger.answers == [("cb1", "Готово")]
+
+
+# --- тихие часы: почасовой повтор ночью молчит ---
+
+NIGHT = "23:00-08:00"
+
+
+@pytest.fixture
+def sleepy(db, messenger):
+    """Цикл с тихими часами, как в бою: ночь владельца с 23:00 до 08:00."""
+    return Scheduler(db, messenger, owner_tz=TZ, day_start="09:00", owner_chat_id=OWNER, quiet_hours=NIGHT)
+
+
+async def _water(db, start, **over):
+    """«Попить воды» каждые два часа, начиная с местного `start`."""
+    return await _event(
+        db, title="Попить воды", at=start, rrule="FREQ=HOURLY;INTERVAL=2", remind=["PT0M"],
+        source=Source(said="напоминай пить воду каждые два часа"), **over,
+    )
+
+
+async def test_an_hourly_repeat_is_silent_at_night_and_returns_in_the_morning(db, now, sleepy, messenger, monkeypatch):
+    # В Берлине лето: UTC+2. Ряд идёт с 22:00 понедельника: 00:00, 02:00, 04:00, 06:00 — ночь, 08:00 — уже утро.
+    _at(monkeypatch, 2026, 10, 12, 20, 30)
+    await _water(db, datetime(2026, 10, 12, 22, 0))
+    for hour in (22, 0, 2, 4):  # UTC: местные 00:00, 02:00, 04:00, 06:00
+        _at(monkeypatch, 2026, 10, 12 if hour == 22 else 13, hour, 0)
+        assert await sleepy.tick() == 0
+    assert messenger.sent == []
+    _at(monkeypatch, 2026, 10, 13, 6, 0)
+    assert await sleepy.tick() == 1
+    assert messenger.sent[0][0] == "⏰ 13.10 08:00 · Попить воды"
+    # Ночные пропущены, утреннее отправлено, следующее уже ждёт: цепочка не оборвалась.
+    assert await _states(db) == ["skipped", "skipped", "skipped", "skipped", "sent", "pending"]
+
+
+async def test_an_hourly_repeat_is_sent_by_day(db, now, sleepy, messenger, monkeypatch):
+    await _water(db, datetime(2026, 10, 12, 12, 0))
+    _at(monkeypatch, 2026, 10, 12, 12, 0)  # 14:00 в Берлине
+    assert await sleepy.tick() == 1
+
+
+async def test_a_night_reminder_planned_before_an_outage_is_not_sent_after_it(db, now, sleepy, messenger, monkeypatch):
+    # Сервер молчал с вечера до утра: ночное напоминание созрело в 02:00, а дошла очередь в 09:30.
+    _at(monkeypatch, 2026, 10, 12, 22, 30)
+    await _water(db, datetime(2026, 10, 13, 0, 0))
+    _at(monkeypatch, 2026, 10, 13, 7, 30)
+    assert await sleepy.tick() == 0
+    assert messenger.sent == []
+
+
+async def test_a_time_named_outright_is_sent_at_night(db, now, sleepy, messenger, monkeypatch):
+    # Разовое событие в три ночи и ежедневная привычка в 07:30 названы явно: тихие часы их не касаются.
+    await _event(db, title="Такси в аэропорт", at=datetime(2026, 10, 13, 3, 0), remind=["PT0M"])
+    await _event(
+        db, kind="task", title="Зарядка", at=datetime(2026, 10, 13, 7, 30), rrule="FREQ=DAILY", remind=["PT0M"],
+    )
+    _at(monkeypatch, 2026, 10, 13, 1, 0)
+    assert await sleepy.tick() == 1
+    _at(monkeypatch, 2026, 10, 13, 5, 30)
+    assert await sleepy.tick() == 1
+    assert [text for text, _ in messenger.sent] == ["⏰ 13.10 03:00 · Такси в аэропорт", "⏰ 13.10 07:30 · Зарядка"]
+
+
+async def test_a_snoozed_hourly_reminder_is_sent_at_night(db, now, sleepy, messenger, monkeypatch):
+    # «+1 час» нажали сами: это просьба, а не ряд.
+    await _water(db, datetime(2026, 10, 12, 20, 0))
+    _at(monkeypatch, 2026, 10, 12, 20, 0)  # 22:00 в Берлине
+    assert await sleepy.tick() == 1
+    async with db.read() as session:
+        sent = (await session.scalars(select(Firing).where(Firing.state == "sent"))).one()
+    await sleepy.handle(_press("hour", sent.id))
+    _at(monkeypatch, 2026, 10, 12, 21, 0)  # 23:00: тихие часы уже идут
+    assert await sleepy.tick() == 1
+    assert len(messenger.sent) == 2
+
+
+async def test_without_quiet_hours_an_hourly_repeat_is_sent_at_night(db, now, scheduler, messenger, monkeypatch):
+    _at(monkeypatch, 2026, 10, 12, 20, 30)
+    await _water(db, datetime(2026, 10, 12, 22, 0))
+    _at(monkeypatch, 2026, 10, 12, 22, 0)  # полночь в Берлине
+    assert await scheduler.tick() == 1
