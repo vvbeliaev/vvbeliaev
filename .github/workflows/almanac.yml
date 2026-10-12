@@ -11,6 +11,8 @@ on:
       - 'apps/almanac/**'
       # Правка README или CLAUDE.md не пересобирает образ и не перезапускает сервер.
       - '!apps/almanac/*.md'
+      # Контракт окружения в образ не едет: его применяет `coolify-env-sync.py`, а не сборка.
+      - '!apps/almanac/coolify.env'
       - 'pyproject.toml'
       - 'uv.lock'
       - '.github/workflows/almanac.yml'
