@@ -20,12 +20,14 @@ Pages and items are projections: each names the facts it was built from.
 their zone. Item times are written in that zone unless the item names another
 `tz`. Never take the time from your own clock.
 
-- A moment: `at: "2026-10-14T18:00"`. A whole day: `at: "2026-10-14"`.
+- A moment: `at: "2026-10-14T18:00"`. A whole-day event: `at: "2026-10-14"`.
+  A task's date is `due`.
 - "In twenty minutes", "in two days": `in: "PT20M"`, `in: "P2D"` — the server
   counts from now.
 - A length: `end`, in the same form as `at`. For whole days it is the last day.
 - `remind` — ISO 8601 offsets before the moment: `PT0M`, `PT1H`, `P1D`. A
-  whole-day event and a task with only `due` count from the start of the day.
+  whole-day event and a task with only `due` count from `day_start` in this
+  guide's answer: the owner's morning, not midnight.
 - `rrule` — RFC 5545: `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO,TH`, `FREQ=YEARLY`.
 
 ## Saving
@@ -78,9 +80,10 @@ In `execute` a refused call raises and the script stops: what it already did
 stays done, but its answer is lost. So:
 
 - call `note` once, keep the id, and pass it as `facts` to everything built
-  from it — a retry then records nothing twice;
+  from it: the owner's words are then recorded once, however often you retry;
 - wrap the calls in `try/except` and return what is done together with the
-  refusal;
+  refusal, then repeat only the refused call — a second `item_add` makes a
+  second item;
 - list answers are objects with a named list: `entries`, `matches`, `items`,
   `revisions`.
 

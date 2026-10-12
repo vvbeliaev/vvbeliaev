@@ -18,7 +18,9 @@ async def guide(ctx: Ctx) -> GuideOut:
     `now` is the owner's current local time: item times (`at`, `due`) are written in it."""
     moment = tree.local_now(ctx.owner_tz)
     now = f"{moment:%Y-%m-%dT%H:%M}"
-    return GuideOut(text=ctx.schema.guide, types=ctx.schema.types, now=now, tz=ctx.owner_tz)
+    return GuideOut(
+        text=ctx.schema.guide, types=ctx.schema.types, now=now, tz=ctx.owner_tz, day_start=ctx.day_start
+    )
 
 
 @router.get("/tree", operation_id="ls", summary="List a directory of the tree")

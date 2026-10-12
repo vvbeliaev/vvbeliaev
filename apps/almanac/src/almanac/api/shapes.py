@@ -28,6 +28,9 @@ class GuideOut(Shape):
     types: dict[str, str] = Field(description="Page types: name -> what belongs on such a page.")
     now: str = Field(description="The owner's local time now, to the minute: 2026-10-12T15:21.")
     tz: str = Field(description="IANA name of the owner's zone, like Europe/Berlin.")
+    day_start: str = Field(
+        description="The owner's morning, HH:MM: whole-day events and tasks with only `due` remind from it."
+    )
 
 
 class EntryOut(Shape):

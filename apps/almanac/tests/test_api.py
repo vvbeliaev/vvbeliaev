@@ -180,6 +180,7 @@ async def test_guide_says_what_time_it_is_for_the_owner(api, now):
     # `now` заморожен на 10:00 UTC; у владельца Europe/Berlin, летнее время.
     guide = (await api.get("/api/guide")).json()
     assert (guide["now"], guide["tz"]) == ("2026-10-12T12:00", "Europe/Berlin")
+    assert guide["day_start"] == "09:00"  # от него считают напоминания целого дня и задачи со сроком
 
 
 async def test_every_answer_is_an_object_with_named_fields(app):

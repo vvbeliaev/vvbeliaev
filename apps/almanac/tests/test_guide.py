@@ -7,6 +7,7 @@ import pytest
 from fastmcp import Client
 
 from almanac import schema, tree
+from almanac.api.shapes import GuideOut
 from almanac.app import create_app
 from almanac.identity import acting
 
@@ -70,7 +71,8 @@ def test_the_guide_names_the_tools_it_relies_on(spans):
 
 async def test_every_tool_the_guide_names_exists(spans, tools):
     assert EXPECTED <= tools
-    assert _tool_names(spans) <= tools
+    # Поля ответа самого руководства (`day_start`) пишутся так же, как имена инструментов.
+    assert _tool_names(spans) - set(GuideOut.model_fields) <= tools
 
 
 def test_every_page_type_the_guide_names_is_in_the_schema(spans, settings):
