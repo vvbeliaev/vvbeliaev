@@ -49,10 +49,18 @@ def safe_next(target: str | None) -> str:
 
 
 def same_origin(request: Request) -> bool:
-    """Запрос пришёл со своей страницы: `Origin` совпадает с адресом сервера."""
-    origin = urlsplit(request.headers.get("origin") or "")
-    own = urlsplit(request.app.state.settings.base_url)
-    return bool(origin.scheme) and (origin.scheme, origin.netloc) == (own.scheme, own.netloc)
+    """Запрос пришёл со своей страницы.
+
+    Названный `Origin` обязан совпасть с адресом сервера. Но свои страницы уходят с
+    `Referrer-Policy: no-referrer`, а при ней браузер шлёт с формы `Origin: null` — и со своей
+    страницы тоже. Тогда источник называет сам браузер в `Sec-Fetch-Site`: скрипт страницы этот
+    заголовок выставить не может. Никто не назвал — отказ.
+    """
+    named = request.headers.get("origin")
+    if named and named != "null":
+        origin, own = urlsplit(named), urlsplit(request.app.state.settings.base_url)
+        return (origin.scheme, origin.netloc) == (own.scheme, own.netloc)
+    return request.headers.get("sec-fetch-site") == "same-origin"
 
 
 async def signed_in(request: Request) -> bool:

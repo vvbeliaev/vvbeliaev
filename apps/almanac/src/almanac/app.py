@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -17,6 +18,10 @@ from almanac.errors import Refused
 from almanac.telegram import Telegram
 from almanac.timeline.scheduler import Scheduler
 
+# Журнала доступа у сервера нет: в адресах лежат коды OAuth и секрет ленты. Отказы пишутся отдельно —
+# метод, путь без строки запроса и код ответа: иначе не понять, дошёл ли клиент и чем ему ответили.
+refused = logging.getLogger("almanac.refused")
+
 CSP = "Content-Security-Policy"
 # `form-action` намеренно нет: браузер применяет его и к редиректу после формы согласия,
 # а он ведёт на адрес клиента OAuth.
@@ -33,6 +38,11 @@ SITE_CSP = (
     "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; "
     "connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 )
+
+
+def _loggable(path: str) -> str:
+    """Путь для журнала: у календарной ленты секрет стоит прямо в нём."""
+    return "/calendar/…" if path.startswith("/calendar/") else path
 
 
 class Site(StaticFiles):
@@ -60,6 +70,8 @@ class SecureHeaders:
 
         async def send_with_headers(message: Message) -> None:
             if message["type"] == "http.response.start":
+                if message["status"] >= 400:
+                    refused.warning("%s %s -> %s", scope["method"], _loggable(scope["path"]), message["status"])
                 headers = MutableHeaders(scope=message)
                 for name, value in FIXED_HEADERS.items():
                     # Своя политика содержимого остаётся только у сайта: она строже общей.
@@ -136,7 +148,7 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
         return {"ok": True}
 
     @app.exception_handler(Refused)
-    async def refused(_request: Request, error: Refused) -> JSONResponse:
+    async def refusal(_request: Request, error: Refused) -> JSONResponse:
         return JSONResponse({"detail": str(error)}, status_code=error.status)
 
     # Сайт — одна страница на корне и каталог её файлов. Монтировать его на корень целиком нельзя:

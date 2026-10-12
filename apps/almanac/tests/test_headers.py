@@ -1,3 +1,5 @@
+import logging
+
 from httpx import ASGITransport, AsyncClient
 from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
@@ -76,4 +78,24 @@ async def test_a_weaker_policy_of_its_own_is_replaced_and_the_site_one_is_kept()
         kept = await client.get("/site")
     assert replaced.headers["content-security-policy"] == "frame-ancestors 'none'"
     assert kept.headers["content-security-policy"] == SITE_CSP
+
+
+async def test_refused_requests_are_logged_without_their_secrets(caplog):
+    """Журнала доступа нет: в адресах лежат коды OAuth и секрет ленты. Но отказ должен быть виден."""
+
+    async def missing(_request):
+        return PlainTextResponse("no", status_code=404)
+
+    async def fine(_request):
+        return PlainTextResponse("ok")
+
+    routes = [Route("/calendar/{name}", missing), Route("/mcp/register", missing, methods=["POST"]), Route("/ok", fine)]
+    wrapped = SecureHeaders(Starlette(routes=routes))
+    with caplog.at_level(logging.WARNING, logger="almanac.refused"):
+        async with AsyncClient(transport=ASGITransport(app=wrapped), base_url="http://test") as client:
+            await client.post("/mcp/register?code=one-time-code")
+            await client.get("/calendar/feed-secret-in-the-path.ics")
+            await client.get("/ok")
+    lines = [record.getMessage() for record in caplog.records]
+    assert lines == ["POST /mcp/register -> 404", "GET /calendar/… -> 404"]
 

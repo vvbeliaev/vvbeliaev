@@ -41,7 +41,11 @@ FROM base AS runtime
 RUN useradd --create-home --uid 1000 almanac
 COPY --from=deps --chown=almanac:almanac /repo /repo
 COPY --from=web --chown=almanac:almanac /web/dist /repo/apps/almanac/web/dist
-ENV PATH=/repo/.venv/bin:$PATH
+# Запросы контейнер получает только от прокси площадки (Traefik). Его `X-Forwarded-Proto` надо
+# принять: иначе сервер считает, что к нему пришли по http, и свои редиректы (`/mcp` → `/mcp/`)
+# выдаёт на `http://…` — клиенты OAuth по такому адресу не идут.
+ENV PATH=/repo/.venv/bin:$PATH \
+    FORWARDED_ALLOW_IPS=*
 WORKDIR /repo/apps/almanac
 USER almanac
 EXPOSE 8000

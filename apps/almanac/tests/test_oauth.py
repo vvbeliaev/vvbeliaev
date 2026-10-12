@@ -326,3 +326,42 @@ async def test_consent_page_needs_the_owner(anon, oauth, password, settings):
     )
     assert allowed.status_code == 303
     assert allowed.headers["location"].startswith(CALLBACK + "?code=")
+
+
+async def _pending_consent(anon, oauth, password) -> str:
+    """Владелец вошёл, клиент ждёт решения: номер запроса для формы согласия."""
+    client = _client()
+    await oauth.register_client(client)
+    consent_url = await oauth.authorize(client, _params())
+    await anon.post("/login", data={"password": password})
+    return _query(consent_url)["txn"]
+
+
+async def test_consent_from_the_real_page_passes_though_the_browser_hides_the_origin(anon, oauth, password):
+    """Страницы уходят с `Referrer-Policy: no-referrer`, и браузер шлёт с формы `Origin: null` даже со
+    своей страницы. Откуда запрос на самом деле, он говорит в `Sec-Fetch-Site`."""
+    txn = await _pending_consent(anon, oauth, password)
+    allowed = await anon.post(
+        "/oauth/consent", data={"txn": txn, "decision": "allow"},
+        headers={"origin": "null", "sec-fetch-site": "same-origin"},
+    )
+    assert allowed.status_code == 303
+    assert allowed.headers["location"].startswith(CALLBACK + "?code=")
+
+
+@pytest.mark.parametrize(
+    "headers",
+    [
+        {"origin": "null"},  # старый браузер или не браузер: источник не назван никем
+        {},
+        {"origin": "null", "sec-fetch-site": "cross-site"},
+        {"origin": "null", "sec-fetch-site": "same-site"},  # соседний поддомен — тоже чужой
+        {"origin": "https://evil.example", "sec-fetch-site": "same-origin"},  # названный чужой Origin сильнее
+    ],
+)
+async def test_consent_is_refused_when_nothing_says_the_form_is_ours(anon, oauth, password, headers):
+    txn = await _pending_consent(anon, oauth, password)
+    refused = await anon.post("/oauth/consent", data={"txn": txn, "decision": "allow"}, headers=headers)
+    assert refused.status_code == 403
+    assert "location" not in refused.headers
+
