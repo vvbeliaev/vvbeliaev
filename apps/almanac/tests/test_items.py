@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import select
 
 from almanac.errors import Conflict, NotFound, Refused
-from almanac.models import ItemFact, Journal
+from almanac.models import Item, ItemFact, Journal
 from almanac.store import items
 from almanac.store.source import Source
 from almanac.timeline import occur
@@ -277,3 +277,138 @@ async def test_page_name_longer_than_its_column_is_simply_not_found(db, now):
         await _update(db, item.id, item.rev, {"page": long})
     async with db.read() as session:
         assert (await session.get(type(item), item.id)).page is None
+
+
+# --- плотный повтор: один такой элемент не должен останавливать единственный воркер ---
+
+SHAPES = {"task": {"kind": "task", "due": date(2026, 10, 14)}, "event": {"kind": "event", "at": EVENING}}
+EVERY_FIVE_MINUTES = "BYMINUTE=0,5,10,15,20,25,30,35,40,45,50,55"
+DENSE = [
+    "FREQ=SECONDLY",
+    "FREQ=MINUTELY",
+    "freq=minutely;interval=30",
+    "FREQ=HOURLY;BYMINUTE=0,30",
+    f"FREQ=DAILY;BYHOUR=9,10,11;{EVERY_FIVE_MINUTES}",  # 36 раз в день
+    "FREQ=DAILY;BYHOUR=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23;BYMINUTE=0,30",
+]
+SPARSE_ENOUGH = [
+    "FREQ=HOURLY", "FREQ=HOURLY;INTERVAL=2", "FREQ=DAILY;BYHOUR=9,21", "FREQ=DAILY;BYHOUR=9,10;BYMINUTE=0,30",
+]
+
+
+@pytest.mark.parametrize("shape", SHAPES.values(), ids=SHAPES)
+@pytest.mark.parametrize("rule", DENSE)
+async def test_add_refuses_a_rule_that_repeats_more_often_than_hourly(db, now, shape, rule):
+    with pytest.raises(Refused, match="more often than once an hour.*FREQ=HOURLY"):
+        await _add(db, **shape, rrule=rule)
+    async with db.read() as session:
+        assert (await session.scalars(select(Item))).all() == []
+
+
+@pytest.mark.parametrize("shape", SHAPES.values(), ids=SHAPES)
+@pytest.mark.parametrize("rule", DENSE)
+async def test_update_refuses_a_rule_that_repeats_more_often_than_hourly(db, now, shape, rule):
+    item = await _add(db, **shape)
+    with pytest.raises(Refused, match="more often than once an hour.*FREQ=HOURLY"):
+        await _update(db, item.id, 1, {"rrule": rule})
+    async with db.read() as session:
+        stored = await session.get(Item, item.id)
+    assert (stored.rrule, stored.rev) == (None, 1)
+
+
+@pytest.mark.parametrize("shape", SHAPES.values(), ids=SHAPES)
+@pytest.mark.parametrize("rule", SPARSE_ENOUGH)
+async def test_a_rule_no_denser_than_hourly_is_accepted(db, now, shape, rule):
+    added = await _add(db, **shape, rrule=rule)
+    assert added.rrule == rule
+    plain = await _add(db, **shape)
+    assert (await _update(db, plain.id, 1, {"rrule": rule})).rrule == rule
+
+
+async def test_window_longer_than_a_year_is_refused(db, now):
+    async with db.read() as session:
+        with pytest.raises(Refused, match="longer than 366 days.*narrow"):
+            await items.query(session, owner_tz=TZ, start=date(2026, 1, 1), end=date(2027, 1, 2))
+        with pytest.raises(Refused, match="narrow"):
+            await items.query(session, owner_tz=TZ, start=date(2000, 1, 1), end=date(2026, 1, 1))
+        # Оба конца входят: с 1 января по 1 января следующего года — ровно 366 дней.
+        assert await items.query(session, owner_tz=TZ, start=date(2026, 1, 1), end=date(2027, 1, 1)) == []
+
+
+# --- далёкие даты: 9999-12-31 + сутки не помещаются в дату, и один такой элемент ронял ленту календаря ---
+
+TASK = {"kind": "task", "due": date(2026, 10, 14)}
+EVENT = {"kind": "event", "at": EVENING}
+EVENT_WITH_END = {"kind": "event", "at": EVENING, "end": datetime(2026, 10, 12, 19, 0)}
+LATE_EVENT = {"kind": "event", "at": datetime(2200, 12, 31, 10, 0), "end": datetime(2200, 12, 31, 11, 0)}
+LATE_WHOLE_DAY = {"kind": "event", "at": date(2200, 12, 31), "end": date(2200, 12, 31)}
+# (поле, годный элемент, значение поля): за пределами 1900..2200 с обеих сторон.
+OUT_OF_RANGE = [
+    ("due", TASK, date(2201, 1, 1)),
+    ("due", TASK, date(9999, 12, 31)),
+    ("due", TASK, date(1899, 12, 31)),
+    ("at", EVENT, datetime(2201, 1, 1, 10, 0)),
+    ("at", EVENT, date(9999, 12, 31)),
+    ("at", EVENT, datetime(1899, 12, 31, 22, 0)),
+    ("at", TASK, datetime(2201, 1, 1, 10, 0)),
+    ("end", LATE_EVENT, datetime(2201, 1, 1, 10, 0)),
+    ("end", LATE_WHOLE_DAY, date(9999, 12, 31)),
+    ("end", EVENT_WITH_END, datetime(1899, 12, 31, 23, 0)),
+]
+YEARS = "between the years 1900 and 2200"
+IDS = [f"{field}-{value.year}-{base['kind']}" for field, base, value in OUT_OF_RANGE]
+
+
+@pytest.mark.parametrize(("field", "base", "value"), OUT_OF_RANGE, ids=IDS)
+async def test_add_refuses_a_date_outside_1900_and_2200(db, now, field, base, value):
+    with pytest.raises(Refused, match=f"`{field}` must fall {YEARS}"):
+        await _add(db, **{**base, field: value})
+    async with db.read() as session:
+        assert (await session.scalars(select(Item))).all() == []
+
+
+@pytest.mark.parametrize(("field", "base", "value"), OUT_OF_RANGE, ids=IDS)
+async def test_update_refuses_a_date_outside_1900_and_2200(db, now, field, base, value):
+    item = await _add(db, **base)
+    with pytest.raises(Refused, match=f"`{field}` must fall {YEARS}"):
+        await _update(db, item.id, 1, {field: value})
+    async with db.read() as session:
+        assert (await session.get(Item, item.id)).rev == 1
+
+
+@pytest.mark.parametrize("kind", ["task", "event"])
+async def test_an_offset_so_long_that_it_passes_2200_is_refused(db, now, kind):
+    # P9999W — 191 год и 8 месяцев от 2026-го: уже 2218-й.
+    with pytest.raises(Refused, match=f"`at` must fall {YEARS}"):
+        await _add(db, kind=kind, in_="P9999W")
+    item = await _add(db, kind="event", at=EVENING)
+    with pytest.raises(Refused, match=f"`at` must fall {YEARS}"):
+        await _update(db, item.id, 1, {"in": "P9999W"})
+
+
+async def test_a_reminded_event_in_the_year_9999_is_refused_instead_of_overflowing(db, now):
+    # К западу от Гринвича вечер 31 декабря 9999-го в UTC уже за пределами календаря.
+    with pytest.raises(Refused, match=YEARS):
+        await _add(db, kind="event", at=datetime(9999, 12, 31, 23, 30), tz="America/New_York", remind=["PT1H"])
+    with pytest.raises(Refused, match=YEARS):
+        await _add(db, due=date(9999, 12, 31), remind=["P1D"])
+
+
+async def test_dates_on_the_edges_of_the_range_are_accepted(db, now):
+    oldest = await _add(db, kind="event", title="Родился", at=date(1900, 1, 1), end=date(1900, 1, 1))
+    latest = await _add(db, title="Далёкий срок", due=date(2200, 12, 31), remind=["PT0M"])
+    late_event = await _add(
+        db, kind="event", title="Далёкая встреча", at=datetime(2200, 12, 31, 22, 0), end=datetime(2200, 12, 31, 23, 0),
+        remind=["PT1H"],
+    )
+    assert (oldest.at, latest.due, late_event.end_at) == (
+        datetime(1900, 1, 1), date(2200, 12, 31), datetime(2200, 12, 31, 23, 0),
+    )
+
+
+async def test_a_yearly_event_may_start_in_the_year_of_birth(db, now):
+    birthday = await _add(db, kind="event", title="ДР Ани", at=datetime(1990, 5, 17, 9, 0), rrule="FREQ=YEARLY")
+    assert birthday.at == datetime(1990, 5, 17, 9, 0)
+    async with db.read() as session:
+        found = await items.query(session, owner_tz=TZ, start=date(2027, 5, 17), end=date(2027, 5, 17))
+    assert [item.id for item in found] == [birthday.id]

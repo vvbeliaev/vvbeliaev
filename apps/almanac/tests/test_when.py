@@ -305,7 +305,7 @@ async def test_an_event_cannot_run_longer_than_a_year(db, now):
     with pytest.raises(Refused, match="longer than 366 days"):
         await _add(db, at=date(2026, 10, 12), end=date(2027, 10, 14))
     with pytest.raises(Refused, match="longer than 366 days"):
-        await _add(db, at=datetime(2020, 1, 1, 0, 0), end=datetime(9999, 1, 1, 0, 0))
+        await _add(db, at=datetime(2020, 1, 1, 0, 0), end=datetime(2200, 1, 1, 0, 0))
 
 
 async def test_end_may_be_the_same_day_for_a_whole_day(db, now):

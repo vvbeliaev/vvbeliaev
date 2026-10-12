@@ -176,7 +176,11 @@ class Scheduler:
             if firing is not None and firing.state == "sent" and action in ("done", "hour", "tomorrow"):
                 item = await session.get(Item, firing.item_id)
                 message_id = firing.message_id
-                if action == "done":
+                if self._behind(item, firing):
+                    # Это повторение уже закрыто, срок привычки ушёл дальше: кнопка закрывает лишь само напоминание.
+                    firing.state = "done"
+                    reply = "Уже отмечено"
+                elif action == "done":
                     firing.state = "done"
                     if item.kind == "task" and item.status == "open":
                         await items.update(
@@ -197,6 +201,17 @@ class Scheduler:
         await self.messenger.answer(callback["id"], reply)
         if message_id is not None:
             await self.messenger.clear_buttons(message_id)
+
+    def _behind(self, item: Item, firing: Firing) -> bool:
+        """Срок повторяющейся задачи ушёл дальше повторения, о котором это напоминание.
+
+        У такой задачи статус всегда `open`, и по нему не узнать, закрыто ли повторение: сравниваются
+        нынешний опорный момент и повторение напоминания. У остальных элементов срок не едет сам.
+        """
+        if item.kind != "task" or item.rrule is None or item.status != "open":
+            return False
+        current = plan.current_anchor(item, self.owner_tz, self.day_start)
+        return current is not None and current.astimezone(UTC) > firing.occurrence
 
     def _tomorrow(self, now: datetime) -> datetime:
         local_zone = occur.zone(self.owner_tz)

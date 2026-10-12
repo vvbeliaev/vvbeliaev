@@ -34,6 +34,9 @@ def _where(response):
         ("POST", "/api/items", {**ITEM, "note": f"две{NUL}пачки"}),
         ("POST", "/api/items", {**ITEM, "remind": [f"PT1H{NUL}"]}),
         ("POST", "/api/pages/remove", {"path": "pages/people/anna.md", "rev": 1, "reason": f"ошибка{NUL}"}),
+        ("POST", "/api/pages/move", {"path": "pages/people/anna.md", "to": "pages/people/ann.md", "rev": 1, "reason": f"ошибка{NUL}"}),
+        ("POST", "/api/pages/move", {"path": f"pages/people/an{NUL}na.md", "to": "pages/people/ann.md", "rev": 1, "reason": "переименовать"}),
+        ("POST", "/api/pages/move", {"path": "pages/people/anna.md", "to": f"pages/people/an{NUL}n.md", "rev": 1, "reason": "переименовать"}),
     ],
 )
 async def test_body_with_a_nul_is_refused_before_it_reaches_the_database(api, db, method, url, body):

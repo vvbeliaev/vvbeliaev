@@ -584,3 +584,183 @@ async def test_whole_day_reminder_shows_a_date_without_a_time(db, now, scheduler
     _at(monkeypatch, 2026, 10, 20, 7, 0)
     assert await scheduler.tick() == 1
     assert messenger.sent[0][0] == "⏰ 20.10 · Командировка"
+
+
+# --- старая кнопка под повторяющейся задачей ---
+
+
+async def _habit(db, **over):
+    args = {
+        "client": "claude", "owner_tz": TZ, "kind": "task", "title": "Зарядка", "due": date(2026, 10, 13),
+        "rrule": "FREQ=DAILY", "remind": ["PT0M"], "source": Source(said="зарядка каждый день"),
+        "reason": "привычка",
+    }
+    args.update(over)
+    async with db.write() as session:
+        return await items.add(session, **args)
+
+
+async def _sent_firings(db):
+    async with db.read() as session:
+        return list((await session.scalars(select(Firing).where(Firing.state == "sent").order_by(Firing.fire_at))).all())
+
+
+async def _item(db, item_id):
+    async with db.read() as session:
+        return await session.get(Item, item_id)
+
+
+@pytest.mark.parametrize("order", [(0, 1), (1, 0)], ids=["old first", "new first"])
+async def test_two_unanswered_reminders_of_a_habit_move_it_once(db, now, scheduler, messenger, monkeypatch, order):
+    habit = await _habit(db)
+    # Начало дня 13 октября в Берлине — 07:00 UTC; напоминание 14-го уходит следом, и оба остаются без ответа.
+    _at(monkeypatch, 2026, 10, 13, 7, 0)
+    await scheduler.tick()
+    _at(monkeypatch, 2026, 10, 14, 7, 0)
+    await scheduler.tick()
+    sent = await _sent_firings(db)
+    assert [text.split(" · ")[0] for text, _ in messenger.sent] == ["⏰ срок 13.10", "⏰ срок 14.10"]
+
+    for index in order:
+        await scheduler.handle(_press("done", sent[index].id))
+
+    moved = await _item(db, habit.id)
+    # Закрыто одно повторение: 13-е и пропущенное 14-е ушли, привычка стоит на 15-м и ждёт его напоминания.
+    assert (moved.status, moved.due, moved.rev) == ("open", date(2026, 10, 15), 2)
+    assert await _states(db) == ["done", "done", "pending"]
+    assert await _pending_fires(db) == [datetime(2026, 10, 15, 7, 0, tzinfo=UTC)]
+    answers = [reply for _, reply in messenger.answers]
+    assert answers == ["Готово", "Уже отмечено"]
+    assert messenger.cleared == [sent[index].message_id for index in order]
+
+
+async def test_old_message_does_not_move_a_habit_closed_through_the_api(db, now, scheduler, messenger, monkeypatch):
+    habit = await _habit(db)
+    _at(monkeypatch, 2026, 10, 13, 7, 0)
+    await scheduler.tick()
+    (sent,) = await _sent_firings(db)
+    async with db.write() as session:
+        await items.update(
+            session, client="claude", owner_tz=TZ, item_id=habit.id, rev=1,
+            changes={"status": "done"}, reason="сделано в приложении",
+        )
+    assert (await _item(db, habit.id)).due == date(2026, 10, 14)
+
+    await scheduler.handle(_press("done", sent.id))
+
+    moved = await _item(db, habit.id)
+    assert (moved.status, moved.due, moved.rev) == ("open", date(2026, 10, 14), 2)
+    assert await _states(db) == ["done", "pending"]
+    assert await _pending_fires(db) == [datetime(2026, 10, 14, 7, 0, tzinfo=UTC)]
+    assert messenger.answers == [("cb1", "Уже отмечено")]
+    assert messenger.cleared == [sent.message_id]
+
+
+async def test_old_message_does_not_move_a_timed_habit_either(db, now, scheduler, messenger, monkeypatch):
+    habit = await _habit(db, due=None, at=datetime(2026, 10, 13, 18, 0))
+    _at(monkeypatch, 2026, 10, 13, 16, 0)
+    await scheduler.tick()
+    (sent,) = await _sent_firings(db)
+    async with db.write() as session:
+        await items.update(
+            session, client="claude", owner_tz=TZ, item_id=habit.id, rev=1,
+            changes={"status": "done"}, reason="сделано в приложении",
+        )
+
+    await scheduler.handle(_press("done", sent.id))
+
+    moved = await _item(db, habit.id)
+    assert (moved.status, moved.at, moved.rev) == ("open", datetime(2026, 10, 14, 18, 0), 2)
+    assert await _states(db) == ["done", "pending"]
+    assert messenger.answers == [("cb1", "Уже отмечено")]
+
+
+@pytest.mark.parametrize("action", ["hour", "tomorrow"])
+async def test_old_snooze_of_a_closed_habit_occurrence_plans_nothing(db, now, scheduler, messenger, monkeypatch, action):
+    habit = await _habit(db)
+    _at(monkeypatch, 2026, 10, 13, 7, 0)
+    await scheduler.tick()
+    (sent,) = await _sent_firings(db)
+    async with db.write() as session:
+        await items.update(
+            session, client="claude", owner_tz=TZ, item_id=habit.id, rev=1,
+            changes={"status": "done"}, reason="сделано в приложении",
+        )
+
+    await scheduler.handle(_press(action, sent.id))
+
+    # Отложенного срабатывания нет: остались только отправленное (теперь закрытое) и плановое на 14-е.
+    assert await _states(db) == ["done", "pending"]
+    assert messenger.answers == [("cb1", "Уже отмечено")]
+    assert messenger.cleared == [sent.message_id]
+    _at(monkeypatch, 2026, 10, 14, 7, 0)
+    assert await scheduler.tick() == 1
+    assert [text.split(" · ")[0] for text, _ in messenger.sent] == ["⏰ срок 13.10", "⏰ срок 14.10"]
+
+
+async def test_button_under_a_habit_reminder_still_acts_while_its_occurrence_is_current(
+    db, now, scheduler, messenger, monkeypatch
+):
+    habit = await _habit(db)
+    _at(monkeypatch, 2026, 10, 13, 7, 0)
+    await scheduler.tick()
+    (sent,) = await _sent_firings(db)
+
+    await scheduler.handle(_press("hour", sent.id))
+
+    assert (await _item(db, habit.id)).due == date(2026, 10, 13)
+    assert await _states(db) == ["snoozed", "pending", "pending"]
+    assert messenger.answers == [("cb1", "Напомню через час")]
+
+
+KINDS = {
+    "task": lambda db: _habit(db, rrule=None),
+    "event": lambda db: _event(db, remind=["PT0M"], at=datetime(2026, 10, 13, 9, 0)),
+}
+# Что остаётся в срабатываниях после кнопки: (состояние, вручную ли). Отложенное — новое ожидающее.
+AS_BEFORE = [
+    ("done", "Готово", [("done", False)]),
+    ("hour", "Напомню через час", [("snoozed", False), ("pending", True)]),
+    ("tomorrow", "Напомню завтра", [("snoozed", False), ("pending", True)]),
+]
+
+
+@pytest.mark.parametrize("kind", ["task", "event"])
+@pytest.mark.parametrize(("action", "reply", "firings"), AS_BEFORE)
+async def test_buttons_under_an_item_that_does_not_repeat_work_as_before(
+    db, now, scheduler, messenger, monkeypatch, kind, action, reply, firings
+):
+    item = await KINDS[kind](db)
+    _at(monkeypatch, 2026, 10, 13, 7, 0)
+    await scheduler.tick()
+    (sent,) = await _sent_firings(db)
+
+    await scheduler.handle(_press(action, sent.id))
+
+    current = await _item(db, item.id)
+    closes = kind == "task" and action == "done"
+    assert (current.status, current.rev) == (("done", 2) if closes else ("open", 1))
+    async with db.read() as session:
+        rows = (await session.scalars(select(Firing).order_by(Firing.fire_at))).all()
+    assert [(row.state, row.manual) for row in rows] == firings
+    assert messenger.answers == [("cb1", reply)]
+    assert messenger.cleared == [sent.message_id]
+
+
+async def test_done_button_still_closes_a_task_that_does_not_repeat_after_its_date_moved(
+    db, now, scheduler, messenger, monkeypatch
+):
+    task = await _habit(db, rrule=None)
+    _at(monkeypatch, 2026, 10, 13, 7, 0)
+    await scheduler.tick()
+    (sent,) = await _sent_firings(db)
+    async with db.write() as session:
+        await items.update(
+            session, client="claude", owner_tz=TZ, item_id=task.id, rev=1,
+            changes={"due": date(2026, 10, 20)}, reason="перенесли срок",
+        )
+
+    await scheduler.handle(_press("done", sent.id))
+
+    assert (await _item(db, task.id)).status == "done"
+    assert messenger.answers == [("cb1", "Готово")]

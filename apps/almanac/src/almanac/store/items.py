@@ -30,6 +30,11 @@ AT_OR_IN = (
 DAY = timedelta(days=1)
 # Событие длиннее года — почти наверняка опечатка в дате, а гигантская длина ломала бы расчёт дней при каждом чтении повестки.
 MAX_SPAN = timedelta(days=366)
+# Годы, между которыми лежат `at`, `end` и `due`: дата 9999-12-31 не терпит прибавленных суток, и лента календаря падала бы целиком.
+# Нижняя граница — год рождения: день рождения начинается в нём.
+MIN_YEAR, MAX_YEAR = 1900, 2200
+# Окно `items` шире года перебирало бы повторения каждого элемента за все эти дни: просят сузить.
+MAX_WINDOW_DAYS = 366
 
 
 def _attr(field: str) -> str:
@@ -73,6 +78,13 @@ def _form(is_date: bool) -> str:
     return "a date" if is_date else "a date and time"
 
 
+def _check_years(item: Item) -> None:
+    """`at`, `end` и `due` лежат между `MIN_YEAR` и `MAX_YEAR` включительно; отказ называет поле."""
+    for name, value in (("at", item.at), ("end", item.end_at), ("due", item.due)):
+        if value is not None and not MIN_YEAR <= value.year <= MAX_YEAR:
+            raise Refused(f"`{name}` must fall between the years {MIN_YEAR} and {MAX_YEAR}: check the date")
+
+
 def _check_end(item: Item, end_is_date: bool) -> None:
     """Конец события согласован с началом: той же формы и позже. Отказ просит прислать оба поля."""
     if item.kind != "event":
@@ -102,7 +114,7 @@ def _check_rule(item: Item) -> None:
     if item.kind == "task" and item.at is None and item.due is None:
         raise Refused("`rrule` on a task needs `due` or `at` to repeat from")
     start = item.at if item.at is not None else datetime.combine(item.due, time.min)
-    occur.rule(item.rrule, start)
+    occur.check_density(occur.rule(item.rrule, start), item.rrule)
     if item.kind == "task" and occur.COUNT.search(item.rrule):
         raise Refused(
             "COUNT is not allowed on a task: its start moves with every completion, so a count would never run "
@@ -122,6 +134,7 @@ def _check(item: Item, owner_tz: str, *, end_is_date: bool = False) -> None:
         )
     if item.at is not None and item.at.tzinfo is not None:
         raise Refused("`at` is local time without an offset; put the zone name in `tz`")
+    _check_years(item)
     if item.all_day and item.kind != "event":
         raise Refused("a task takes `due` for a date, `at` for a date and time; a date alone in `at` is for events")
     if item.end_at is not None:
@@ -398,6 +411,9 @@ async def query(
     """Выборка элементов. Окно `start..end` (оба конца включены) оставляет то, что приходится на эти дни."""
     if (start is None) != (end is None):
         raise Refused("a window needs both ends: pass `from` and `to` together")
+    # Оба конца входят в окно, поэтому дней в нём на один больше, чем разница дат.
+    if start is not None and (end - start).days + 1 > MAX_WINDOW_DAYS:
+        raise Refused(f"a window cannot be longer than {MAX_WINDOW_DAYS} days: narrow `from`..`to`")
     if kind is not None and kind not in KINDS:
         raise Refused(f"unknown kind {kind!r}; one of: {', '.join(KINDS)}")
     if status is not None and status not in STATUS_FILTERS:

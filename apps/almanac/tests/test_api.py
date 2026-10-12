@@ -163,6 +163,22 @@ async def test_items_flow(api):
     assert "without an offset" in aware.json()["detail"]
 
 
+async def test_items_refuse_a_wide_window_a_far_date_and_a_dense_rule_with_a_422(api):
+    wide = await api.get("/api/items", params={"from": "2020-01-01", "to": "2026-01-01"})
+    assert wide.status_code == 422
+    assert "narrow" in wide.json()["detail"]
+
+    base = {"kind": "task", "title": "Когда-нибудь", "said": "когда-нибудь", "reason": "срок"}
+    far = await api.post("/api/items", json={**base, "due": "9999-12-31"})
+    assert far.status_code == 422
+    assert "between the years 1900 and 2200" in far.json()["detail"]
+
+    dense = await api.post("/api/items", json={**base, "due": "2026-10-14", "rrule": "FREQ=MINUTELY"})
+    assert dense.status_code == 422
+    assert "FREQ=HOURLY" in dense.json()["detail"]
+    assert (await api.get("/api/items", params={"status": "any"})).json() == {"items": []}
+
+
 async def test_tree_grep_and_guide(api):
     await api.put("/api/pages", json=PAGE)
     catalog = (await api.get("/api/tree", params={"path": "pages", "depth": 2})).json()["entries"]

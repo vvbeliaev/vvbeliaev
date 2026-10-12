@@ -2,9 +2,10 @@
 
 import re
 from datetime import UTC, date, datetime, time, timedelta
+from itertools import islice
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from dateutil.rrule import rrulestr
+from dateutil.rrule import rrulebase, rrulestr
 
 from almanac.errors import Refused
 
@@ -22,6 +23,12 @@ UTC_UNTIL = re.compile(r"UNTIL=[0-9T]*Z", re.IGNORECASE)
 # `UNTIL=20261231` без времени dateutil читает как полночь: последний день выпал бы из повтора целиком.
 DATE_UNTIL = re.compile(r"UNTIL=[0-9]{8}(?![0-9T])", re.IGNORECASE)
 COUNT = re.compile(r"\bCOUNT\s*=", re.IGNORECASE)
+# Секундная и минутная частота отказываются по имени, без перебора: с условием, которое не выполняется ни разу,
+# он шёл бы секундными шагами годами.
+FINE = re.compile(r"\bFREQ\s*=\s*(?:SECONDLY|MINUTELY)\b", re.IGNORECASE)
+# Плотность смотрим по первым повторениям: если 25-е приходится меньше чем на сутки позже первого, в сутки их больше 24.
+DENSITY_SAMPLE = 25
+DENSITY_SPAN = timedelta(hours=24)
 
 
 def rule(text: str, start: datetime):
@@ -39,6 +46,21 @@ def rule(text: str, start: datetime):
         return rrulestr(text, dtstart=start)
     except (ValueError, TypeError, KeyError) as error:
         raise Refused(f"bad rrule {text!r}: {error}") from error
+
+
+def check_density(parsed: rrulebase, text: str) -> None:
+    """Правило повторяется не чаще раза в час, иначе отказ.
+
+    Плотный ряд заставлял бы каждое чтение повестки и каждый тик перебирать сотни тысяч моментов,
+    а единственный воркер всё это время молчал бы. Решает само правило, без окна и без часов:
+    берутся первые `DENSITY_SAMPLE` повторений, перебор на них и кончается.
+    """
+    refusal = f"rrule {text!r} repeats more often than once an hour; the densest allowed is FREQ=HOURLY"
+    if FINE.search(text):
+        raise Refused(refusal)
+    sample = list(islice(parsed, DENSITY_SAMPLE))
+    if len(sample) == DENSITY_SAMPLE and sample[-1] - sample[0] < DENSITY_SPAN:
+        raise Refused(refusal)
 
 
 def occurrences(at: datetime, rrule: str | None, tz: str, start: datetime, end: datetime) -> list[datetime]:
