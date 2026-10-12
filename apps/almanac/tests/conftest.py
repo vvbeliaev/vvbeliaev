@@ -5,12 +5,15 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import asyncpg
 import pytest
 from alembic import command
 from alembic.config import Config
 from httpx import ASGITransport, AsyncClient
+from mcp.server.auth.handlers import token as mcp_token
+from mcp.server.auth.middleware import bearer_auth as mcp_bearer
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 
@@ -127,9 +130,15 @@ async def db(pg_url):
 
 @pytest.fixture
 def now(monkeypatch):
-    """Понедельник 2026-10-12, 10:00 UTC — в Берлине 12:00, летнее время до 25 октября."""
+    """Понедельник 2026-10-12, 10:00 UTC — в Берлине 12:00, летнее время до 25 октября.
+
+    Сроки кодов и токенов библиотека MCP сверяет со своими часами. Ей ставим часы сервера: иначе тесты
+    входа зависят от настоящей даты и падают, как только она обгонит этот понедельник на час."""
     moment = datetime(2026, 10, 12, 10, 0, tzinfo=UTC)
     monkeypatch.setattr(clock, "_now", lambda: moment)
+    server_clock = SimpleNamespace(time=lambda: clock.utcnow().timestamp())
+    for module in (mcp_bearer, mcp_token):
+        monkeypatch.setattr(module, "time", server_clock)
     return moment
 
 
