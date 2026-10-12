@@ -9,7 +9,7 @@ from almanac.models import Journal, RevisionFact
 from almanac.store import pages
 from almanac.store.source import Source
 
-TYPES = {"people", "areas", "topics", "ideas"}
+TYPES = {"people", "areas", "projects", "topics", "ideas"}
 ANNA = "pages/people/anna.md"
 CHECKBOX = "checkbox in a page: tasks are items — use item_add and set its page"
 

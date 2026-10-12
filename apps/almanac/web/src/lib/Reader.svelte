@@ -47,6 +47,12 @@
         </dl>
       </header>
       <div class="prose">{@html render(page.body)}</div>
+      {#if view.file.items?.length}
+        <section>
+          <h2>Дела</h2>
+          <Log blocks={blocks(view.file.items.join('\n'))} />
+        </section>
+      {/if}
       {#if view.file.backlinks?.length}
         <footer>
           <h2>Сюда ссылаются</h2>
@@ -114,12 +120,14 @@
     color: var(--accent);
   }
 
+  section,
   footer {
     margin-top: 2.4rem;
     padding-top: 1.1rem;
     border-top: 1px solid var(--border);
   }
 
+  section h2,
   footer h2 {
     font-size: 0.95rem;
     margin-bottom: 0.5rem;

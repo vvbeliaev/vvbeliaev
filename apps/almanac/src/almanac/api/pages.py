@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query
 from pydantic import Field
 
 from almanac.api.deps import Ctx, Db, Sourced, Strict, Who
-from almanac.api.shapes import HistoryOut, RevisionOut, WrittenOut
+from almanac.api.shapes import HistoryOut, MovedOut, RevisionOut, WrittenOut
 from almanac.store import pages as store
 
 router = APIRouter()
@@ -26,6 +26,16 @@ class EditIn(Sourced):
     new: str
     rev: int = Field(description="The `rev` from your last read of this page.")
     restructure: bool = Field(default=False, description="True when the change adds no new knowledge.")
+
+
+class MoveIn(Strict):
+    path: str = Field(description="Path of the page to move, like `pages/ideas/garden.md`.")
+    to: str = Field(
+        description="New path, `pages/<type>/<slug>.md`: a new slug renames the page, "
+        "another type moves it there, like `pages/projects/garden.md`. Must be free."
+    )
+    rev: int = Field(description="The `rev` from your last read of this page.")
+    reason: str = Field(description="One line for the journal: why this change.")
 
 
 class RemoveIn(Strict):
@@ -58,6 +68,18 @@ async def edit(body: EditIn, db: Db, who: Who) -> WrittenOut:
             source=body.source(), reason=body.reason,
         )
     return WrittenOut.model_validate(done)
+
+
+@router.post("/pages/move", operation_id="move", summary="Move or rename a page")
+async def move(body: MoveIn, db: Db, ctx: Ctx, who: Who) -> MovedOut:
+    """Moves the page with its history; links from other pages and items attached to it
+    follow. Use it to rename, or when an idea becomes a project. Needs the current `rev`."""
+    async with db.write() as session:
+        done = await store.move(
+            session, client=who.client, types=ctx.schema.types, path=body.path, to=body.to, rev=body.rev,
+            reason=body.reason,
+        )
+    return MovedOut.model_validate(done)
 
 
 @router.post("/pages/remove", operation_id="remove", summary="Remove a page")

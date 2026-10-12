@@ -7,6 +7,8 @@ export type FileView = {
   text: string;
   rev: number | null;
   backlinks: string[] | null;
+  // Открытые дела страницы строками, как их печатает сервер; у всего, что не текущая страница, — null.
+  items: string[] | null;
   writable: boolean;
 };
 

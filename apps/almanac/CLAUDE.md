@@ -15,6 +15,13 @@ Rules for working in this app. Repo-wide rules are in the root
   fix. Endpoint docstrings are tool descriptions: English, written for a model.
 - **One fact, one home.** The catalog, the inbox, the agenda and the item lines
   are projections computed in `tree.py`. Do not store a second copy of them.
+- **Every `/api` answer is an object with a response model** (`api/shapes.py`), and a
+  list is never the top level: Code Mode would hand a bare list to the script wrapped
+  in `result`. A list lives under a name (`entries`, `matches`, `items`, `revisions`);
+  every field carries a one-line description, because `get_schema` is built from them.
+- **A repeating task is one row** that holds its next occurrence in `due`/`at`. `done`
+  moves it to the next one and writes `item_done` to the journal: the journal is the
+  history of completions, there is no row per completion.
 - **Postgres is strict.** Text longer than its `String(n)`
   column, `\x00` in any text, a number outside `int32`: each is a database error and
   a 500. Whatever lands in a column is checked at the boundary and refused with

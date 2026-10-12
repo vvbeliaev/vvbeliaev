@@ -19,7 +19,7 @@ from almanac.identity import INTERNAL_HEADER, acting, sign_internal
 from almanac.models import Journal
 
 TOOLS = {
-    "guide", "ls", "grep", "read", "note", "dismiss", "write", "edit", "remove", "history",
+    "guide", "ls", "grep", "read", "note", "dismiss", "write", "edit", "move", "remove", "history",
     "item_add", "item_update", "items",
 }
 
@@ -108,6 +108,10 @@ answers['read'] = await call_tool('read', {'path': page})
 answers['edit'] = await call_tool('edit', {
     'path': page, 'old': 'Берлине', 'new': 'Мюнхене', 'rev': 1, 'restructure': True, 'reason': 'переезд'})
 answers['history'] = await call_tool('history', {'path': page})
+moved = await call_tool('move', {
+    'path': page, 'to': 'pages/people/anna-petrova.md', 'rev': 2, 'reason': 'полное имя'})
+answers['move'] = moved
+page = moved['path']
 item = await call_tool('item_add', {
     'kind': 'task', 'title': 'Купить молоко', 'list': 'shopping', 'facts': [fact['id']], 'reason': 'покупка'})
 answers['item_add'] = item
@@ -116,7 +120,7 @@ answers['item_update'] = await call_tool('item_update', {
 answers['items'] = await call_tool('items', {'status': 'any'})
 other = await call_tool('note', {'text': 'просто так'})
 answers['dismiss'] = await call_tool('dismiss', {'fact': other['id'], 'reason': 'не нужно'})
-answers['remove'] = await call_tool('remove', {'path': page, 'rev': 2, 'reason': 'ошибка'})
+answers['remove'] = await call_tool('remove', {'path': page, 'rev': moved['rev'], 'reason': 'ошибка'})
 return answers
 """
 
@@ -235,6 +239,43 @@ async def test_execute_description_tells_about_refusals_and_named_lists(mcp):
     execute = next(tool for tool in await mcp.list_tools() if tool.name == "execute")
     for fact in ("try/except", "entries", "matches", "items", "revisions"):
         assert fact in execute.description, fact
+
+
+async def test_execute_description_lists_move_next_to_the_page_tools(mcp):
+    execute = next(tool for tool in await mcp.list_tools() if tool.name == "execute")
+    assert "    write, edit, move, remove    pages; `history` lists revisions\n" in execute.description
+
+
+async def test_get_schema_describes_move_and_the_items_of_a_page(mcp):
+    text = _value(await mcp.call_tool("get_schema", {"tools": ["move", "read"]}))
+    move, read = text.split("### read")
+    for field in ("path", "to", "rev", "reason"):
+        line = next(line for line in move.splitlines() if line.startswith(f"- {field} ("))
+        assert "required" in line and " — " in line, field
+    returns = move.split("Returns:")[1]
+    assert all(f"- {field} (" in returns for field in ("path", "rev", "relinked"))
+    items = next(line for line in read.split("Returns:")[1].splitlines() if line.startswith("- items ("))
+    assert "item_update" in items and "null" in items
+
+
+async def test_a_script_can_turn_an_idea_into_a_project_with_its_tasks(mcp):
+    code = (
+        "fact = await call_tool('note', {'text': 'хочу огород на даче'})\n"
+        "idea = 'pages/ideas/garden.md'\n"
+        "await call_tool('write', {'path': idea, 'title': 'Огород', 'description': 'Грядки', "
+        "'body': 'Что сажаем.\\n', 'facts': [fact['id']], 'reason': 'идея'})\n"
+        "await call_tool('item_add', {'kind': 'task', 'title': 'Купить семена', 'page': idea, "
+        "'due': '2026-10-14', 'facts': [fact['id']], 'reason': 'дело'})\n"
+        "moved = await call_tool('move', {'path': idea, 'to': 'pages/projects/garden.md', 'rev': 1, "
+        "'reason': 'стало делом'})\n"
+        "page = await call_tool('read', {'path': moved['path']})\n"
+        "return {'moved': moved, 'items': page['items'], 'rev': page['rev']}"
+    )
+    answer = _value(await mcp.call_tool("execute", {"code": code}))
+    assert answer["moved"] == {"path": "pages/projects/garden.md", "rev": 2, "relinked": []}
+    assert answer["rev"] == 2
+    assert len(answer["items"]) == 1
+    assert answer["items"][0].startswith("- [ ] Купить семена  due:2026-10-14  page:pages/projects/garden.md")
 
 
 async def test_call_without_identity_is_refused(db, settings, now):

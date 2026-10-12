@@ -32,11 +32,11 @@ EXECUTE_DESCRIPTION = """Runs your Python in a sandbox and returns what you retu
 The only thing in scope is `await call_tool(name, params)`. Find tools with `search`,
 take parameters and answers from `get_schema`. Start with `guide`. The tools:
 
-    guide                  rules, schema, the owner's time now — read first
-    ls, grep, read         the tree: pages, facts, items, views
-    note, dismiss          record a fact; close a fact that needs no projection
-    write, edit, remove    pages; `history` lists revisions
-    item_add, item_update  tasks and events; `items` queries them
+    guide                        rules, schema, the owner's time now — read first
+    ls, grep, read               the tree: pages, facts, items, views
+    note, dismiss                record a fact; close a fact that needs no projection
+    write, edit, move, remove    pages; `history` lists revisions
+    item_add, item_update        tasks and events; `items` queries them
 
 Every answer is an object. A list comes under a name: `entries` (ls), `matches` (grep),
 `items` (items), `revisions` (history).

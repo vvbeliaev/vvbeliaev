@@ -4,13 +4,13 @@ import re
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from almanac import checks
 from almanac.clock import utcnow
 from almanac.errors import Conflict, NotFound, Refused
-from almanac.models import Page, PageRevision, RevisionFact
+from almanac.models import Item, Page, PageRevision, RevisionFact
 from almanac.store import journal
 from almanac.store.source import Source, resolve
 
@@ -22,6 +22,7 @@ LINK = re.compile(r"\[\[([a-z0-9-]+/[a-z0-9-]+)(?:\|[^\]\n]{0,120})?\]\]")
 # у задач есть элементы со сроком и напоминанием, а флажок в тексте никто не увидит и не напомнит о нём.
 CHECKBOX = re.compile(r"^[ \t]*[-*+][ \t]+\[[ xX]\](?:[ \t]|$)", re.MULTILINE)
 CHECKBOX_WARNING = "checkbox in a page: tasks are items — use item_add and set its page"
+REASON_MAX = 200  # длина колонки `reason`: причина, которую пишет сервер, в неё должна влезть
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,13 @@ class Written:
     rev: int
     facts: list[str]
     warnings: list[str]
+
+
+@dataclass(frozen=True)
+class Moved:
+    path: str
+    rev: int
+    relinked: list[str]
 
 
 def links(body: str) -> list[str]:
@@ -200,3 +208,104 @@ async def remove(session: AsyncSession, *, client: str, path: str, rev: int, rea
     journal.record(session, client=client, op="remove", target=path, reason=why, detail={"rev": page.rev})
     await session.flush()
     return Written(path, page.rev, [], [])
+
+
+def _target(path: str) -> str:
+    """Цель ссылки на страницу с этим путём: `pages/people/anna.md` -> `people/anna`."""
+    return path.removeprefix("pages/").removesuffix(".md")
+
+
+def retarget(body: str, old: str, new: str) -> str:
+    """Тело, где ссылки на страницу `old` ведут на `new`; подпись после `|` остаётся как была."""
+    old_target, new_target = _target(old), _target(new)
+
+    def follow(found: re.Match[str]) -> str:
+        text = found.group(0)
+        return f"[[{new_target}{text[len(old_target) + 2:]}" if found.group(1) == old_target else text
+
+    return LINK.sub(follow, body)
+
+
+def _fits(path: str, body: str) -> None:
+    if len(body) > MAX_BODY:
+        raise Refused(
+            f"{path} would be longer than {MAX_BODY} characters once its links follow the move; "
+            "shorten it with `edit`, then move again"
+        )
+
+
+async def _free(session: AsyncSession, to: str) -> None:
+    """Путь назначения свободен. Строка убранной страницы держит свои ревизии, на неё переезжать нельзя."""
+    taken = await session.get(Page, to)
+    if taken is None:
+        return
+    if taken.deleted_at is None:
+        raise Conflict(f"{to} already exists: pick another slug, or merge the two pages by hand with `edit`")
+    raise Refused(f"{to} was used by a removed page, its revisions stay under that path: pick another slug")
+
+
+async def _followers(session: AsyncSession, path: str, to: str) -> list[tuple[Page, str]]:
+    """Другие живые страницы, которые ссылаются на `path`, с телом, где ссылки уже ведут на `to`."""
+    found = []
+    for other in await live(session):
+        if other.path == path:
+            continue
+        body = retarget(other.body, path, to)
+        if body != other.body:
+            _fits(other.path, body)
+            found.append((other, body))
+    return found
+
+
+async def move(
+    session: AsyncSession, *, client: str, types: Iterable[str], path: str, to: str, rev: int, reason: str
+) -> Moved:
+    """Переименовать страницу или сменить её тип. Ревизии, ссылки на неё и привязанные дела идут следом.
+
+    Путь — ключ строки страницы, а на него смотрит внешний ключ ревизий: сначала появляется строка нового
+    пути, потом ревизии переезжают на неё, и только после этого опустевшая старая строка уходит.
+    """
+    page = await get(session, path)
+    _same_rev(page, rev)
+    why = checks.reason(reason)
+    checks.page_path(to, set(types))
+    if to == path:
+        raise Refused("`to` is the same as `path`: pass a new path, with another slug or another type")
+    await _free(session, to)
+
+    body = retarget(page.body, path, to)  # ссылки страницы на саму себя тоже переезжают
+    _fits(to, body)
+    followers = await _followers(session, path, to)
+    now = utcnow()
+    moved = Page(
+        path=to, title=page.title, description=page.description, aliases=list(page.aliases), body=body,
+        rev=page.rev + 1, created_at=page.created_at, updated_at=now,
+    )
+    session.add(moved)
+    await session.flush()
+    for table in (PageRevision, RevisionFact):
+        await session.execute(
+            update(table).where(table.path == path).values(path=to), execution_options={"synchronize_session": False}
+        )
+    await session.delete(page)
+    await session.flush()
+    await _snapshot(session, moved, client=client, reason=why, fact_ids=())
+
+    for item in (await session.scalars(select(Item).where(Item.page == path))).all():
+        item.page, item.updated_at, item.rev = to, now, item.rev + 1
+    relinked = [other.path for other, _ in followers]
+    journal.record(
+        session, client=client, op="move", target=to, reason=why,
+        detail={"from": path, "rev": moved.rev, "relinked": relinked},
+    )
+    follow = f"link follows move: {path} -> {to}"[:REASON_MAX]
+    for other, text in followers:
+        other.body, other.updated_at = text, now
+        other.rev += 1
+        await session.flush()
+        await _snapshot(session, other, client=client, reason=follow, fact_ids=())
+        journal.record(
+            session, client=client, op="edit", target=other.path, reason=follow, detail={"rev": other.rev, "facts": []}
+        )
+    await session.flush()
+    return Moved(to, moved.rev, relinked)

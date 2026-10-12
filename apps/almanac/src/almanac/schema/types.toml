@@ -4,6 +4,9 @@ description = "A person: who they are, how the owner knows them, what matters ab
 [types.areas]
 description = "A standing area of life or work: health, home, finances, a job"
 
+[types.projects]
+description = "A piece of work with an outcome: what is being done, why, where it stands"
+
 [types.topics]
 description = "A subject the owner keeps notes on: a technology, a book, a place"
 

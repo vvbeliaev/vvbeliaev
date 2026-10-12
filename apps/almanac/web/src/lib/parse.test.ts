@@ -94,3 +94,21 @@ describe('frontmatter', () => {
     expect(frontmatter('# guide\n')).toEqual({ front: null, body: '# guide\n' });
   });
 });
+
+describe('the open items a page lists under its body', () => {
+  it('read as item blocks, in the order the server sent them', () => {
+    const lines = [
+      '- [ ] Вскопать грядки  due:2026-10-14  page:pages/projects/garden.md  ^i_dig00001',
+      '- [ ] Приехать на дачу  at:2026-10-17T09:00  page:pages/projects/garden.md  ^i_visit001',
+      '- [ ] Подумать о теплице  page:pages/projects/garden.md  ^i_think001',
+    ];
+    const found = blocks(lines.join('\n'));
+    expect(found.map((block) => block.kind)).toEqual(['item', 'item', 'item']);
+    expect(found.map((block) => (block.kind === 'item' ? block.item.id : ''))).toEqual([
+      'i_dig00001',
+      'i_visit001',
+      'i_think001',
+    ]);
+    expect(found[0]).toMatchObject({ item: { due: '2026-10-14', page: 'pages/projects/garden.md' } });
+  });
+});

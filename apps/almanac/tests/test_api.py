@@ -11,7 +11,7 @@ PAGE = {
     "reason": "новый человек",
 }
 TOOLS = {
-    "guide", "ls", "grep", "read", "note", "dismiss", "write", "edit", "remove", "history",
+    "guide", "ls", "grep", "read", "note", "dismiss", "write", "edit", "move", "remove", "history",
     "item_add", "item_update", "items",
 }
 
@@ -59,6 +59,45 @@ async def test_page_round_trip(api):
     removed = await api.post("/api/pages/remove", json={"path": ANNA, "rev": 2, "reason": "ошибка"})
     assert removed.json()["rev"] == 3
     assert (await api.get("/api/file", params={"path": ANNA})).status_code == 404
+
+
+async def test_move_renames_a_page_and_the_links_follow(api):
+    await api.put("/api/pages", json={**PAGE, "body": "Живёт в Берлине.\n"})
+    boris = {**PAGE, "path": "pages/people/boris.md", "title": "Борис", "aliases": [],
+             "body": "Знает [[people/anna|Аню]].\n", "said": "Борис знает Аню"}
+    await api.put("/api/pages", json=boris)
+
+    moved = await api.post(
+        "/api/pages/move",
+        json={"path": ANNA, "to": "pages/people/anna-petrova.md", "rev": 1, "reason": "полное имя"},
+    )
+    assert moved.status_code == 200
+    assert moved.json() == {"path": "pages/people/anna-petrova.md", "rev": 2, "relinked": ["pages/people/boris.md"]}
+
+    assert (await api.get("/api/file", params={"path": ANNA})).status_code == 404
+    new = (await api.get("/api/file", params={"path": "pages/people/anna-petrova.md"})).json()
+    assert (new["rev"], new["backlinks"]) == (2, ["pages/people/boris.md"])
+    text = (await api.get("/api/file", params={"path": "pages/people/boris.md"})).json()["text"]
+    assert "[[people/anna-petrova|Аню]]" in text
+    history = (await api.get("/api/pages/history", params={"path": "pages/people/anna-petrova.md"})).json()
+    assert [(row["rev"], row["reason"]) for row in history["revisions"]] == [(2, "полное имя"), (1, "новый человек")]
+
+
+async def test_move_refusals_carry_instructions(api):
+    await api.put("/api/pages", json=PAGE)
+    taken = {**PAGE, "path": "pages/projects/anna.md", "title": "Проект", "aliases": [], "said": "проект"}
+    await api.put("/api/pages", json=taken)
+    base = {"path": ANNA, "to": "pages/projects/anna-two.md", "rev": 1, "reason": "перенос"}
+
+    stale = await api.post("/api/pages/move", json={**base, "rev": 9})
+    assert (stale.status_code, "current rev is 1" in stale.json()["detail"]) == (409, True)
+    busy = await api.post("/api/pages/move", json={**base, "to": "pages/projects/anna.md"})
+    assert busy.status_code == 409
+    assert "pick another slug" in busy.json()["detail"]
+    unknown = await api.post("/api/pages/move", json={**base, "to": "pages/pets/anna.md"})
+    assert (unknown.status_code, "unknown page type" in unknown.json()["detail"]) == (422, True)
+    extra = await api.post("/api/pages/move", json={**base, "colour": "red"})
+    assert extra.status_code == 422
 
 
 async def test_refusals_carry_instructions(api):

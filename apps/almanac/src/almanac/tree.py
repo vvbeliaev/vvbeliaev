@@ -62,6 +62,7 @@ class File:
     text: str
     rev: int | None = None
     backlinks: list[str] | None = None
+    items: list[str] | None = None
     writable: bool = False
 
 
@@ -320,6 +321,20 @@ async def ls(session: AsyncSession, ctx: Context, path: str = "", depth: int = 1
     return sorted(inside, key=lambda entry: entry.path)
 
 
+def _when(item: Item) -> datetime:
+    """Когда дело наступает: ближайшее из `at` и `due`; без даты — позже всех."""
+    moments = [item.at] if item.at is not None else []
+    if item.due is not None:
+        moments.append(datetime.combine(item.due, time.min))
+    return min(moments, default=datetime.max)
+
+
+async def attached(session: AsyncSession, ctx: Context, path: str) -> list[str]:
+    """Открытые задачи и события страницы строками, как в повестке: по сроку, без срока — в конце."""
+    rows = await items_.query(session, owner_tz=ctx.owner_tz, status="open", page=path)
+    return [render_item(item) for item in sorted(rows, key=lambda item: (_when(item), item.created_at, item.id))]
+
+
 async def read(session: AsyncSession, ctx: Context, path: str, rev: int | None = None) -> File:
     clean = path.strip("/")
     if clean.startswith("pages/"):
@@ -328,7 +343,8 @@ async def read(session: AsyncSession, ctx: Context, path: str, rev: int | None =
             return File(clean, render_page(old), rev=old.rev)
         page = await pages_.get(session, clean)
         return File(
-            clean, render_page(page), rev=page.rev, backlinks=await pages_.backlinks(session, clean), writable=True
+            clean, render_page(page), rev=page.rev, backlinks=await pages_.backlinks(session, clean),
+            items=await attached(session, ctx, clean), writable=True,
         )
     if rev is not None:
         raise Refused("`rev` applies to pages only")

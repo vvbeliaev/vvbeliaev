@@ -57,6 +57,10 @@ class FileOut(Shape):
     text: str = Field(description="The file. A page starts with a header the server writes.")
     rev: int | None = Field(description="Revision of a page; null for the rest. Pass it back when you write.")
     backlinks: list[str] | None = Field(description="Pages that link here; null unless a current page is read.")
+    items: list[str] | None = Field(
+        description="Open tasks and events attached to this page, one line each; change them with `item_update`. "
+        "Null unless a current page is read."
+    )
     writable: bool = Field(description="True only for the current revision of a page; the rest is read-only.")
 
 
@@ -76,6 +80,12 @@ class WrittenOut(Shape):
     rev: int = Field(description="The page's new revision: pass it to the next write, edit or remove.")
     facts: list[str] = Field(description="Ids of the facts this revision was built from.")
     warnings: list[str] = Field(description="Problems that did not stop the write: broken links, a checkbox.")
+
+
+class MovedOut(Shape):
+    path: str = Field(description="The new path of the page.")
+    rev: int = Field(description="The page's new revision: pass it to the next write, edit or remove.")
+    relinked: list[str] = Field(description="Paths of the other pages whose links were rewritten.")
 
 
 class RevisionOut(Shape):

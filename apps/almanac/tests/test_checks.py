@@ -5,7 +5,7 @@ import pytest
 from almanac import checks
 from almanac.errors import Refused
 
-TYPES = {"people", "areas", "topics", "ideas"}
+TYPES = {"people", "areas", "projects", "topics", "ideas"}
 
 
 def test_page_path_accepts_type_and_slug():
@@ -30,7 +30,7 @@ def test_page_path_refuses_bad_shape(path):
 
 
 def test_page_path_names_known_types():
-    with pytest.raises(Refused, match="areas, ideas, people, topics"):
+    with pytest.raises(Refused, match="areas, ideas, people, projects, topics"):
         checks.page_path("pages/pets/rex.md", TYPES)
 
 

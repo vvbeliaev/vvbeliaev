@@ -57,8 +57,8 @@ async def read(
     path: Annotated[str, Query(description=FILE)],
     rev: Annotated[int | None, Query(description="Revision of a page to read; omit for the current one.")] = None,
 ) -> FileOut:
-    """A page comes with its `rev` (pass it back when you write) and `backlinks`.
-    `rev` in the request reads an old revision of a page. Everything outside `pages/`
-    is a read-only projection."""
+    """A page comes with its `rev` (pass it back when you write), its `backlinks` and the open
+    `items` attached to it. `rev` in the request reads an old revision of a page. Everything
+    outside `pages/` is a read-only projection."""
     async with db.read() as session:
         return FileOut.model_validate(await tree.read(session, ctx, path, rev))
