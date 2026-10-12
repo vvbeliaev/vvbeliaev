@@ -6,6 +6,7 @@
 """
 
 import asyncio
+import contextlib
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
@@ -25,21 +26,32 @@ STALE_AFTER = timedelta(hours=24)
 ALERT_AFTER = 10  # неудачных отправок подряд: в журнал идёт одна запись, а попытки продолжаются
 RETRY_PAUSE = 5  # секунд до новой попытки опроса после сбоя
 BUTTONS = (("Готово", "done"), ("+1 час", "hour"), ("Завтра", "tomorrow"))
+# Сколько ждём ответа собеседника, секунд: дольше владелец у телефона ждать не станет.
+REPLY_TIMEOUT = 90.0
+TELEGRAM_LIMIT = 4096  # знаков в одном сообщении Bot API
+UNANSWERED = "Записал. Разобрать не вышло: слова сохранены, посмотри во входящих."
 # Признаки пересланного сообщения: новый `forward_origin` и старые поля Bot API.
 FORWARD_KEYS = ("forward_origin", "forward_date", "forward_from", "forward_from_chat")
 
 
 class Messenger(Protocol):
     async def send(self, text: str, buttons: list[tuple[str, str]] | None = None) -> int: ...
+    async def typing(self) -> None: ...
     async def answer(self, callback_id: str, text: str = "") -> None: ...
     async def clear_buttons(self, message_id: int) -> None: ...
     async def updates(self, offset: int | None = None, timeout: int = 25) -> list[dict]: ...
 
 
+class Replier(Protocol):
+    """Собеседник: отвечает на слова владельца, уже записанные фактом."""
+
+    async def reply(self, text: str, fact_id: str) -> str: ...
+
+
 class Scheduler:
     def __init__(
         self, db: Database, messenger: Messenger, *, owner_tz: str, day_start: str, owner_chat_id: int,
-        quiet_hours: str = "",
+        quiet_hours: str = "", assistant: Replier | None = None,
     ) -> None:
         self.db = db
         self.messenger = messenger
@@ -47,6 +59,7 @@ class Scheduler:
         self.day_start = day_start
         self.owner_chat_id = owner_chat_id
         self.quiet_hours = quiet_hours
+        self.assistant = assistant
 
     # --- отправка ---
 
@@ -174,11 +187,28 @@ class Scheduler:
         origin = "forward" if any(key in message for key in FORWARD_KEYS) else "said"
         try:
             async with self.db.write() as session:
-                await facts.add(session, client="telegram", text=text, origin=origin)
+                fact = await facts.add(session, client="telegram", text=text, origin=origin)
         except Refused as refusal:
             await self.messenger.send(f"Не записал: {refusal}")
             return
-        await self.messenger.send("Записал.")
+        # Чужие слова собеседнику не поручения: пересланное только записывается.
+        if self.assistant is None or origin != "said":
+            await self.messenger.send("Записал.")
+            return
+        await self._converse(text, fact.id)
+
+    async def _converse(self, text: str, fact_id: str) -> None:
+        """Ответ собеседника на слова владельца. Факт к этому моменту уже записан: сбой модели, сети
+        или предел шагов ничего не теряют — слова остаются во входящих."""
+        with contextlib.suppress(Exception):  # «печатает…» — вежливость, а не обязательство
+            await self.messenger.typing()
+        try:
+            answer = await asyncio.wait_for(self.assistant.reply(text, fact_id), REPLY_TIMEOUT)
+        except Exception as error:  # noqa: BLE001
+            # Только род ошибки: в тексте исключения провайдера может оказаться и запрос, и ключ.
+            log.warning("assistant failed: %s", type(error).__name__)
+            answer = ""
+        await self.messenger.send(answer[:TELEGRAM_LIMIT] or UNANSWERED)
 
     async def _button(self, callback: dict) -> None:
         action, _, firing_id = (callback.get("data") or "").partition(":")

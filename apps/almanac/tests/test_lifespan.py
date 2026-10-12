@@ -62,6 +62,7 @@ async def test_loops_start_with_the_app_and_stop_with_it(fresh_database, started
     assert (messenger.token, messenger.chat_id) == (TOKEN, 42)
     assert options == {
         "owner_tz": "Europe/Berlin", "day_start": "09:00", "owner_chat_id": 42, "quiet_hours": "23:00-08:00",
+        "assistant": None,  # ключа модели нет — собеседника нет
     }
 
 

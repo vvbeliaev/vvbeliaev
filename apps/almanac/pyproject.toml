@@ -18,6 +18,9 @@ dependencies = [
   "python-multipart>=0.0.12",
   # MCP-дверь. Extra code-mode тянет pydantic-monty: без него CodeMode падает на первом исполнении.
   "fastmcp[code-mode]>=4.0.5",
+  # Собеседник в Telegram: агент на нашем же MCP в памяти процесса. Extra `mcp` тянет клиента fastmcp,
+  # совместимого с нашим fastmcp 4; `google` — нативный провайдер Gemini.
+  "pydantic-ai-slim[google,mcp]>=2.46,<3",
   # grep принимает выражение от модели; `re` не умеет прерываться по времени, `regex` умеет.
   "regex>=2024.11",
   # Клиент Bot API Telegram. Свой httpx, не httpx2 из fastmcp.

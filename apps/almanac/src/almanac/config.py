@@ -3,7 +3,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PACKAGE = Path(__file__).parent
@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     # Без токена и чата бот и цикл напоминаний не запускаются.
     telegram_bot_token: str = ""
     telegram_owner_chat_id: int = 0
+    # Собеседник в Telegram (`assistant.py`). Без ключа его нет: бот только записывает.
+    llm_api_key: str = Field("", repr=False)
+    # Имя модели явное, а не алиас «latest»: алиас однажды молча сменит модель.
+    assistant_model: str = "gemini-3.8-flash"
     # Секрет в адресе ленты `/calendar/<токен>.ics`. Пусто — лента выключена.
     ics_token: str = ""
 
@@ -54,6 +58,13 @@ class Settings(BaseSettings):
     def _day_start(cls, value: str) -> str:
         if not DAY_START.fullmatch(value):
             raise ValueError(f"DAY_START must be HH:MM from 00:00 to 23:59, got {value!r}")
+        return value
+
+    @field_validator("assistant_model")
+    @classmethod
+    def _assistant_model(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("ASSISTANT_MODEL must name a model")
         return value
 
     @field_validator("quiet_hours")

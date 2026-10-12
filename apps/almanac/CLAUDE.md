@@ -9,6 +9,12 @@ Rules for working in this app. Repo-wide rules are in the root
   memory: two workers mean double reminders. The write lock is not in memory
   but in Postgres (`pg_advisory_xact_lock`, the first statement of `db.write()`),
   so a second process writing to the same database, like the local MCP door, is safe.
+- **The assistant is a client, not the core.** `assistant.py` runs a model for the
+  owner's Telegram messages through the same MCP door as any other client: no
+  private path into `store/`, no rule that lives only in its prompt. Whatever must
+  hold is enforced by the server. It never sees forwarded messages, its writes carry
+  the client name `agent`, and the bot records the owner's words before calling it,
+  so a model failure loses nothing. No `LLM_API_KEY` — no assistant.
 - **Writes go through `store/`**, inside `async with db.write()`, and leave a
   `journal` row. The API and the bot never touch tables directly.
 - **Refusals are instructions.** A `Refused` message tells the model what to

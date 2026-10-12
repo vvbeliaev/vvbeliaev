@@ -39,6 +39,10 @@ class Telegram:
             payload["reply_markup"] = {"inline_keyboard": [row]}
         return (await self._call("sendMessage", **payload))["message_id"]
 
+    async def typing(self) -> None:
+        """«Печатает…» в чате владельца: гаснет само через несколько секунд или с первым сообщением."""
+        await self._call("sendChatAction", chat_id=self._chat_id, action="typing")
+
     async def answer(self, callback_id: str, text: str = "") -> None:
         await self._call("answerCallbackQuery", callback_query_id=callback_id, text=text)
 

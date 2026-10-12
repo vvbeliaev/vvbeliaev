@@ -9,7 +9,7 @@ from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from almanac import api, mcp, schema, tree, web
+from almanac import api, assistant, mcp, schema, tree, web
 from almanac.auth import owner
 from almanac.auth.oauth import AlmanacOAuthProvider
 from almanac.config import Settings
@@ -111,6 +111,7 @@ def create_app(settings: Settings | None = None, db: Database | None = None) -> 
                     app.state.db, Telegram(settings.telegram_bot_token, settings.telegram_owner_chat_id),
                     owner_tz=settings.owner_tz, day_start=settings.day_start,
                     owner_chat_id=settings.telegram_owner_chat_id, quiet_hours=settings.quiet_hours,
+                    assistant=assistant.build(settings, app.state.mcp, guide=app.state.ctx.schema.guide),
                 )
                 background = [asyncio.create_task(scheduler.run()), asyncio.create_task(scheduler.poll())]
             async with app.state.mcp_app.lifespan(app):
