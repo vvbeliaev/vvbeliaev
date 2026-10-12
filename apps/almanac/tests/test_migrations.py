@@ -32,7 +32,7 @@ def test_upgrade_builds_the_tables_of_the_models(fresh_database, migrate):
     assert set(Base.metadata.tables) <= tables
 
     version = _on(fresh_database, lambda connection: connection.scalar(text("select version_num from alembic_version")))
-    assert version == "0001"
+    assert version == "0002"
 
 
 def test_models_and_migrations_have_not_drifted_apart(fresh_database, migrate):

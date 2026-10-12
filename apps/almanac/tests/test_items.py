@@ -56,7 +56,7 @@ async def test_add_needs_a_source(db, now):
         ({"kind": "habit"}, "unknown kind"),
         ({"title": " "}, "title is empty"),
         ({"kind": "event"}, "an event needs `at`"),
-        ({"rrule": "FREQ=WEEKLY", "at": EVENING}, "events only"),
+        ({"rrule": "FREQ=WEEKLY"}, "needs `due` or `at` to repeat from"),
         ({"kind": "event", "at": EVENING, "rrule": "FREQ=SOMETIMES"}, "bad rrule"),
         ({"kind": "event", "at": EVENING, "list_": "shopping"}, "tasks only"),
         ({"list_": "Shopping List"}, "bad list"),

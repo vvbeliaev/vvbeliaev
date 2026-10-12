@@ -31,6 +31,8 @@ DESCRIPTIONS = {
 }
 VIEWS = ("views/inbox.md", "views/today.md", "views/week.md", "views/lint.md")
 BOX = {"open": " ", "done": "x", "cancelled": "-"}
+# Метка даты закрытия: у закрытой задачи — `done`, у открытой повторяющейся — `last`, когда её делали в последний раз.
+LAST = {"done": "done", "open": "last"}
 # grep гоняет выражение от модели по всему дереву в потоке событий. `regex` умеет прерываться
 # по времени, а длину выражения и общий срок вызова держим малыми: процесс один.
 GREP_BUDGET = 1.0
@@ -101,7 +103,9 @@ def render_item(item: Item) -> str:
     """Строка элемента. Это отображение: писать его нельзя, менять — через `item_update`."""
     parts = [f"- [{BOX[item.status]}] {item.title}"]
     if item.at is not None:
-        parts.append(f"at:{item.at:%Y-%m-%dT%H:%M}")
+        parts.append(f"at:{items_.moment_text(item.at, item.all_day)}")
+    if item.end_at is not None:
+        parts.append(f"end:{items_.moment_text(item.end_at, item.all_day)}")
     if item.due is not None:
         parts.append(f"due:{item.due.isoformat()}")
     if item.rrule:
@@ -112,8 +116,8 @@ def render_item(item: Item) -> str:
         parts.append(f"list:{item.list_}")
     if item.page:
         parts.append(f"page:{item.page}")
-    if item.done_at is not None:
-        parts.append(f"done:{item.done_at:%Y-%m-%d}")
+    if item.done_at is not None and item.status in LAST:
+        parts.append(f"{LAST[item.status]}:{item.done_at:%Y-%m-%d}")
     parts.append(f"^{item.id}")
     return "  ".join(parts)
 

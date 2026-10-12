@@ -42,6 +42,20 @@ async def replan(session: AsyncSession, item: Item, *, owner_tz: str, day_start:
     await session.flush()
 
 
+async def skip_through(session: AsyncSession, item_id: str, occurrence: datetime) -> None:
+    """Закрыто повторение `occurrence` (UTC): всё ожидающее до него включительно пропущено.
+
+    Сюда входят и отложенные вручную, с повторением в той же отметке: закрытое дело не должно напомнить о себе.
+    Отправленные и обработанные остаются как были. Следом нужен `replan`: он спланирует следующее повторение.
+    """
+    await session.flush()
+    await session.execute(
+        update(Firing)
+        .where(Firing.item_id == item_id, Firing.state == "pending", Firing.occurrence <= occurrence)
+        .values(state="skipped")
+    )
+
+
 async def unplanned(session: AsyncSession, *, owner_tz: str, day_start: str, now: datetime) -> list[str]:
     """Открытые элементы с напоминаниями, у которых нет ожидающего срабатывания, хотя по плану оно есть.
 

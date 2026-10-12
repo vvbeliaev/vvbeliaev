@@ -1,6 +1,6 @@
 <script lang="ts">
   // Журнал: слева колонка времени, справа записи. Так показаны и повестка, и дела, и факты.
-  import { dayOfMonth, heading, origin, pageName, remind, repeat, shortDate, today, weekday } from './format';
+  import { dayOfMonth, heading, origin, pageName, remind, repeat, shortDate, span, today, weekday } from './format';
   import { render } from './markdown';
   import type { Block, Item } from './parse';
 
@@ -40,12 +40,13 @@
         <div>
           <span class="title">{item.title}</span>
           <span class="meta">
-            {#if item.at && !dated}<span>{shortDate(item.at.slice(0, 10))}</span>{/if}
+            {#if item.at}{@const when = span(item.at, item.end, !dated)}{#if when}<span>{when}</span>{/if}{/if}
             {#if item.due}<span class:late={late(item)}>срок {shortDate(item.due)}</span>{/if}
             {#if item.every}<span>{repeat(item.every)}</span>{/if}
             {#if item.remind}<span>напомнить {item.remind.split(',').map(remind).join(', ')}</span>{/if}
             {#if item.list}<a href={`#/items/lists/${item.list}.md`}>{item.list}</a>{/if}
             {#if item.page}<a href={`#/pages/${pageName(item.page)}.md`}>{pageName(item.page)}</a>{/if}
+            {#if item.last}<span>последний раз {shortDate(item.last)}</span>{/if}
             {#if item.done}<span>закрыто {shortDate(item.done)}</span>{/if}
             <span class="id">{item.id}</span>
           </span>

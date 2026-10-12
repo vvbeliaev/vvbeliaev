@@ -193,6 +193,33 @@ async def test_get_schema_shows_descriptions_values_and_answer_fields(mcp):
     assert "    - id (string)" in after
 
 
+async def test_get_schema_describes_the_time_fields_of_an_item(mcp):
+    text = _value(await mcp.call_tool("get_schema", {"tools": ["item_add", "item_update"]}))
+    add, update = text.split("### item_update")
+    for part in (add, update):
+        line = {
+            field: next(line for line in part.splitlines() if line.startswith(f"- {field} ("))
+            for field in ("at", "end", "in")
+        }
+        assert "date | datetime" in line["at"] and "whole day" in line["at"]
+        assert "same form as `at`" in line["end"] and "inclusive" in line["end"]
+        assert "PT20M" in line["in"] and "from now" in line["in"]
+    returns = add.split("Returns:")[1]
+    assert "- end (" in returns
+
+
+async def test_a_script_can_set_a_reminder_with_in_and_a_range_with_end(mcp):
+    code = (
+        "soon = await call_tool('item_add', {'kind': 'task', 'title': 'Выключить плиту', 'in': 'PT20M', "
+        "'said': 'плита', 'reason': 'напоминание'})\n"
+        "trip = await call_tool('item_add', {'kind': 'event', 'title': 'Командировка', 'at': '2026-10-20', "
+        "'end': '2026-10-25', 'said': 'командировка', 'reason': 'план'})\n"
+        "return {'soon': soon['at'], 'trip': [trip['at'], trip['end']]}"
+    )
+    answer = _value(await mcp.call_tool("execute", {"code": code}))
+    assert answer == {"soon": "2026-10-12T12:20", "trip": ["2026-10-20", "2026-10-25"]}
+
+
 async def test_get_schema_names_the_tools_it_does_not_know(mcp):
     text = _value(await mcp.call_tool("get_schema", {"tools": ["guide", "nope"]}))
     assert "### guide" in text

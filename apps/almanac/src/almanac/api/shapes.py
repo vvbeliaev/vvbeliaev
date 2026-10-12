@@ -98,7 +98,8 @@ class ItemOut(Shape):
     list_: str | None = Field(alias="list", description="List slug, tasks only.")
     page: str | None = Field(description="Path of the page the item belongs to.")
     due: str | None = Field(description="Deadline: 2026-10-14.")
-    at: str | None = Field(description="Local date and time without an offset: 2026-10-14T18:00.")
+    at: str | None = Field(description="2026-10-14T18:00, local, no offset; a whole-day event: 2026-10-14.")
+    end: str | None = Field(description="When an event ends, in the form of `at`; null without an end.")
     tz: str | None = Field(description="IANA zone of `at` when it is not the owner's.")
     rrule: str | None
     remind: list[str]

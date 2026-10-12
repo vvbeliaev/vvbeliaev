@@ -16,13 +16,41 @@ EVENT_LENGTH = timedelta(hours=1)
 TASK_LENGTH = timedelta(minutes=30)
 
 
-def _recur(rule: str, zone: ZoneInfo) -> vRecur:
+def _recur(rule: str, zone: ZoneInfo, *, dated: bool = False) -> vRecur:
     """Правило повтора для ленты. `UNTIL` хранится в местном времени, а RFC 5545 при `DTSTART` с поясом
-    требует UTC: переводим из пояса элемента и пишем с `Z`."""
+    требует UTC: переводим из пояса элемента и пишем с `Z`. При `DTSTART`-дате `UNTIL` тоже дата."""
     recur = vRecur.from_ical(rule.removeprefix("RRULE:"))
     if "UNTIL" in recur:
-        recur["UNTIL"] = [moment.replace(tzinfo=zone).astimezone(UTC) for moment in recur["UNTIL"]]
+        if dated:
+            recur["UNTIL"] = [moment.date() for moment in recur["UNTIL"]]
+        else:
+            recur["UNTIL"] = [moment.replace(tzinfo=zone).astimezone(UTC) for moment in recur["UNTIL"]]
     return recur
+
+
+def _event(item: Item, zone: ZoneInfo) -> Event | None:
+    """Строка ленты для элемента или `None`, если показывать нечего: нет ни времени, ни срока."""
+    event = Event()
+    task = item.kind == "task"
+    event.add("summary", f"☐ {item.title}" if task else item.title)
+    if item.at is not None and item.all_day:
+        # Конец в ленте не включает последний день: целый день `20` — это `DTSTART:20`, `DTEND:21`.
+        event.add("dtstart", item.at.date())
+        event.add("dtend", (item.end_at or item.at).date() + timedelta(days=1))
+    elif item.at is not None:
+        start = item.at.replace(tzinfo=zone)
+        event.add("dtstart", start)
+        # Задача со временем — короткое событие; у события без конца длина по умолчанию — час.
+        length = TASK_LENGTH if task else EVENT_LENGTH
+        event.add("dtend", item.end_at.replace(tzinfo=zone) if item.end_at else start + length)
+    elif item.due is not None:
+        event.add("dtstart", item.due)
+        event.add("dtend", item.due + timedelta(days=1))
+    else:
+        return None
+    if item.rrule:
+        event.add("rrule", _recur(item.rrule, zone, dated=item.at is None or item.all_day))
+    return event
 
 
 def render(items: list[Item], owner_tz: str) -> bytes:
@@ -34,29 +62,11 @@ def render(items: list[Item], owner_tz: str) -> bytes:
     for item in items:
         if item.status != "open":
             continue
-        event = Event()
+        event = _event(item, occur.zone(item.tz or owner_tz))
+        if event is None:
+            continue
         event.add("uid", f"{item.id}@almanac")
         event.add("dtstamp", stamp)
-        zone = occur.zone(item.tz or owner_tz)
-        if item.kind == "event":
-            start = item.at.replace(tzinfo=zone)
-            event.add("summary", item.title)
-            event.add("dtstart", start)
-            event.add("dtend", start + EVENT_LENGTH)
-            if item.rrule:
-                event.add("rrule", _recur(item.rrule, zone))
-        elif item.at is not None:
-            # Задача со временем — короткое событие; если есть и срок, время точнее.
-            start = item.at.replace(tzinfo=zone)
-            event.add("summary", f"☐ {item.title}")
-            event.add("dtstart", start)
-            event.add("dtend", start + TASK_LENGTH)
-        elif item.due is not None:
-            event.add("summary", f"☐ {item.title}")
-            event.add("dtstart", item.due)
-            event.add("dtend", item.due + timedelta(days=1))
-        else:
-            continue
         if item.note:
             event.add("description", item.note)
         calendar.add_component(event)

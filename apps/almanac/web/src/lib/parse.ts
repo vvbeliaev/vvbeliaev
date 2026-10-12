@@ -3,7 +3,7 @@
 
 export type Status = 'open' | 'done' | 'cancelled';
 
-const FIELDS = ['at', 'due', 'every', 'remind', 'list', 'page', 'done'] as const;
+const FIELDS = ['at', 'end', 'due', 'every', 'remind', 'list', 'page', 'last', 'done'] as const;
 type Field = (typeof FIELDS)[number];
 
 export type Item = { status: Status; title: string; id: string } & Partial<Record<Field, string>>;

@@ -2,7 +2,7 @@
 
 from datetime import UTC, date, datetime
 
-from sqlalchemy import BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Date, DateTime, ForeignKey, Integer, String, Text, false
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
@@ -89,7 +89,10 @@ class RevisionFact(Base):
 
 
 class Item(Base):
-    """Задача или событие. `at` — местное время без пояса, пояс лежит в `tz`."""
+    """Задача или событие. `at` и `end_at` — местное время без пояса, пояс лежит в `tz`.
+
+    Событие на целый день: `all_day`, `at` — полночь его первого дня, `end_at` — полночь последнего (включительно).
+    """
 
     __tablename__ = "items"
 
@@ -102,6 +105,8 @@ class Item(Base):
     page: Mapped[str | None] = mapped_column(String(120))
     due: Mapped[date | None] = mapped_column(Date)
     at: Mapped[datetime | None] = mapped_column(DateTime)
+    end_at: Mapped[datetime | None] = mapped_column(DateTime)
+    all_day: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     tz: Mapped[str | None] = mapped_column(String(60))
     rrule: Mapped[str | None] = mapped_column(String(300))
     remind: Mapped[list[str]] = mapped_column(JSONB)

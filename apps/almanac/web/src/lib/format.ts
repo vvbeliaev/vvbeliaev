@@ -13,6 +13,8 @@ const REPEATS: Record<string, string> = {
   YEARLY: 'каждый год',
 };
 
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 /** `2026-10-12` — календарный день без пояса: полдень, чтобы сдвиг пояса не увёл дату. */
 function local(date: string): Date {
   return new Date(`${date}T12:00:00`);
@@ -45,6 +47,28 @@ export function fullDate(date: string): string {
   return `${day.getDate()} ${MONTHS_FULL[day.getMonth()]} ${day.getFullYear()}`;
 }
 
+/** `at`/`end` элемента: `2026-10-12T14:00` — день и время, `2026-10-20` — целый день, времени нет. */
+function moment(value: string): { day: string; time: string | null } {
+  return { day: value.slice(0, 10), time: DATE.test(value) ? null : value.slice(11, 16) };
+}
+
+/** Когда идёт событие, словами. Целый день — датой без часа, длинное — диапазоном «20 окт — 25 окт»,
+ * с часом — «до 19:00». День называем, только если рядом его не видно (`withDay`): в повестке он слева.
+ * Пустая строка — сказать нечего: время событие уже показывает колонка слева. */
+export function span(at: string, end: string | undefined, withDay: boolean): string {
+  const from = moment(at);
+  const to = end ? moment(end) : null;
+  const several = to !== null && to.day !== from.day;
+  if (from.time === null) {
+    if (several) return `${shortDate(from.day)} — ${shortDate(to.day)}`;
+    return withDay ? shortDate(from.day) : 'весь день';
+  }
+  if (to?.time && several) return `${shortDate(from.day)}, ${from.time} — ${shortDate(to.day)}, ${to.time}`;
+  const day = withDay ? `${shortDate(from.day)}, ` : '';
+  if (to?.time) return `${day}до ${to.time}`;
+  return withDay ? shortDate(from.day) : '';
+}
+
 /** Простое правило повтора — словами; сложное остаётся как записано. */
 export function repeat(rule: string): string {
   const simple = /^FREQ=([A-Z]+)$/.exec(rule);
@@ -75,8 +99,6 @@ const HEADINGS: Record<string, string> = {
   'broken links': 'Битые ссылки',
   'pages nothing links to': 'Страницы, на которые никто не ссылается',
 };
-
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function heading(text: string): string {
   if (HEADINGS[text]) return HEADINGS[text];

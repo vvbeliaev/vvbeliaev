@@ -1,8 +1,9 @@
+import re
 from datetime import date, datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Path, Query
-from pydantic import Field
+from pydantic import BeforeValidator, Field, TypeAdapter, ValidationError
 
 from almanac.api.deps import Ctx, Db, Sourced, Strict, Who
 from almanac.api.shapes import ItemOut, ItemsOut, ItemStatus, Kind
@@ -11,16 +12,43 @@ from almanac.store import items as store
 
 router = APIRouter()
 
-LIST = "List slug, tasks only: `shopping`."
-AT = "Local date and time without an offset: 2026-10-14T18:00."
+LIST = "List slug, tasks only: `shopping` for purchases, or any slug of your own, like `reading`."
+AT = "`2026-10-14T18:00` is a moment (local, no offset); `2026-10-14` alone is a whole day."
+ENDS = "When it ends, same form as `at`; for whole days the last day, inclusive. Events only."
+IN = "Instead of `at`: this far from now, ISO 8601: PT20M, P2D. The server computes the moment."
 TZ = "IANA zone of `at`, only when it is not the owner's."
-RRULE = "RFC 5545 rule, events only: FREQ=YEARLY, FREQ=WEEKLY;BYDAY=MO."
+RRULE = "RFC 5545 rule: FREQ=YEARLY, FREQ=WEEKLY;BYDAY=MO. On a task: needs `due` or `at`, UNTIL not COUNT."
 REMIND = "ISO 8601 offsets before the moment: PT0M, PT1H, P1D."
 ITEM = "Id of the item, like i_ab12cd34."
 START = "First day of the window: 2026-10-12."
 END = "Last day of the window, inclusive: 2026-10-18."
 # Фильтр статуса шире статуса элемента: `any` снимает отбор.
 StatusFilter = Literal[*store.STATUS_FILTERS]
+
+DATE_ONLY = re.compile(r"\d{4}-\d{2}-\d{2}")
+MOMENT = TypeAdapter(datetime)
+
+
+def _day_or_moment(value: Any) -> Any:
+    """Форму `at` и `end` различает текст: `2026-10-14` — день, `2026-10-14T00:00` — момент в полночь.
+
+    Сам pydantic из объединения `date | datetime` для строки берёт первое, что разобралось, и полночь стала бы днём.
+    Что не разобралось здесь, уходит дальше как есть: отказ напишет pydantic.
+    """
+    if isinstance(value, (date, datetime)):
+        return value
+    if not isinstance(value, str):
+        # ValueError, а не TypeError: из проверки поля pydantic превращает в отказ 422 только первый.
+        raise ValueError("pass a date like 2026-10-14 or a local date and time like 2026-10-14T18:00")  # noqa: TRY004
+    text = value.strip()
+    try:
+        return date.fromisoformat(text) if DATE_ONLY.fullmatch(text) else MOMENT.validate_python(text)
+    except (ValueError, ValidationError):
+        return value
+
+
+# День (целый день) или момент (местные дата и время); в схеме инструмента — `date | date-time`.
+When = Annotated[date | datetime, BeforeValidator(_day_or_moment)]
 
 
 class ItemAddIn(Sourced):
@@ -30,7 +58,9 @@ class ItemAddIn(Sourced):
     list_: str | None = Field(default=None, alias="list", description=LIST)
     page: str | None = Field(default=None, description="Path of the page this item belongs to.")
     due: date | None = Field(default=None, description="Deadline, a date.")
-    at: datetime | None = Field(default=None, description=AT)
+    at: When | None = Field(default=None, description=AT)
+    end: When | None = Field(default=None, description=ENDS)
+    in_: str | None = Field(default=None, alias="in", description=IN)
     tz: str | None = Field(default=None, description=TZ)
     rrule: str | None = Field(default=None, description=RRULE)
     remind: list[str] = Field(default_factory=list, description=REMIND)
@@ -44,7 +74,9 @@ class ItemUpdateIn(Strict):
     list_: str | None = Field(default=None, alias="list", description=LIST)
     page: str | None = None
     due: date | None = None
-    at: datetime | None = Field(default=None, description=AT)
+    at: When | None = Field(default=None, description=AT)
+    end: When | None = Field(default=None, description=ENDS)
+    in_: str | None = Field(default=None, alias="in", description=IN)
     tz: str | None = Field(default=None, description=TZ)
     rrule: str | None = Field(default=None, description=RRULE)
     remind: list[str] | None = Field(default=None, description=REMIND)
@@ -60,7 +92,8 @@ def item_out(item: Item) -> ItemOut:
         list_=item.list_,
         page=item.page,
         due=item.due.isoformat() if item.due else None,
-        at=item.at.isoformat(timespec="minutes") if item.at else None,
+        at=store.moment_text(item.at, item.all_day),
+        end=store.moment_text(item.end_at, item.all_day),
         tz=item.tz,
         rrule=item.rrule,
         remind=item.remind,
@@ -73,12 +106,15 @@ def item_out(item: Item) -> ItemOut:
 @router.post("/items", operation_id="item_add", summary="Create a task or an event")
 async def item_add(body: ItemAddIn, db: Db, ctx: Ctx, who: Who) -> ItemOut:
     """Anything with a date, a time or a checkbox. A purchase is a task with
-    `list: "shopping"`. An event needs `at`. Needs a source: `said` or `facts`."""
+    `list: "shopping"`; any other slug is a list of its own. An event needs `at` or `in`;
+    a date alone makes it whole-day; `end` gives it a length. `rrule` repeats an event,
+    or makes a task a habit. Needs a source: `said` or `facts`."""
     async with db.write() as session:
         item = await store.add(
             session, client=who.client, owner_tz=ctx.owner_tz, day_start=ctx.day_start, kind=body.kind,
             title=body.title, note=body.note, list_=body.list_, page=body.page, due=body.due, at=body.at,
-            tz=body.tz, rrule=body.rrule, remind=body.remind, source=body.source(), reason=body.reason,
+            end=body.end, in_=body.in_, tz=body.tz, rrule=body.rrule, remind=body.remind, source=body.source(),
+            reason=body.reason,
         )
     return item_out(item)
 
@@ -87,8 +123,9 @@ async def item_add(body: ItemAddIn, db: Db, ctx: Ctx, who: Who) -> ItemOut:
 async def item_update(
     item: Annotated[str, Path(description=ITEM)], body: ItemUpdateIn, db: Db, ctx: Ctx, who: Who
 ) -> ItemOut:
-    """Send only the fields that change, plus the item's current `rev`. Closing a task is
-    `status: "done"`. A field sent as null is cleared."""
+    """Send only the fields that change, plus the current `rev`. `status: "done"` closes a
+    task; a repeating task then moves to its next occurrence and stays open, and `cancelled`
+    ends the series. A field sent as null is cleared."""
     changes = body.model_dump(exclude_unset=True, by_alias=True, exclude={"rev", "reason"})
     async with db.write() as session:
         changed = await store.update(

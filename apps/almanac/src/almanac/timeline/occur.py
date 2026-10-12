@@ -1,7 +1,7 @@
 """Моменты события в окне. Чистые функции: без базы и без часов."""
 
 import re
-from datetime import datetime
+from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from dateutil.rrule import rrulestr
@@ -21,6 +21,7 @@ EXTRA = re.compile(r"DTSTART|EXDATE|RDATE", re.IGNORECASE)
 UTC_UNTIL = re.compile(r"UNTIL=[0-9T]*Z", re.IGNORECASE)
 # `UNTIL=20261231` без времени dateutil читает как полночь: последний день выпал бы из повтора целиком.
 DATE_UNTIL = re.compile(r"UNTIL=[0-9]{8}(?![0-9T])", re.IGNORECASE)
+COUNT = re.compile(r"\bCOUNT\s*=", re.IGNORECASE)
 
 
 def rule(text: str, start: datetime):
@@ -54,3 +55,37 @@ def occurrences(at: datetime, rrule: str | None, tz: str, start: datetime, end: 
     else:
         local = [moment for moment in rule(rrule, at).between(low, high, inc=True) if moment < high]
     return [moment.replace(tzinfo=local_zone) for moment in local]
+
+
+def next_after(start: datetime, rrule: str, after: datetime) -> datetime | None:
+    """Первое повторение правила строго позже `after` — местное время без пояса; `None`, когда правило кончилось.
+
+    Правило разворачивается от `start`. У задачи это её текущий срок: с каждым закрытием он сдвигается
+    на повторение, а значит, остаётся членом прежнего ряда.
+    """
+    return rule(rrule, start).after(after, inc=False)
+
+
+def days(due: date, rrule: str, low: date, high: date) -> list[date]:
+    """Дни повторения задачи, у которой есть срок, но нет времени, в окне `[low, high]` — по возрастанию.
+
+    Правило разворачивается от полуночи `due`; время суток в ответ не идёт, а дни не повторяются.
+    """
+    found = rule(rrule, datetime.combine(due, time.min)).between(
+        datetime.combine(low, time.min), datetime.combine(high, time.max), inc=True
+    )
+    return sorted({moment.date() for moment in found})
+
+
+def from_now(now: datetime, offset: timedelta, tz: str) -> datetime:
+    """Местное время через `offset` от `now`, до целой минуты вверх — без пояса, как хранится `at`.
+
+    Целые дни отсчитываются по местным часам («через день» — тот же час), остаток — настоящее время.
+    """
+    local_zone = zone(tz)
+    whole_days = timedelta(days=offset.days)
+    shifted = (now.astimezone(local_zone).replace(tzinfo=None) + whole_days).replace(tzinfo=local_zone)
+    moment = (shifted.astimezone(UTC) + (offset - whole_days)).astimezone(local_zone).replace(tzinfo=None)
+    if moment.second or moment.microsecond:
+        moment = moment.replace(second=0, microsecond=0) + timedelta(minutes=1)
+    return moment

@@ -25,6 +25,32 @@ describe('item', () => {
     });
   });
 
+  it('reads the end of an event and a date-only start', () => {
+    expect(item('- [ ] Командировка  at:2026-10-20  end:2026-10-25  ^i_trip0001')).toEqual({
+      status: 'open',
+      title: 'Командировка',
+      id: 'i_trip0001',
+      at: '2026-10-20',
+      end: '2026-10-25',
+    });
+    expect(item('- [ ] Встреча  at:2026-10-14T18:00  end:2026-10-14T19:30  every:FREQ=WEEKLY  ^i_meet0001')).toMatchObject({
+      at: '2026-10-14T18:00',
+      end: '2026-10-14T19:30',
+      every: 'FREQ=WEEKLY',
+    });
+  });
+
+  it('reads when a repeating task was last done', () => {
+    expect(item('- [ ] Зарядка  due:2026-10-13  every:FREQ=DAILY  last:2026-10-12  ^i_gym00001')).toEqual({
+      status: 'open',
+      title: 'Зарядка',
+      id: 'i_gym00001',
+      due: '2026-10-13',
+      every: 'FREQ=DAILY',
+      last: '2026-10-12',
+    });
+  });
+
   it('reads a cancelled item with nothing but an id', () => {
     expect(item('- [-] Отменённое  ^t_abc')).toEqual({ status: 'cancelled', title: 'Отменённое', id: 't_abc' });
   });

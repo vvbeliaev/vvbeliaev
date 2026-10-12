@@ -19,11 +19,13 @@ def parse_day_start(text: str) -> time:
 def anchors(item: Item, owner_tz: str, day_start: str, after: datetime) -> Iterator[datetime]:
     """Опорные моменты элемента не раньше `after`, по возрастанию — в поясе элемента.
 
-    Опорный момент — `at`, а без него `due` в начале дня. У неповторяющегося элемента он один.
+    Опорный момент — `at`; у события на целый день и у задачи, где есть только `due`, — начало дня
+    владельца (`day_start`). У неповторяющегося элемента он один; повторяющаяся задача только со сроком
+    повторяется по датам.
     """
     local_zone = occur.zone(item.tz or owner_tz)
-    if item.at is not None:
-        local_after = after.astimezone(local_zone).replace(tzinfo=None)
+    local_after = after.astimezone(local_zone).replace(tzinfo=None)
+    if item.at is not None and not item.all_day:
         if item.rrule is None:
             if item.at >= local_after:
                 yield item.at.replace(tzinfo=local_zone)
@@ -31,10 +33,31 @@ def anchors(item: Item, owner_tz: str, day_start: str, after: datetime) -> Itera
             rule = occur.rule(item.rrule, item.at)
             for moment in rule.xafter(local_after, count=MAX_OCCURRENCES, inc=True):
                 yield moment.replace(tzinfo=local_zone)
-    elif item.due is not None:
-        moment = datetime.combine(item.due, parse_day_start(day_start), tzinfo=local_zone)
+        return
+    first = item.at.date() if item.at is not None else item.due
+    if first is None:
+        return
+    if item.rrule is None:
+        found = [first]
+    else:
+        # Правило идёт по полуночам, а опорный момент дня — позже: поэтому просмотр начинается с начала сегодняшнего дня.
+        rule = occur.rule(item.rrule, datetime.combine(first, time.min))
+        floor = datetime.combine(local_after.date(), time.min)
+        found = dict.fromkeys(moment.date() for moment in rule.xafter(floor, count=MAX_OCCURRENCES, inc=True))
+    clock = parse_day_start(day_start)
+    for day in found:
+        moment = datetime.combine(day, clock, tzinfo=local_zone)
         if moment >= after:
             yield moment
+
+
+def current_anchor(item: Item, owner_tz: str, day_start: str) -> datetime | None:
+    """Опорный момент нынешнего срока элемента — его `at`, а без него `due`. `None`, если срока нет."""
+    local_zone = occur.zone(item.tz or owner_tz)
+    if item.at is not None and not item.all_day:
+        return item.at.replace(tzinfo=local_zone)
+    day = item.at.date() if item.at is not None else item.due
+    return None if day is None else datetime.combine(day, parse_day_start(day_start), tzinfo=local_zone)
 
 
 def fire_time(anchor: datetime, offset: timedelta) -> datetime:

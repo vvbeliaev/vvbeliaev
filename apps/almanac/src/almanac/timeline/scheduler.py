@@ -108,7 +108,10 @@ class Scheduler:
 
     def _text(self, item: Item, firing: Firing, now: datetime) -> str:
         local = firing.occurrence.astimezone(occur.zone(item.tz or self.owner_tz))
-        when = f"{local:%d.%m %H:%M}" if item.at is not None else f"срок {local:%d.%m}"
+        if item.at is None:
+            when = f"срок {local:%d.%m}"
+        else:
+            when = f"{local:%d.%m}" if item.all_day else f"{local:%d.%m %H:%M}"
         late = now - firing.fire_at
         suffix = f"\nопоздало на {int(late.total_seconds() // 60)} мин" if late > LATE_AFTER else ""
         return f"⏰ {when} · {item.title}{suffix}"
