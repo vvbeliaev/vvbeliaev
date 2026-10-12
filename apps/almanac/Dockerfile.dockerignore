@@ -17,8 +17,12 @@
 apps/almanac/.env
 apps/almanac/.env.*
 apps/almanac/tests
-apps/almanac/web
+apps/almanac/web/node_modules
+apps/almanac/web/dist
 apps/almanac/.run
+apps/almanac/Makefile
+apps/almanac/compose.yml
+apps/almanac/scripts
 apps/almanac/*.md
 **/.venv
 **/__pycache__

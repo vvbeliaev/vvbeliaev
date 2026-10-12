@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Read-only view of an almanac: the agenda, the pages, the log of facts",
+  "packageManager": "pnpm@11.13.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

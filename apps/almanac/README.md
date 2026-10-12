@@ -72,8 +72,9 @@ claude mcp add almanac --scope user -- uv run --directory /полный/путь
 приходит «с самой машины» и прочтёт записи через сайт. Не подходит —
 `LOCAL_SITE=0` в `.env` и `OWNER_PASSWORD_HASH`: сайт станет спрашивать пароль.
 
-`web/` — свой корень pnpm со своим lockfile, вне общего workspace репозитория:
-в образ сайт пока не едет.
+`web/` — свой корень pnpm со своим lockfile, вне общего workspace репозитория.
+В образ сайт едет собранным: стадия `web` в `Dockerfile` гоняет его проверки и
+тесты и кладёт `dist` рядом с сервером. На публичном адресе сайт требует входа.
 
 Сервер без `make` — те же шаги руками: `uv run alembic upgrade head`, затем
 `uv run uvicorn almanac.app:create_app --factory --port 8910`. Приложение само
