@@ -1,9 +1,10 @@
-from dataclasses import asdict
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import Field
 
 from almanac.api.deps import Ctx, Db, Sourced, Strict, Who
+from almanac.api.shapes import HistoryOut, RevisionOut, WrittenOut
 from almanac.store import pages as store
 
 router = APIRouter()
@@ -34,21 +35,21 @@ class RemoveIn(Strict):
 
 
 @router.put("/pages", operation_id="write", summary="Create a page or replace it whole")
-async def write(body: WriteIn, db: Db, ctx: Ctx, who: Who) -> dict:
+async def write(body: WriteIn, db: Db, ctx: Ctx, who: Who) -> WrittenOut:
     """One subject — one page: grep for the name first. Creating needs a source (`said` or
     `facts`). Replacing needs the current `rev`; prefer `edit` for a small change.
-    The answer lists broken links as `warnings`."""
+    The answer lists broken links and checkboxes as `warnings`."""
     async with db.write() as session:
         done = await store.write(
             session, client=who.client, types=ctx.schema.types, path=body.path, title=body.title,
             description=body.description, body=body.body, aliases=body.aliases, rev=body.rev,
             source=body.source(), reason=body.reason,
         )
-    return asdict(done)
+    return WrittenOut.model_validate(done)
 
 
 @router.post("/pages/edit", operation_id="edit", summary="Replace one fragment of a page body")
-async def edit(body: EditIn, db: Db, who: Who) -> dict:
+async def edit(body: EditIn, db: Db, who: Who) -> WrittenOut:
     """`old` must occur exactly once in the body — widen it until it does. Needs the current
     `rev` and a source, or `restructure: true` when no new knowledge is added."""
     async with db.write() as session:
@@ -56,23 +57,27 @@ async def edit(body: EditIn, db: Db, who: Who) -> dict:
             session, client=who.client, path=body.path, old=body.old, new=body.new, rev=body.rev,
             source=body.source(), reason=body.reason,
         )
-    return asdict(done)
+    return WrittenOut.model_validate(done)
 
 
 @router.post("/pages/remove", operation_id="remove", summary="Remove a page")
-async def remove(body: RemoveIn, db: Db, who: Who) -> dict:
+async def remove(body: RemoveIn, db: Db, who: Who) -> WrittenOut:
     """The page disappears from the tree; its revisions stay and can be read by `rev`."""
     async with db.write() as session:
         done = await store.remove(session, client=who.client, path=body.path, rev=body.rev, reason=body.reason)
-    return asdict(done)
+    return WrittenOut.model_validate(done)
 
 
 @router.get("/pages/history", operation_id="history", summary="Revisions of a page")
-async def history(path: str, db: Db) -> list[dict]:
+async def history(
+    path: Annotated[str, Query(description="Path of the page, like `pages/people/anna.md`.")], db: Db
+) -> HistoryOut:
     """Newest first: who changed the page, when and why. Read an old one with `read(path, rev)`."""
     async with db.read() as session:
         rows = await store.history(session, path)
-    return [
-        {"rev": row.rev, "at": row.at.isoformat(), "client": row.client, "reason": row.reason, "deleted": row.deleted}
-        for row in rows
-    ]
+    return HistoryOut(
+        revisions=[
+            RevisionOut(rev=row.rev, at=row.at.isoformat(), client=row.client, reason=row.reason, deleted=row.deleted)
+            for row in rows
+        ]
+    )

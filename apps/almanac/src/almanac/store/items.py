@@ -17,7 +17,8 @@ from almanac.store.source import Source, resolve
 from almanac.timeline import occur
 
 KINDS = ("task", "event")
-STATUSES = {"task": ("open", "done", "cancelled"), "event": ("open", "cancelled")}
+ITEM_STATUSES = ("open", "done", "cancelled")
+STATUSES = {"task": ITEM_STATUSES, "event": ("open", "cancelled")}
 FIELDS = ("title", "note", "list", "page", "due", "at", "tz", "rrule", "remind", "status")
 NOT_NULL = ("title", "status")
 STATUS_FILTERS = ("open", "done", "cancelled", "any")

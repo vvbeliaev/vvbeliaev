@@ -1,3 +1,5 @@
+import pytest
+
 ANNA = "pages/people/anna.md"
 PAGE = {
     "path": ANNA,
@@ -51,7 +53,7 @@ async def test_page_round_trip(api):
     )
     assert edited.json()["rev"] == 2
 
-    history = (await api.get("/api/pages/history", params={"path": ANNA})).json()
+    history = (await api.get("/api/pages/history", params={"path": ANNA})).json()["revisions"]
     assert [(row["rev"], row["reason"]) for row in history] == [(2, "переезд"), (1, "новый человек")]
 
     removed = await api.post("/api/pages/remove", json={"path": ANNA, "rev": 2, "reason": "ошибка"})
@@ -104,14 +106,14 @@ async def test_items_flow(api):
     )
     assert event.json()["at"] == "2026-10-12T18:00"
 
-    week = (await api.get("/api/items", params={"from": "2026-10-12", "to": "2026-10-18"})).json()
+    week = (await api.get("/api/items", params={"from": "2026-10-12", "to": "2026-10-18"})).json()["items"]
     assert {row["title"] for row in week} == {"Купить молоко", "Английский"}
-    shopping = (await api.get("/api/items", params={"list": "shopping"})).json()
+    shopping = (await api.get("/api/items", params={"list": "shopping"})).json()["items"]
     assert [row["id"] for row in shopping] == [item["id"]]
 
     done = await api.patch(f"/api/items/{item['id']}", json={"rev": 1, "status": "done", "reason": "куплено"})
     assert (done.json()["status"], done.json()["rev"]) == ("done", 2)
-    assert (await api.get("/api/items", params={"list": "shopping"})).json() == []
+    assert (await api.get("/api/items", params={"list": "shopping"})).json() == {"items": []}
 
     aware = await api.post(
         "/api/items",
@@ -124,12 +126,55 @@ async def test_items_flow(api):
 
 async def test_tree_grep_and_guide(api):
     await api.put("/api/pages", json=PAGE)
-    catalog = (await api.get("/api/tree", params={"path": "pages", "depth": 2})).json()
+    catalog = (await api.get("/api/tree", params={"path": "pages", "depth": 2})).json()["entries"]
     assert {"path": ANNA, "kind": "file", "description": "Подруга из Берлина"} in catalog
 
-    found = (await api.get("/api/grep", params={"pattern": "берлин", "path": "pages"})).json()
+    found = (await api.get("/api/grep", params={"pattern": "берлин", "path": "pages"})).json()["matches"]
     assert {match["path"] for match in found} == {ANNA}
 
     guide = (await api.get("/api/guide")).json()
     assert guide["text"].startswith("# almanac guide")
     assert "people" in guide["types"]
+
+
+async def test_guide_says_what_time_it_is_for_the_owner(api, now):
+    # `now` заморожен на 10:00 UTC; у владельца Europe/Berlin, летнее время.
+    guide = (await api.get("/api/guide")).json()
+    assert (guide["now"], guide["tz"]) == ("2026-10-12T12:00", "Europe/Berlin")
+
+
+async def test_every_answer_is_an_object_with_named_fields(app):
+    """Верх ответа — объект с объявленными полями, а не список: так его читает скрипт модели."""
+    spec = app.openapi()
+    for path, methods in spec["paths"].items():
+        for method, operation in methods.items():
+            schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
+            if "$ref" in schema:
+                schema = spec["components"]["schemas"][schema["$ref"].rsplit("/", 1)[1]]
+            where = f"{method.upper()} {path}"
+            assert schema.get("type") == "object", where
+            assert schema.get("properties"), where
+
+
+@pytest.mark.parametrize(
+    "call, field, bad",
+    [
+        ("item_add", "kind", "habit"),
+        ("item_update", "status", "paused"),
+        ("items", "status", "closed"),
+        ("items", "kind", "habit"),
+        ("note", "origin", "rumor"),
+    ],
+)
+async def test_closed_sets_are_refused_by_the_schema_naming_the_values(api, call, field, bad):
+    item = {"kind": "task", "title": "Купить молоко", "said": "молоко кончилось", "reason": "покупка"}
+    if call == "item_add":
+        response = await api.post("/api/items", json={**item, field: bad})
+    elif call == "item_update":
+        response = await api.patch("/api/items/i_abcdefgh", json={"rev": 1, "reason": "правка", field: bad})
+    elif call == "items":
+        response = await api.get("/api/items", params={field: bad})
+    else:
+        response = await api.post("/api/facts", json={"text": "слух", field: bad})
+    assert response.status_code == 422
+    assert "Input should be" in response.json()["detail"][0]["msg"]

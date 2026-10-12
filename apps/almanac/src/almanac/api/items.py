@@ -1,10 +1,11 @@
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query
 from pydantic import Field
 
 from almanac.api.deps import Ctx, Db, Sourced, Strict, Who
+from almanac.api.shapes import ItemOut, ItemsOut, ItemStatus, Kind
 from almanac.models import Item
 from almanac.store import items as store
 
@@ -15,10 +16,15 @@ AT = "Local date and time without an offset: 2026-10-14T18:00."
 TZ = "IANA zone of `at`, only when it is not the owner's."
 RRULE = "RFC 5545 rule, events only: FREQ=YEARLY, FREQ=WEEKLY;BYDAY=MO."
 REMIND = "ISO 8601 offsets before the moment: PT0M, PT1H, P1D."
+ITEM = "Id of the item, like i_ab12cd34."
+START = "First day of the window: 2026-10-12."
+END = "Last day of the window, inclusive: 2026-10-18."
+# Фильтр статуса шире статуса элемента: `any` снимает отбор.
+StatusFilter = Literal[*store.STATUS_FILTERS]
 
 
 class ItemAddIn(Sourced):
-    kind: str = Field(description="`task` — something to do; `event` — something that happens at a time.")
+    kind: Kind = Field(description="`task` — something to do; `event` — something that happens at a time.")
     title: str
     note: str = ""
     list_: str | None = Field(default=None, alias="list", description=LIST)
@@ -42,30 +48,30 @@ class ItemUpdateIn(Strict):
     tz: str | None = Field(default=None, description=TZ)
     rrule: str | None = Field(default=None, description=RRULE)
     remind: list[str] | None = Field(default=None, description=REMIND)
-    status: str | None = Field(default=None, description="`open`, `done` (tasks only) or `cancelled`.")
+    status: ItemStatus | None = Field(default=None, description="`open`, `done` (tasks only) or `cancelled`.")
 
 
-def item_out(item: Item) -> dict:
-    return {
-        "id": item.id,
-        "kind": item.kind,
-        "title": item.title,
-        "note": item.note,
-        "list": item.list_,
-        "page": item.page,
-        "due": item.due.isoformat() if item.due else None,
-        "at": item.at.isoformat(timespec="minutes") if item.at else None,
-        "tz": item.tz,
-        "rrule": item.rrule,
-        "remind": item.remind,
-        "status": item.status,
-        "done_at": item.done_at.isoformat() if item.done_at else None,
-        "rev": item.rev,
-    }
+def item_out(item: Item) -> ItemOut:
+    return ItemOut(
+        id=item.id,
+        kind=item.kind,
+        title=item.title,
+        note=item.note,
+        list_=item.list_,
+        page=item.page,
+        due=item.due.isoformat() if item.due else None,
+        at=item.at.isoformat(timespec="minutes") if item.at else None,
+        tz=item.tz,
+        rrule=item.rrule,
+        remind=item.remind,
+        status=item.status,
+        done_at=item.done_at.isoformat() if item.done_at else None,
+        rev=item.rev,
+    )
 
 
 @router.post("/items", operation_id="item_add", summary="Create a task or an event")
-async def item_add(body: ItemAddIn, db: Db, ctx: Ctx, who: Who) -> dict:
+async def item_add(body: ItemAddIn, db: Db, ctx: Ctx, who: Who) -> ItemOut:
     """Anything with a date, a time or a checkbox. A purchase is a task with
     `list: "shopping"`. An event needs `at`. Needs a source: `said` or `facts`."""
     async with db.write() as session:
@@ -78,7 +84,9 @@ async def item_add(body: ItemAddIn, db: Db, ctx: Ctx, who: Who) -> dict:
 
 
 @router.patch("/items/{item}", operation_id="item_update", summary="Change an item or its status")
-async def item_update(item: str, body: ItemUpdateIn, db: Db, ctx: Ctx, who: Who) -> dict:
+async def item_update(
+    item: Annotated[str, Path(description=ITEM)], body: ItemUpdateIn, db: Db, ctx: Ctx, who: Who
+) -> ItemOut:
     """Send only the fields that change, plus the item's current `rev`. Closing a task is
     `status: "done"`. A field sent as null is cleared."""
     changes = body.model_dump(exclude_unset=True, by_alias=True, exclude={"rev", "reason"})
@@ -94,17 +102,17 @@ async def item_update(item: str, body: ItemUpdateIn, db: Db, ctx: Ctx, who: Who)
 async def items(
     db: Db,
     ctx: Ctx,
-    kind: str | None = None,
-    status: str = "open",
-    list_: Annotated[str | None, Query(alias="list")] = None,
-    page: str | None = None,
-    start: Annotated[date | None, Query(alias="from", description="First day of the window.")] = None,
-    end: Annotated[date | None, Query(alias="to", description="Last day of the window, inclusive.")] = None,
-) -> list[dict]:
+    kind: Annotated[Kind | None, Query(description="Only tasks or only events; omit for both.")] = None,
+    status: Annotated[StatusFilter, Query(description="`any` lifts the filter.")] = "open",
+    list_: Annotated[str | None, Query(alias="list", description="Only tasks of this list slug.")] = None,
+    page: Annotated[str | None, Query(description="Only items of this page path.")] = None,
+    start: Annotated[date | None, Query(alias="from", description=START)] = None,
+    end: Annotated[date | None, Query(alias="to", description=END)] = None,
+) -> ItemsOut:
     """Open items by default; `status=any` lifts the filter. A window `from`..`to` keeps
     what falls on those days: deadlines and event moments, repeats included."""
     async with db.read() as session:
         rows = await store.query(
             session, owner_tz=ctx.owner_tz, kind=kind, status=status, list_=list_, page=page, start=start, end=end
         )
-    return [item_out(row) for row in rows]
+    return ItemsOut(items=[item_out(row) for row in rows])

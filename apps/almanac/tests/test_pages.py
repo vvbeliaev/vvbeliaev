@@ -11,6 +11,7 @@ from almanac.store.source import Source
 
 TYPES = {"people", "areas", "topics", "ideas"}
 ANNA = "pages/people/anna.md"
+CHECKBOX = "checkbox in a page: tasks are items — use item_add and set its page"
 
 
 async def _write(db, **over):
@@ -246,3 +247,31 @@ async def test_revision_number_no_column_can_hold_is_simply_not_found(db, now, r
     async with db.read() as session:
         with pytest.raises(NotFound, match="has no rev"):
             await pages.revision(session, ANNA, rev)
+
+
+@pytest.mark.parametrize(
+    "line",
+    ["- [ ] купить билеты", "- [x] купить билеты", "- [X] купить билеты", "* [ ] купить билеты", "   - [ ] купить билеты"],
+)
+async def test_a_checkbox_in_a_page_body_is_a_warning_not_a_refusal(db, now, line):
+    done = await _write(db, body=f"Планы.\n{line}\n")
+    assert done.warnings == [CHECKBOX]
+    async with db.read() as session:
+        assert (await pages.get(session, ANNA)).body == f"Планы.\n{line}\n"
+
+
+async def test_a_checkbox_warns_once_per_call_next_to_broken_links(db, now):
+    body = "- [ ] один\n- [x] два\nСм. [[people/boris]]\n"
+    done = await _write(db, body=body)
+    assert done.warnings == ["broken link: pages/people/boris.md", CHECKBOX]
+
+
+async def test_edit_warns_about_a_checkbox_the_page_now_holds(db, now):
+    await _write(db)
+    done = await _edit(db, old="Берлине", new="Берлине.\n- [ ] позвонить\nИ ещё")
+    assert done.warnings == [CHECKBOX]
+
+
+@pytest.mark.parametrize("body", ["- обычный пункт\n", "Текст про [ ] и [x] в строке.\n", "-[ ] без пробела\n"])
+async def test_a_plain_list_is_not_a_checkbox(db, now, body):
+    assert (await _write(db, body=body)).warnings == []

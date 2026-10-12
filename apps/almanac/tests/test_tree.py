@@ -163,6 +163,32 @@ async def test_week_and_today_views(db, ctx, now):
     assert "Купить молоко" not in today
 
 
+async def test_today_view_says_what_time_it_is(db, ctx, now):
+    # 10:00 UTC — в Берлине 12:00; неделя часов не показывает.
+    today = await _text(db, ctx, "views/today.md")
+    week = await _text(db, ctx, "views/week.md")
+    assert today.startswith("# 2026-10-12\nnow 12:00 Europe/Berlin\n\n## 2026-10-12 Mon\n")
+    assert "now " not in week
+    assert week.startswith("# 2026-10-12 — 2026-10-18\n\n")
+
+
+@pytest.mark.parametrize("status", ["done", "cancelled"])
+async def test_a_list_file_outlives_its_last_open_task(db, ctx, now, status):
+    seeded = await _seed(db, ctx)
+    async with db.write() as session:
+        await items.update(
+            session, client="claude", owner_tz=TZ, item_id=seeded["milk"].id, rev=1,
+            changes={"status": status}, reason="закрыто",
+        )
+    assert await _text(db, ctx, "items/lists/shopping.md") == ""
+    async with db.read() as session:
+        listed = {entry.path for entry in await tree.ls(session, ctx, "items", depth=2)}
+        with pytest.raises(NotFound):
+            await tree.read(session, ctx, "items/lists/never-used.md")
+    assert "items/lists/shopping.md" in listed
+    assert "items/lists/never-used.md" not in listed
+
+
 async def test_lint_view(db, ctx, now):
     await _seed(db, ctx)
     lint = await _text(db, ctx, "views/lint.md")

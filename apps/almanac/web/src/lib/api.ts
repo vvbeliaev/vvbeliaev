@@ -27,6 +27,9 @@ async function get<T>(name: string, params: Record<string, string | number>): Pr
   return (await response.json()) as T;
 }
 
-export const tree = (): Promise<Entry[]> => get('tree', { path: '', depth: 5 });
+// Сервер отвечает объектом с названным списком (`entries`, `matches`); сайту список нужен сам по себе.
+export const tree = async (): Promise<Entry[]> =>
+  (await get<{ entries: Entry[] }>('tree', { path: '', depth: 5 })).entries;
 export const file = (path: string): Promise<FileView> => get('file', { path });
-export const grep = (pattern: string): Promise<Match[]> => get('grep', { pattern, limit: 50 });
+export const grep = async (pattern: string): Promise<Match[]> =>
+  (await get<{ matches: Match[] }>('grep', { pattern, limit: 50 })).matches;

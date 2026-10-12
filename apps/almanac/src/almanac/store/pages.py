@@ -18,6 +18,10 @@ MAX_BODY = 100_000
 REV_MAX = 2**31 - 1  # номер ревизии лежит в int32; больший в запрос не отправить: ответом будет ошибка базы
 # Подпись ограничена по длине и строке: без предела выражение на чужом теле квадратично.
 LINK = re.compile(r"\[\[([a-z0-9-]+/[a-z0-9-]+)(?:\|[^\]\n]{0,120})?\]\]")
+# Строка-флажок Markdown: `- [ ]`, `* [x]`, возможно с отступом. Задача в тексте страницы — это ошибка места:
+# у задач есть элементы со сроком и напоминанием, а флажок в тексте никто не увидит и не напомнит о нём.
+CHECKBOX = re.compile(r"^[ \t]*[-*+][ \t]+\[[ xX]\](?:[ \t]|$)", re.MULTILINE)
+CHECKBOX_WARNING = "checkbox in a page: tasks are items — use item_add and set its page"
 
 
 @dataclass(frozen=True)
@@ -83,8 +87,10 @@ async def _no_duplicate(session: AsyncSession, path: str, title: str, aliases: S
 
 
 async def _warnings(session: AsyncSession, body: str) -> list[str]:
+    """Что не помешало записи, но модели стоит прочесть: битые ссылки и флажок (один раз на вызов)."""
     existing = {page.path for page in await live(session)}
-    return [f"broken link: {target}" for target in links(body) if target not in existing]
+    found = [f"broken link: {target}" for target in links(body) if target not in existing]
+    return [*found, CHECKBOX_WARNING] if CHECKBOX.search(body) else found
 
 
 async def _snapshot(

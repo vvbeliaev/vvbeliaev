@@ -1,7 +1,10 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Path
 from pydantic import Field
 
 from almanac.api.deps import Db, Strict, Who
+from almanac.api.shapes import FactOut, Origin
 from almanac.models import Fact
 from almanac.store import facts as store
 
@@ -10,7 +13,7 @@ router = APIRouter()
 
 class NoteIn(Strict):
     text: str = Field(description="What was said or found, verbatim.")
-    origin: str = Field(
+    origin: Origin = Field(
         default="said",
         description=(
             "`said` — the owner's words; `web` — text from the web; `file` — text from a document; "
@@ -25,21 +28,21 @@ class DismissIn(Strict):
     reason: str = Field(description="One line: why nothing needs to be built from this fact.")
 
 
-def fact_out(fact: Fact) -> dict:
-    return {
-        "id": fact.id,
-        "at": fact.at.isoformat(),
-        "client": fact.client,
-        "origin": fact.origin,
-        "text": fact.text,
-        "url": fact.url,
-        "supersedes": fact.supersedes_id,
-        "dismissed": fact.dismissed_at is not None,
-    }
+def fact_out(fact: Fact) -> FactOut:
+    return FactOut(
+        id=fact.id,
+        at=fact.at.isoformat(),
+        client=fact.client,
+        origin=fact.origin,
+        text=fact.text,
+        url=fact.url,
+        supersedes=fact.supersedes_id,
+        dismissed=fact.dismissed_at is not None,
+    )
 
 
 @router.post("/facts", operation_id="note", summary="Record a fact")
-async def note(body: NoteIn, db: Db, who: Who) -> dict:
+async def note(body: NoteIn, db: Db, who: Who) -> FactOut:
     """Append raw material: what was said or found. Facts are never edited — to correct one,
     record a new fact with `supersedes`. A fact stays in `views/inbox.md` until a page or
     an item is built from it, or it is dismissed."""
@@ -51,7 +54,9 @@ async def note(body: NoteIn, db: Db, who: Who) -> dict:
 
 
 @router.post("/facts/{fact}/dismiss", operation_id="dismiss", summary="Close a fact that needs no projection")
-async def dismiss(fact: str, body: DismissIn, db: Db, who: Who) -> dict:
+async def dismiss(
+    fact: Annotated[str, Path(description="Id of the fact, like f_ab12cd34.")], body: DismissIn, db: Db, who: Who
+) -> FactOut:
     """Remove a fact from the inbox without building anything from it. The fact itself stays."""
     async with db.write() as session:
         closed = await store.dismiss(session, client=who.client, fact_id=fact, reason=body.reason)

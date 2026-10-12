@@ -13,6 +13,7 @@ from mcp.shared.auth import OAuthClientInformationFull
 from pydantic import AnyUrl
 from sqlalchemy import select
 
+from almanac.api.items import REMIND
 from almanac.app import create_app
 from almanac.identity import INTERNAL_HEADER, acting, sign_internal
 from almanac.models import Journal
@@ -90,6 +91,123 @@ async def test_unknown_argument_is_refused_in_code_mode(mcp):
     # Строгость действует и по пути, которым ходит модель: изнутри песочницы Code Mode.
     with pytest.raises(ToolError, match="unknown parameters: pth"):
         await mcp.call_tool("execute", {"code": "return await call_tool('ls', {'pth': 'pages'})"})
+
+
+EVERY_TOOL = """
+answers = {}
+answers['guide'] = await call_tool('guide', {})
+fact = await call_tool('note', {'text': 'Аня переехала в Берлин'})
+answers['note'] = fact
+page = 'pages/people/anna.md'
+answers['write'] = await call_tool('write', {
+    'path': page, 'title': 'Анна', 'description': 'Подруга', 'body': 'Живёт в Берлине.\\n',
+    'facts': [fact['id']], 'reason': 'новый человек'})
+answers['ls'] = await call_tool('ls', {'path': 'pages', 'depth': 2})
+answers['grep'] = await call_tool('grep', {'pattern': 'берлин', 'path': 'pages'})
+answers['read'] = await call_tool('read', {'path': page})
+answers['edit'] = await call_tool('edit', {
+    'path': page, 'old': 'Берлине', 'new': 'Мюнхене', 'rev': 1, 'restructure': True, 'reason': 'переезд'})
+answers['history'] = await call_tool('history', {'path': page})
+item = await call_tool('item_add', {
+    'kind': 'task', 'title': 'Купить молоко', 'list': 'shopping', 'facts': [fact['id']], 'reason': 'покупка'})
+answers['item_add'] = item
+answers['item_update'] = await call_tool('item_update', {
+    'item': item['id'], 'rev': 1, 'status': 'done', 'reason': 'куплено'})
+answers['items'] = await call_tool('items', {'status': 'any'})
+other = await call_tool('note', {'text': 'просто так'})
+answers['dismiss'] = await call_tool('dismiss', {'fact': other['id'], 'reason': 'не нужно'})
+answers['remove'] = await call_tool('remove', {'path': page, 'rev': 2, 'reason': 'ошибка'})
+return answers
+"""
+
+
+async def test_no_answer_of_any_tool_is_wrapped_in_a_result_key(mcp):
+    answers = _value(await mcp.call_tool("execute", {"code": EVERY_TOOL}))
+    assert set(answers) == TOOLS
+    for name, answer in answers.items():
+        assert isinstance(answer, dict), name
+        assert "result" not in answer, name
+
+
+async def test_list_answers_are_objects_with_a_named_list(mcp):
+    answers = _value(await mcp.call_tool("execute", {"code": EVERY_TOOL}))
+    for name, key in (("ls", "entries"), ("grep", "matches"), ("items", "items"), ("history", "revisions")):
+        assert isinstance(answers[name][key], list) and answers[name][key], name
+    assert answers["ls"]["entries"][0].keys() == {"path", "kind", "description"}
+    assert answers["grep"]["matches"][0].keys() == {"path", "line", "text", "before", "after"}
+    assert answers["history"]["revisions"][0].keys() == {"rev", "at", "client", "reason", "deleted"}
+    assert answers["items"]["items"][0]["status"] == "done"
+
+
+async def test_a_script_can_index_and_count_a_list_answer(mcp):
+    code = (
+        "entries = (await call_tool('ls', {'path': ''}))['entries']\n"
+        "return {'listed': isinstance(entries, list), 'count': len(entries), 'first': entries[0]['path']}"
+    )
+    found = _value(await mcp.call_tool("execute", {"code": code}))
+    assert (found["listed"], found["count"], found["first"]) == (True, 5, "facts")
+
+
+async def test_a_closed_set_refusal_names_the_values_inside_the_sandbox(mcp):
+    code = (
+        "return await call_tool('item_add', {'kind': 'habit', 'title': 'Бегать', "
+        "'said': 'бегать по утрам', 'reason': 'привычка'})"
+    )
+    with pytest.raises(ToolError) as refusal:
+        await mcp.call_tool("execute", {"code": code})
+    assert "task" in str(refusal.value) and "event" in str(refusal.value)
+
+
+async def test_a_script_can_catch_a_refusal_and_return_what_is_done(mcp):
+    code = (
+        "done = []\n"
+        "try:\n"
+        "    done.append((await call_tool('note', {'text': 'первое'}))['id'])\n"
+        "    await call_tool('item_add', {'kind': 'event', 'title': 'Без времени', 'said': 'встреча', 'reason': 'тест'})\n"
+        "    done.append('unreachable')\n"
+        "except Exception as error:\n"
+        "    return {'done': len(done), 'error': str(error)}\n"
+        "return {'done': len(done), 'error': None}"
+    )
+    answer = _value(await mcp.call_tool("execute", {"code": code}))
+    assert answer["done"] == 1
+    assert "needs `at`" in answer["error"]
+
+
+async def test_get_schema_shows_descriptions_values_and_answer_fields(mcp):
+    text = _value(await mcp.call_tool("get_schema", {"tools": ["item_add", "items"]}))
+    add, items = text.split("### items")
+    assert "### item_add" in add
+    assert REMIND in add
+    kind = next(line for line in add.splitlines() if line.startswith("- kind"))
+    assert '"task"' in kind and '"event"' in kind and "required" in kind
+    returns = add.split("Returns:")[1]
+    for field in ("id", "rev", "status", "title", "list", "remind"):
+        assert f"- {field} (" in returns, field
+    status = next(line for line in items.splitlines() if line.startswith("- status"))
+    assert all(f'"{value}"' in status for value in ("open", "done", "cancelled", "any"))
+    assert 'default "open"' in status
+    # Список объектов раскрыт на один уровень: поля элемента видны под `items`.
+    after = items.split("Returns:")[1]
+    assert "- items (list[object])" in after
+    assert "    - id (string)" in after
+
+
+async def test_get_schema_names_the_tools_it_does_not_know(mcp):
+    text = _value(await mcp.call_tool("get_schema", {"tools": ["guide", "nope"]}))
+    assert "### guide" in text
+    assert "nope" in text and "item_add" in text
+
+
+async def test_guide_answer_is_described_with_the_current_moment(mcp):
+    text = _value(await mcp.call_tool("get_schema", {"tools": ["guide"]}))
+    assert all(f"- {field} (" in text for field in ("text", "types", "now", "tz"))
+
+
+async def test_execute_description_tells_about_refusals_and_named_lists(mcp):
+    execute = next(tool for tool in await mcp.list_tools() if tool.name == "execute")
+    for fact in ("try/except", "entries", "matches", "items", "revisions"):
+        assert fact in execute.description, fact
 
 
 async def test_call_without_identity_is_refused(db, settings, now):

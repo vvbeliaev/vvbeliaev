@@ -2,7 +2,7 @@
 
 import json
 from dataclasses import dataclass
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta
 from functools import cached_property
 from time import monotonic
 from zoneinfo import ZoneInfo
@@ -70,6 +70,11 @@ class Match:
     text: str
     before: list[str]
     after: list[str]
+
+
+def local_now(owner_tz: str) -> datetime:
+    """Сейчас по часам владельца: в этом времени записаны `at` и `due` элементов."""
+    return utcnow().astimezone(occur.zone(owner_tz))
 
 
 def _quoted(value: str) -> str:
@@ -159,7 +164,8 @@ class Snapshot:
         self.inbox = inbox
         self.items = items
         self.zone = occur.zone(ctx.owner_tz)
-        self.today = utcnow().astimezone(self.zone).date()
+        self.moment = local_now(ctx.owner_tz)
+        self.today = self.moment.date()
 
     @classmethod
     async def load(cls, session: AsyncSession, ctx: Context) -> "Snapshot":
@@ -185,10 +191,13 @@ class Snapshot:
 
     @cached_property
     def lists(self) -> dict[str, list[Item]]:
+        """Файл списка живёт, пока список хоть раз был у какой-нибудь задачи; в нём — открытые."""
         lists: dict[str, list[Item]] = {}
         for item in self.items:
-            if item.kind == "task" and item.status == "open" and item.list_:
-                lists.setdefault(f"items/lists/{item.list_}.md", []).append(item)
+            if item.kind == "task" and item.list_:
+                opened = lists.setdefault(f"items/lists/{item.list_}.md", [])
+                if item.status == "open":
+                    opened.append(item)
         return lists
 
     @cached_property
@@ -237,7 +246,7 @@ class Snapshot:
         if path == "views/inbox.md":
             return self._inbox()
         if path == "views/today.md":
-            return self._agenda(self.today, self.today)
+            return self._agenda(self.today, self.today, clock=True)
         if path == "views/week.md":
             return self._agenda(self.today, self.today + timedelta(days=6))
         if path == "views/lint.md":
@@ -249,10 +258,11 @@ class Snapshot:
             return "# inbox\n\nempty\n"
         return "# inbox\n\n" + "\n".join(render_fact(fact, self.zone, None) for fact in self.inbox)
 
-    def _agenda(self, start: date, end: date) -> str:
-        """Повестка: просроченные задачи, затем по дням — события и сроки."""
+    def _agenda(self, start: date, end: date, *, clock: bool = False) -> str:
+        """Повестка: просроченные задачи, затем по дням — события и сроки. С `clock` под заголовком
+        стоит местное время: модели нечем больше узнать, который час у владельца."""
         title = start.isoformat() if start == end else f"{start.isoformat()} — {end.isoformat()}"
-        lines = [f"# {title}", ""]
+        lines = [f"# {title}", *([f"now {self.moment:%H:%M} {self.ctx.owner_tz}"] if clock else []), ""]
         opened = [item for item in self.items if item.status == "open"]
         overdue = [item for item in opened if item.kind == "task" and item.due is not None and item.due < start]
         if overdue:
