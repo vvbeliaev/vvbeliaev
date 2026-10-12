@@ -59,6 +59,9 @@ def check_density(parsed: rrulebase, text: str) -> None:
     if FINE.search(text):
         raise Refused(refusal)
     sample = list(islice(parsed, DENSITY_SAMPLE))
+    if not sample:
+        # Пустой ряд ничего не покажет и не напомнит, а каждое чтение перебирало бы его до конца календаря.
+        raise Refused(f"rrule {text!r} never happens from this start: check UNTIL and the BY… parts")
     if len(sample) == DENSITY_SAMPLE and sample[-1] - sample[0] < DENSITY_SPAN:
         raise Refused(refusal)
 

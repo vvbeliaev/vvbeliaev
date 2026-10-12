@@ -317,6 +317,15 @@ async def test_update_refuses_a_rule_that_repeats_more_often_than_hourly(db, now
 
 
 @pytest.mark.parametrize("shape", SHAPES.values(), ids=SHAPES)
+async def test_add_refuses_a_rule_that_never_happens(db, now, shape):
+    # Повтор кончился раньше, чем начался: такой элемент не показался бы ни в один день и ни разу не напомнил.
+    with pytest.raises(Refused, match="never happens"):
+        await _add(db, **shape, rrule="FREQ=DAILY;UNTIL=20200101T000000")
+    async with db.read() as session:
+        assert (await session.scalars(select(Item))).all() == []
+
+
+@pytest.mark.parametrize("shape", SHAPES.values(), ids=SHAPES)
 @pytest.mark.parametrize("rule", SPARSE_ENOUGH)
 async def test_a_rule_no_denser_than_hourly_is_accepted(db, now, shape, rule):
     added = await _add(db, **shape, rrule=rule)
