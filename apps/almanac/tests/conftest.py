@@ -75,6 +75,14 @@ def _no_ambient_database(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://nobody@127.0.0.1:1/none")
 
 
+@pytest.fixture(autouse=True)
+def _no_ambient_model(monkeypatch):
+    """Ключи моделей и цепочка из окружения разработчика тестам тоже не указ: с настоящим ключом тест
+    «без ключа собеседника нет» собрал бы настоящую модель."""
+    for name in ("ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "LLM_API_KEY", "ASSISTANT_MODEL"):
+        monkeypatch.delenv(name, raising=False)
+
+
 @pytest.fixture(scope="session")
 def pg_server():
     """Единственный контейнер Postgres на прогон: адрес его служебной базы."""

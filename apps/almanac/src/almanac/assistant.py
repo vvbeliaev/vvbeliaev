@@ -2,7 +2,7 @@
 
 Ядро остаётся без модели: хранение, проверки и время — код. Собеседник — ещё один клиент той же двери,
 что у Claude: те же мета-инструменты, те же отказы, то же руководство. Нет ключа модели — нет
-собеседника, и бот только записывает, как раньше.
+собеседника, и бот только записывает, как раньше. Чья модель и какая — в `llm.py`.
 
 Наружу у него один канал — ответ владельцу в его же чат. Чужой текст в базе может подсказать ему
 глупость, но унести записи ему некуда; а всё, что он пишет, помечено в журнале его именем.
@@ -17,13 +17,11 @@ from fastmcp import Client, FastMCP
 from pydantic_ai import Agent
 from pydantic_ai.capabilities import ProcessHistory
 from pydantic_ai.mcp import MCPToolset
-from pydantic_ai.messages import ModelMessage, ModelRequest, ToolReturnPart, UserPromptPart
+from pydantic_ai.messages import InstructionPart, ModelMessage, ModelRequest, ToolReturnPart, UserPromptPart
 from pydantic_ai.models import Model
-from pydantic_ai.models.google import GoogleModel, GoogleModelSettings
-from pydantic_ai.providers.google import GoogleProvider
 from pydantic_ai.usage import UsageLimits
 
-from almanac import api, tree
+from almanac import api, llm, tree
 from almanac.clock import utcnow
 from almanac.config import Settings
 from almanac.identity import acting
@@ -49,7 +47,7 @@ Reply in the owner's language, in one to three short lines of plain text: no Mar
 
 Every message is already recorded as a fact before you see it; its id comes at the end of the message. Build tasks, events and pages from that fact: pass `facts: [id]`, never `said`, and never call `note` for the same words. When the message is a question, or a command that leaves nothing to keep, answer it and close its fact with `dismiss`.
 
-"Remind me" is an item with `remind`; "in twenty minutes" is `in`. When the day or the time is unclear, ask one short question instead of guessing. To undo what you just did, set the item's status to `cancelled`. `item_update` takes no `facts`: after you change or cancel an item on the owner's word, close the message's fact with `dismiss`.
+"Remind me" is an item with `remind`: a thing to do is a task, a thing that happens is an event. "In twenty minutes" is `in`; it sets the time, and only `remind` sends the reminder. When the day or the time is unclear, ask one short question instead of guessing. When the owner says a thing is done, set its task's status to `done`; to undo what you just did, set the item's status to `cancelled`. `item_update` takes no `facts`: after you change, close or cancel an item on the owner's word, close the message's fact with `dismiss`.
 
 You work through `execute`: Python that calls almanac's tools. The owner is waiting at the phone, so be quick: do the whole job in one `execute` — the writes and the `dismiss` together — and answer. The answer of a call is the confirmation: do not read the inbox or a view to check your own work. Look for an item only when you must change it, and `grep` only before you create a page or when the owner asks about something stored.
 
@@ -129,18 +127,19 @@ class Assistant:
         self.agent = agent
         self.limits = UsageLimits(request_limit=REQUEST_LIMIT)
         self.owner_tz, self.day_start, self.quiet_hours = owner_tz, day_start, quiet_hours
-        # Постоянная часть инструкций: своё и руководство. Время — в хвосте: постоянная часть кэшируется.
+        # Постоянная часть инструкций: своё и руководство. Время — отдельной частью в хвосте: постоянную
+        # провайдер кэширует, а время в ней сбрасывало бы кэш каждую минуту.
         self._constant = f"{INSTRUCTIONS}\n\n{guide}"
         # Схемы инструментов дописываются к постоянной части при первом ответе: взять их можно только из цикла.
         self._mcp = mcp
         self.history: list[ModelMessage] = []
         self._last: datetime | None = None
 
-    def instructions(self) -> str:
+    def instructions(self) -> list[str | InstructionPart]:
         moment = tree.local_now(self.owner_tz)
         quiet = self.quiet_hours or "none"
         clock = f"now: {moment:%Y-%m-%dT%H:%M} {self.owner_tz}, {moment:%A}; day_start {self.day_start}; quiet {quiet}"
-        return f"{self._constant}\n\n{clock}"
+        return [self._constant, InstructionPart(content=clock, dynamic=True)]
 
     async def reply(self, text: str, fact_id: str) -> str:
         """Ответ на слова владельца, уже записанные фактом `fact_id`."""
@@ -166,14 +165,11 @@ class Assistant:
 
 
 def build(settings: Settings, mcp: FastMCP, guide: str) -> Assistant | None:
-    """Собеседник по настройкам; без ключа модели его нет. Модель — нативная Google: она полнее держит
-    многошаговые вызовы инструментов, чем совместимый с OpenAI адрес."""
-    if not settings.llm_api_key:
+    """Собеседник по настройкам; без ключа модели его нет."""
+    keys = {"anthropic": settings.anthropic_api_key, "google": settings.google_api_key}
+    model = llm.model(llm.routes(settings.assistant_model), keys, thinking=THINKING)
+    if model is None:
         return None
-    model = GoogleModel(
-        settings.assistant_model, provider=GoogleProvider(api_key=settings.llm_api_key),
-        settings=GoogleModelSettings(google_thinking_config={"thinking_level": THINKING}),
-    )
     return Assistant(
         agent_over(model, mcp), guide=guide, owner_tz=settings.owner_tz, day_start=settings.day_start,
         quiet_hours=settings.quiet_hours, mcp=mcp,

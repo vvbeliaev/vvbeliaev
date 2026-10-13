@@ -113,3 +113,34 @@ def test_quiet_hours_default_to_the_night_and_can_be_switched_off():
     assert Settings(_env_file=None).quiet_hours == "23:00-08:00"
     assert Settings(_env_file=None, quiet_hours="").quiet_hours == ""
     assert Settings(_env_file=None, quiet_hours="00:30-07:00").quiet_hours == "00:30-07:00"
+
+
+@pytest.mark.parametrize("name", ["GOOGLE_API_KEY", "LLM_API_KEY"])
+def test_the_google_key_is_read_under_its_new_and_its_old_name(monkeypatch, name):
+    monkeypatch.setenv(name, "g-key")
+    settings = Settings(_env_file=None)
+    assert (settings.google_api_key, settings.anthropic_api_key) == ("g-key", "")
+
+
+def test_the_anthropic_key_is_its_own_variable(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "a-key")
+    settings = Settings(_env_file=None)
+    assert (settings.anthropic_api_key, settings.google_api_key) == ("a-key", "")
+
+
+def test_model_keys_are_not_shown_when_settings_are_printed():
+    shown = repr(Settings(_env_file=None, anthropic_api_key="sk-ant-" + "x" * 20, google_api_key="AIza" + "y" * 20))
+    assert "x" * 20 not in shown and "y" * 20 not in shown
+
+
+@pytest.mark.parametrize(
+    "model", ["", " ", "gemini-3.8-flash", "openai:gpt-6", "anthropic:claude-haiku-5-5,", "anthropic:claude-haiku-5-5@deep"]
+)
+def test_a_bad_assistant_model_is_refused(model):
+    with pytest.raises(ValidationError, match="ASSISTANT_MODEL"):
+        Settings(_env_file=None, assistant_model=model)
+
+
+def test_a_chain_of_models_is_accepted():
+    chain = "anthropic:claude-haiku-5-5@medium,google:gemini-3.8-flash"
+    assert Settings(_env_file=None, assistant_model=chain).assistant_model == chain

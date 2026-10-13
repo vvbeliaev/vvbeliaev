@@ -14,7 +14,8 @@ Rules for working in this app. Repo-wide rules are in the root
   private path into `store/`, no rule that lives only in its prompt. Whatever must
   hold is enforced by the server. It never sees forwarded messages, its writes carry
   the client name `agent`, and the bot records the owner's words before calling it,
-  so a model failure loses nothing. No `LLM_API_KEY` — no assistant.
+  so a model failure loses nothing. No model key — no assistant. Which model answers is
+  a setting, not code: `ASSISTANT_MODEL` is a chain of `provider:model` (`llm.py`).
 - **Writes go through `store/`**, inside `async with db.write()`, and leave a
   `journal` row. The API and the bot never touch tables directly.
 - **Refusals are instructions.** A `Refused` message tells the model what to

@@ -3,8 +3,8 @@
 import re
 from datetime import UTC, datetime
 
-import pytest
 from pydantic_ai.messages import (
+    InstructionPart,
     ModelMessage,
     ModelRequest,
     ModelResponse,
@@ -26,11 +26,12 @@ TZ = "Europe/Berlin"
 
 class Script:
     """Подставная модель: на первый запрос хода зовёт `execute` с кодом, получив вывод — отвечает текстом.
-    Запоминает, что ей показали: инструкции и сколько сообщений было в истории."""
+    Запоминает, что ей показали: инструкции целиком и по частям и сколько сообщений было в истории."""
 
     def __init__(self, code: str = "", answer: str = "Готово.") -> None:
         self.code, self.answer = code, answer
         self.instructions: list[str] = []
+        self.parts: list[list[InstructionPart]] = []
         self.histories: list[int] = []
         self.prompts: list[str] = []
         self.tools: set[str] = set()
@@ -42,6 +43,7 @@ class Script:
         if answered or not self.code:
             return ModelResponse(parts=[TextPart(self.answer)])
         self.instructions.append(info.instructions or "")
+        self.parts.append(list(info.model_request_parameters.instruction_parts or []))
         self.histories.append(len(messages))
         prompt = "".join(str(part.content) for part in last.parts if hasattr(part, "content"))
         self.prompts.append(prompt)
@@ -107,6 +109,30 @@ async def test_it_is_told_the_rules_and_the_time(app, db, now):
     assert re.fullmatch(r"напомни\n\n\[recorded as fact f_[a-z0-9]+\]", script.prompts[0])
 
 
+async def test_the_clock_is_kept_apart_from_the_constant_instructions(app, db, now):
+    script = Script(REMIND)
+    await _talker(app, script).reply("напомни", await _said(db, "напомни"))
+    constant, clock = script.parts[0]
+    # Постоянная часть ложится в кэш провайдера; время в ней сбрасывало бы его каждую минуту.
+    assert not constant.dynamic
+    assert "Three kinds of data" in constant.content and "### item_add" in constant.content
+    assert "now:" not in constant.content
+    assert clock.dynamic
+    assert clock.content.startswith("now: 2026-10-12T12:00 Europe/Berlin")
+
+
+async def test_the_constant_instructions_are_the_same_on_every_turn(app, db, now, monkeypatch):
+    script = Script(REMIND)
+    talker = _talker(app, script)
+    await talker.reply("напомни про банк", await _said(db, "напомни про банк"))
+    monkeypatch.setattr(clock, "_now", lambda: datetime(2026, 10, 12, 10, 7, tzinfo=UTC))
+    await talker.reply("а теперь про врача", await _said(db, "а теперь про врача"))
+    (first, first_clock), (second, second_clock) = script.parts
+    # Кэш провайдера держится на побайтном совпадении: меняться от хода к ходу может только время.
+    assert first.content == second.content
+    assert first_clock.content != second_clock.content
+
+
 async def test_a_conversation_is_remembered_while_it_lasts(app, db, now, monkeypatch):
     script = Script(REMIND)
     talker = _talker(app, script)
@@ -149,18 +175,17 @@ async def test_the_caller_identity_does_not_leak_out_of_a_reply(app, db, now):
 
 def test_without_a_key_there_is_no_assistant(pg_url):
     settings = Settings(_env_file=None, database_url=pg_url)
-    assert settings.llm_api_key == ""
+    assert (settings.anthropic_api_key, settings.google_api_key) == ("", "")
     assert assistant.build(settings, mcp=None, guide="") is None
 
 
-def test_the_key_is_not_shown_when_settings_are_printed():
-    key = "AIza" + "x" * 20
-    assert key not in repr(Settings(_env_file=None, llm_api_key=key))
-
-
-@pytest.mark.parametrize("model", ["", " "])
-def test_an_empty_model_name_is_refused(model):
-    from pydantic import ValidationError
-
-    with pytest.raises(ValidationError, match="ASSISTANT_MODEL"):
-        Settings(_env_file=None, assistant_model=model)
+def test_it_runs_on_the_model_the_settings_name(app, pg_url):
+    settings = Settings(
+        _env_file=None, database_url=pg_url, anthropic_api_key="a-key", google_api_key="g-key",
+        assistant_model="anthropic:claude-haiku-5-5,google:gemini-3.8-flash",
+    )
+    talker = assistant.build(settings, app.state.mcp, guide="")
+    assert [(link.system, link.model_name) for link in talker.agent.model.models] == [
+        ("anthropic", "claude-haiku-5-5"),
+        ("google", "gemini-3.8-flash"),
+    ]

@@ -29,9 +29,11 @@ times then mean what the owner means. `in` needs no zone.
 - "In twenty minutes", "in two days": `in: "PT20M"`, `in: "P2D"` — the server
   counts from now.
 - A length: `end`, in the same form as `at`. For whole days it is the last day.
-- `remind` — ISO 8601 offsets before the moment: `PT0M`, `PT1H`, `P1D`. A
-  whole-day event and a task with only `due` count from `day_start` in this
-  guide's answer: the owner's morning, not midnight.
+- `remind` — when to notify the owner: ISO 8601 offsets before the moment,
+  `PT0M` (at the moment), `PT1H`, `P1D`. `at` and `in` only set the moment:
+  without `remind` nothing is sent. A whole-day event and a task with only
+  `due` count from `day_start` in this guide's answer: the owner's morning,
+  not midnight.
 - `rrule` — RFC 5545: `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO,TH`, `FREQ=YEARLY`.
 
 ## Saving
@@ -53,7 +55,11 @@ times then mean what the owner means. `in` needs no zone.
 
 ## Tasks, habits, lists
 
-- A task has a checkbox. `due` is its deadline, a date; `at` is a time of day.
+- A task is something the owner does, and it has a checkbox: `status: "done"`
+  ticks it. `due` is its deadline, a date; `at` is a time of day. A time does
+  not make it an event: "pay the rent at noon" is a task with `at`.
+- An event is something that happens whether or not the owner acts: a meeting,
+  a flight, a birthday. It has no checkbox.
 - Purchases are tasks with `list: "shopping"`. Any other slug is a list of its
   own: `reading`, `gifts`.
 - A habit or a chore is a task with `rrule`: its `due` or `at` is the next

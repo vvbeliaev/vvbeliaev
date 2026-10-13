@@ -15,10 +15,16 @@ router = APIRouter()
 LIST = "List slug, tasks only: `shopping` for purchases, or any slug of your own, like `reading`."
 AT = "`2026-10-14T18:00` is a moment (local, no offset); `2026-10-14` alone is a whole day."
 ENDS = "When it ends, same form as `at`; for whole days the last day, inclusive. Events only."
-IN = "Instead of `at`: this far from now, ISO 8601: PT20M, P2D. The server computes the moment."
+IN = (
+    "Instead of `at`: this far from now, ISO 8601: PT20M, P2D. The server computes the moment. "
+    "Like `at`, it only sets the moment: a reminder needs `remind`."
+)
 TZ = "IANA zone of `at`, only when it is not the owner's."
 RRULE = "RFC 5545 rule: FREQ=YEARLY, FREQ=WEEKLY;BYDAY=MO. On a task: needs `due` or `at`, UNTIL not COUNT."
-REMIND = "ISO 8601 offsets before the moment: PT0M, PT1H, P1D."
+REMIND = (
+    "When to notify the owner: ISO 8601 offsets before the moment: PT0M (at the moment), PT1H, P1D. "
+    "Empty: nothing is sent."
+)
 ITEM = "Id of the item, like i_ab12cd34."
 START = "First day of the window: 2026-10-12."
 END = "Last day of the window, inclusive: 2026-10-18."
@@ -52,7 +58,12 @@ When = Annotated[date | datetime, BeforeValidator(_day_or_moment)]
 
 
 class ItemAddIn(Sourced):
-    kind: Kind = Field(description="`task` — something to do; `event` — something that happens at a time.")
+    kind: Kind = Field(
+        description=(
+            "`task` — something the owner does, with or without a time: it is ticked off when done. "
+            "`event` — something that happens whether or not the owner acts: a meeting, a flight."
+        )
+    )
     title: str
     note: str = ""
     list_: str | None = Field(default=None, alias="list", description=LIST)

@@ -3,8 +3,10 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from almanac import llm
 
 PACKAGE = Path(__file__).parent
 LOOPBACK = frozenset({"localhost", "127.0.0.1", "::1"})
@@ -18,7 +20,10 @@ class Settings(BaseSettings):
     """Настройки из окружения; имена переменных — те же, заглавными."""
 
     # Без значения во вводе: в адресе базы стоит пароль, а текст ошибки уходит в журнал запуска.
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", hide_input_in_errors=True)
+    # По имени поля: у ключа Google два имени в окружении, а код и тесты зовут его одним.
+    model_config = SettingsConfigDict(
+        env_file=".env", extra="ignore", hide_input_in_errors=True, populate_by_name=True,
+    )
 
     # Локальная база из compose. Пароль сюда не вписан: адрес с ним лежит в `.env` (`make up`).
     database_url: str = "postgresql+asyncpg://almanac@127.0.0.1:5434/almanac"
@@ -37,10 +42,16 @@ class Settings(BaseSettings):
     # Без токена и чата бот и цикл напоминаний не запускаются.
     telegram_bot_token: str = ""
     telegram_owner_chat_id: int = 0
-    # Собеседник в Telegram (`assistant.py`). Без ключа его нет: бот только записывает.
-    llm_api_key: str = Field("", repr=False)
-    # Имя модели явное, а не алиас «latest»: алиас однажды молча сменит модель.
-    assistant_model: str = "gemini-3.8-flash"
+    # Собеседник в Telegram (`assistant.py`): цепочка `провайдер:модель` через запятую (`llm.py`). Первая —
+    # основная, следующие подхватывают, когда API отказал. Глубину размышления звено называет после `@`:
+    # `anthropic:claude-haiku-5-5@medium`. Имя модели явное, а не алиас «latest»: алиас однажды молча сменит
+    # модель.
+    assistant_model: str = "google:gemini-3.8-flash"
+    # Ключи провайдеров. Звено без ключа из цепочки выпадает; без единого ключа собеседника нет, и бот
+    # только записывает.
+    anthropic_api_key: str = Field("", repr=False)
+    # `LLM_API_KEY` — прежнее имя: пока провайдер был один, ключ называли по назначению.
+    google_api_key: str = Field("", repr=False, validation_alias=AliasChoices("GOOGLE_API_KEY", "LLM_API_KEY"))
     # Секрет в адресе ленты `/calendar/<токен>.ics`. Пусто — лента выключена.
     ics_token: str = ""
 
@@ -63,8 +74,11 @@ class Settings(BaseSettings):
     @field_validator("assistant_model")
     @classmethod
     def _assistant_model(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError("ASSISTANT_MODEL must name a model")
+        """Опечатка в цепочке — отказ при запуске, а не молчащий бот после первого сообщения."""
+        try:
+            llm.routes(value)
+        except ValueError as error:
+            raise ValueError(f"ASSISTANT_MODEL: {error}") from error
         return value
 
     @field_validator("quiet_hours")
