@@ -150,6 +150,9 @@ async def test_items_flow(api):
     shopping = (await api.get("/api/items", params={"list": "shopping"})).json()["items"]
     assert [row["id"] for row in shopping] == [item["id"]]
 
+    found = (await api.get("/api/items", params={"q": "англ"})).json()["items"]
+    assert [row["title"] for row in found] == ["Английский"]
+
     done = await api.patch(f"/api/items/{item['id']}", json={"rev": 1, "status": "done", "reason": "куплено"})
     assert (done.json()["status"], done.json()["rev"]) == ("done", 2)
     assert (await api.get("/api/items", params={"list": "shopping"})).json() == {"items": []}

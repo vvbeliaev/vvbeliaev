@@ -77,9 +77,10 @@ guide.md                   правила и схема, только чтени
 pages/<type>/<slug>.md     страницы
 facts/YYYY/MM-DD.md        факты дня, только чтение
 items/tasks.md             открытые задачи, строка на задачу
-items/events.md            события
+items/events.md            предстоящие и повторяющиеся события
 items/lists/<list>.md      открытые пункты списка
 items/done/YYYY-MM.md      закрытое за месяц
+items/past/YYYY-MM.md      прошедшие разовые события месяца
 views/inbox.md             факты без проекции
 views/today.md             повестка дня
 views/week.md              повестка недели

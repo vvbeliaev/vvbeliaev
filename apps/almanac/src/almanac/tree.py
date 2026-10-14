@@ -1,6 +1,7 @@
 """Виртуальное дерево: таблицы ядра как файлы для `ls`, `read` и `grep`."""
 
 import json
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from functools import cached_property
@@ -23,7 +24,7 @@ TOP = "guide.md, pages, facts, items, views"
 DESCRIPTIONS = {
     "guide.md": "rules and schema — read first",
     "items/tasks.md": "open tasks without a list, one per line",
-    "items/events.md": "events, one per line",
+    "items/events.md": "upcoming and repeating events, one per line; past ones are in items/past/",
     "views/inbox.md": "facts nothing was built from yet",
     "views/today.md": "today's agenda",
     "views/week.md": "agenda for the next seven days",
@@ -37,7 +38,15 @@ LAST = {"done": "done", "open": "last"}
 # по времени, а длину выражения и общий срок вызова держим малыми: процесс один.
 GREP_BUDGET = 1.0
 GREP_PATTERN_LIMIT = 200
-TOO_SLOW = "pattern is too slow on this data; simplify it — avoid nested repeats like (a+)+"
+TOO_SLOW = (
+    "pattern is too slow on this data: narrow `path` (`pages`, `items`) or simplify the pattern — "
+    "avoid nested repeats like (a+)+"
+)
+# Части базы, из которых строятся файлы дерева. Файл берёт только свои: повестке не нужны факты.
+PAGES, FACTS, INBOX, ITEMS = "pages", "facts", "inbox", "items"
+EVERYTHING = frozenset({PAGES, FACTS, INBOX, ITEMS})
+# Архивы дел по месяцам: закрытые задачи и прошедшие разовые события.
+ARCHIVES = ("items/done/", "items/past/")
 
 
 @dataclass(frozen=True)
@@ -174,14 +183,37 @@ class Snapshot:
         self.today = self.moment.date()
 
     @classmethod
-    async def load(cls, session: AsyncSession, ctx: Context) -> "Snapshot":
+    async def load(cls, session: AsyncSession, ctx: Context, parts: frozenset[str] = EVERYTHING) -> "Snapshot":
+        """Снимок нужных частей; остальные пусты. Факты копятся без конца, и тянуть их ради повестки незачем."""
         return cls(
             ctx,
-            await pages_.live(session),
-            await facts_.everything(session),
-            await facts_.inbox(session),
-            await items_.everything(session),
+            await pages_.live(session) if PAGES in parts else [],
+            await facts_.everything(session) if FACTS in parts else [],
+            await facts_.inbox(session) if INBOX in parts else [],
+            await items_.everything(session) if ITEMS in parts else [],
         )
+
+    @cached_property
+    def opened(self) -> list[Item]:
+        return [item for item in self.items if item.status == "open"]
+
+    def _ended(self, item: Item) -> bool:
+        """Разовое событие, последний день которого позади. Сегодняшнее остаётся в списке до конца дня."""
+        last = item.end_at or item.at
+        if item.kind != "event" or item.rrule or last is None:
+            return False
+        if not item.all_day:
+            last = last.replace(tzinfo=occur.zone(item.tz or self.ctx.owner_tz)).astimezone(self.zone)
+        return last.date() < self.today
+
+    @cached_property
+    def past(self) -> dict[str, list[Item]]:
+        """Прошедшие разовые события по месяцу начала. Статус у них прежний: это отображение, а не закрытие."""
+        months: dict[str, list[Item]] = {}
+        for item in sorted(self.opened, key=lambda item: item.at or datetime.min):
+            if self._ended(item):
+                months.setdefault(f"items/past/{item.at:%Y-%m}.md", []).append(item)
+        return months
 
     @cached_property
     def replaced(self) -> dict[str, str]:
@@ -224,7 +256,7 @@ class Snapshot:
             found[path] = None
         for path in ("items/tasks.md", "items/events.md"):
             found[path] = DESCRIPTIONS[path]
-        for path in (*sorted(self.lists), *sorted(self.closed)):
+        for path in (*sorted(self.lists), *sorted(self.closed), *sorted(self.past)):
             found[path] = None
         for path in VIEWS:
             found[path] = DESCRIPTIONS[path]
@@ -239,16 +271,18 @@ class Snapshot:
                 return render_page(page)
         if path in self.fact_days:
             return "\n".join(render_fact(fact, self.zone, self.replaced.get(fact.id)) for fact in self.fact_days[path])
-        opened = [item for item in self.items if item.status == "open"]
         if path == "items/tasks.md":
-            loose = [item for item in opened if item.kind == "task" and not item.list_]
+            loose = [item for item in self.opened if item.kind == "task" and not item.list_]
             return _lines(sorted(loose, key=lambda item: (item.due is None, item.due or date.max, item.created_at)))
         if path == "items/events.md":
-            return _lines(sorted((item for item in opened if item.kind == "event"), key=lambda item: item.at))
+            ahead = [item for item in self.opened if item.kind == "event" and not self._ended(item)]
+            return _lines(sorted(ahead, key=lambda item: item.at))
         if path in self.lists:
             return _lines(self.lists[path])
         if path in self.closed:
             return _lines(self.closed[path])
+        if path in self.past:
+            return _lines(self.past[path])
         if path == "views/inbox.md":
             return self._inbox()
         if path == "views/today.md":
@@ -269,14 +303,19 @@ class Snapshot:
         стоит местное время: модели нечем больше узнать, который час у владельца."""
         title = start.isoformat() if start == end else f"{start.isoformat()} — {end.isoformat()}"
         lines = [f"# {title}", *([f"now {self.moment:%H:%M} {self.ctx.owner_tz}"] if clock else []), ""]
-        opened = [item for item in self.items if item.status == "open"]
-        overdue = [item for item in opened if item.kind == "task" and item.due is not None and item.due < start]
+        overdue = [item for item in self.opened if item.kind == "task" and item.due is not None and item.due < start]
         if overdue:
             lines += ["## overdue", *(render_item(item) for item in sorted(overdue, key=lambda item: item.due)), ""]
+        # Повторы каждого элемента разворачиваются один раз на всё окно, а не заново на каждый день.
+        by_day: dict[date, list[Item]] = {}
+        for item in self.opened:
+            for day in items_.days(item, start, end, self.ctx.owner_tz):
+                by_day.setdefault(day, []).append(item)
         day = start
         while day <= end:
-            todays = [item for item in opened if items_.days(item, day, day, self.ctx.owner_tz)]
-            todays.sort(key=lambda item: (item.at.time() if item.at else time.max, item.title))
+            todays = sorted(
+                by_day.get(day, []), key=lambda item: (item.at.time() if item.at else time.max, item.title)
+            )
             lines += [f"## {day.isoformat()} {day:%a}", *(render_item(item) for item in todays), ""]
             day += timedelta(days=1)
         return "\n".join(lines)
@@ -336,6 +375,19 @@ async def attached(session: AsyncSession, ctx: Context, path: str) -> list[str]:
     return [render_item(item) for item in sorted(rows, key=lambda item: (_when(item), item.created_at, item.id))]
 
 
+def _needs(path: str) -> frozenset[str]:
+    """Части базы, из которых строится файл. Неизвестному пути не нужно ничего: он и так не найдётся."""
+    if path.startswith("facts/"):
+        return frozenset({FACTS})
+    if path.startswith("items/") or path in ("views/today.md", "views/week.md"):
+        return frozenset({ITEMS})
+    if path == "views/inbox.md":
+        return frozenset({INBOX})
+    if path == "views/lint.md":
+        return frozenset({PAGES})
+    return frozenset()
+
+
 async def read(session: AsyncSession, ctx: Context, path: str, rev: int | None = None) -> File:
     clean = path.strip("/")
     if clean.startswith("pages/"):
@@ -349,10 +401,28 @@ async def read(session: AsyncSession, ctx: Context, path: str, rev: int | None =
         )
     if rev is not None:
         raise Refused("`rev` applies to pages only")
-    text = (await Snapshot.load(session, ctx)).text(clean)
+    text = (await Snapshot.load(session, ctx, _needs(clean))).text(clean)
     if text is None:
         raise NotFound(f"{path} does not exist; top level: {TOP}")
     return File(clean, text)
+
+
+def _search_order(paths: Iterable[str]) -> list[str]:
+    """Порядок `grep`: страницы, открытые дела, архивы дел и факты — от новых к старым.
+
+    Слова владельца повторены в том, что из них собрано, и в порядке показа старые факты съедали бы
+    весь `limit` раньше, чем поиск дойдёт до дел. Остальное (`guide.md`, `views/`) — в конце.
+    """
+    every = list(paths)
+    pages = [path for path in every if path.startswith("pages/")]
+    live = [path for path in every if path.startswith("items/") and not path.startswith(ARCHIVES)]
+    # Архивы — по месяцу в имени файла, свежие первыми: `items/done/2026-10.md` раньше `items/past/2026-09.md`.
+    archived = sorted(
+        (path for path in every if path.startswith(ARCHIVES)), key=lambda path: path.rsplit("/", 1)[1], reverse=True
+    )
+    facts = sorted((path for path in every if path.startswith("facts/")), reverse=True)
+    rest = [path for path in every if not path.startswith(("pages/", "items/", "facts/"))]
+    return [*pages, *live, *archived, *facts, *rest]
 
 
 def _search(compiled: "regex.Pattern[str]", line: str, deadline: float) -> bool:
@@ -383,7 +453,7 @@ async def grep(
     limit = max(1, min(limit, 200))
     found: list[Match] = []
     deadline = monotonic() + GREP_BUDGET
-    for full in snapshot.paths():
+    for full in _search_order(snapshot.paths()):
         if full.startswith("views/") and not prefix.startswith("views"):
             continue
         if full == "guide.md" and prefix != "guide.md":

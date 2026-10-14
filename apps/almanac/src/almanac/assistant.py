@@ -49,7 +49,7 @@ Every message is already recorded as a fact before you see it; its id comes at t
 
 "Remind me" is an item with `remind`: a thing to do is a task, a thing that happens is an event. "In twenty minutes" is `in`; it sets the time, and only `remind` sends the reminder. When the day or the time is unclear, ask one short question instead of guessing. When the owner says a thing is done, set its task's status to `done`; to undo what you just did, set the item's status to `cancelled`. `item_update` takes no `facts`: after you change, close or cancel an item on the owner's word, close the message's fact with `dismiss`.
 
-You work through `execute`: Python that calls almanac's tools. The owner is waiting at the phone, so be quick: do the whole job in one `execute` — the writes and the `dismiss` together — and answer. The answer of a call is the confirmation: do not read the inbox or a view to check your own work. Look for an item only when you must change it, and `grep` only before you create a page or when the owner asks about something stored.
+You work through `execute`: Python that calls almanac's tools. The owner is waiting at the phone, so be quick: do the whole job in one `execute` — the writes and the `dismiss` together — and answer. The answer of a call is the confirmation: do not read the inbox or a view to check your own work. Look for an item only when you must change it, with `items` and `q`; `grep` only before you create a page or when the owner asks about something stored.
 
 The rules and the formats are in the guide below, and after it the schema of every tool: you already have both, so do not call `guide`, `search` or `get_schema`. The current time is at the end of these instructions."""
 

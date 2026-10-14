@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from datetime import UTC, date, datetime, time, timedelta
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from almanac import checks
@@ -35,6 +35,8 @@ MAX_SPAN = timedelta(days=366)
 MIN_YEAR, MAX_YEAR = 1900, 2200
 # Окно `items` шире года перебирало бы повторения каждого элемента за все эти дни: просят сузить.
 MAX_WINDOW_DAYS = 366
+# Поиск по словам названия и заметки: сколько символов в запросе.
+TEXT_LIMIT = 200
 
 
 def _attr(field: str) -> str:
@@ -407,8 +409,15 @@ async def query(
     page: str | None = None,
     start: date | None = None,
     end: date | None = None,
+    text: str | None = None,
 ) -> list[Item]:
-    """Выборка элементов. Окно `start..end` (оба конца включены) оставляет то, что приходится на эти дни."""
+    """Выборка элементов. Окно `start..end` (оба конца включены) оставляет то, что приходится на эти дни.
+
+    `text` — слова, каждое из которых есть в названии или заметке, без учёта регистра. Слово может
+    стоять внутри длинного: «пет» найдёт «Петей», так модель ищет по основе склоняемого слова.
+    """
+    if text is not None and len(text) > TEXT_LIMIT:
+        raise Refused(f"`q` is longer than {TEXT_LIMIT} characters: pass a few words of the title")
     if (start is None) != (end is None):
         raise Refused("a window needs both ends: pass `from` and `to` together")
     # Оба конца входят в окно, поэтому дней в нём на один больше, чем разница дат.
@@ -427,10 +436,20 @@ async def query(
         statement = statement.where(Item.list_ == list_)
     if page is not None:
         statement = statement.where(Item.page == page)
+    for word in (text or "").split():
+        pattern = f"%{_literal(word)}%"
+        statement = statement.where(
+            or_(Item.title.ilike(pattern, escape="\\"), Item.note.ilike(pattern, escape="\\"))
+        )
     rows = list((await session.scalars(statement)).all())
     if start is None:
         return rows
     return [item for item in rows if days(item, start, end, owner_tz)]
+
+
+def _literal(word: str) -> str:
+    """Слово для `LIKE`: `%` и `_` в нём — буквы, а не шаблон."""
+    return word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 async def everything(session: AsyncSession) -> list[Item]:

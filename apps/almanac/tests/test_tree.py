@@ -1,9 +1,9 @@
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pytest
 
-from almanac import tree
+from almanac import clock, tree
 from almanac.errors import NotFound, Refused
 from almanac.store import facts, items, pages
 from almanac.store.source import Source
@@ -299,3 +299,60 @@ async def test_owner_text_cannot_open_a_heading(db, ctx, now):
     assert "\\  # ещё один" in lines
     assert "\\#тег" in lines
     assert "первая" in lines
+
+
+async def test_past_events_leave_the_list_of_events_for_their_month(db, ctx, now):
+    # Сейчас 2026-10-12 12:00 в Берлине. Сегодняшнее остаётся до конца дня, повторяющееся — всегда.
+    def event(title, at, **more):
+        return items.add(
+            session, client="claude", owner_tz=TZ, kind="event", title=title, at=at,
+            source=Source(said=title), reason="встреча", **more,
+        )
+
+    async with db.write() as session:
+        dentist = await event("Стоматолог", datetime(2026, 9, 30, 10, 0))
+        cinema = await event("Кино", datetime(2026, 10, 11, 20, 0))
+        standup = await event("Планёрка", datetime(2026, 10, 12, 9, 0))
+        trip = await event("Поездка", date(2026, 10, 10), end=date(2026, 10, 12))
+        english = await event("Английский", datetime(2026, 9, 7, 18, 0), rrule="FREQ=WEEKLY")
+        flight = await event("Рейс", datetime(2026, 10, 20, 7, 0))
+
+    assert await _text(db, ctx, "items/events.md") == "".join(
+        tree.render_item(item) + "\n" for item in (english, trip, standup, flight)
+    )
+    assert await _text(db, ctx, "items/past/2026-09.md") == tree.render_item(dentist) + "\n"
+    assert await _text(db, ctx, "items/past/2026-10.md") == tree.render_item(cinema) + "\n"
+    async with db.read() as session:
+        listed = {entry.path for entry in await tree.ls(session, ctx, "items/past")}
+    assert listed == {"items/past/2026-09.md", "items/past/2026-10.md"}
+
+
+async def test_grep_looks_at_items_before_facts_and_at_new_facts_first(db, ctx, now, monkeypatch):
+    async with db.write() as session:
+        await facts.add(session, client="telegram", text="банк закрыт по субботам")
+    monkeypatch.setattr(clock, "_now", lambda: now + timedelta(days=2))
+    async with db.write() as session:
+        call = await items.add(
+            session, client="claude", owner_tz=TZ, kind="task", title="Позвонить в банк",
+            source=Source(said="надо позвонить в банк"), reason="дело",
+        )
+    async with db.read() as session:
+        found = await tree.grep(session, ctx, "банк")
+        first = await tree.grep(session, ctx, "банк", limit=1)
+    # Слова владельца повторены в деле, собранном из них: дело находится раньше, чем его факт.
+    assert [match.path for match in found] == ["items/tasks.md", "facts/2026/10-14.md", "facts/2026/10-12.md"]
+    assert first[0].text == tree.render_item(call)
+
+
+async def test_a_view_loads_only_what_it_shows(db, ctx, now, monkeypatch):
+    await _seed(db, ctx)
+
+    def untouched(*_):
+        raise AssertionError("loaded what the file does not show")
+
+    monkeypatch.setattr(tree.facts_, "everything", untouched)
+    monkeypatch.setattr(tree.pages_, "live", untouched)
+    for path in ("views/today.md", "views/week.md", "items/events.md", "items/lists/shopping.md", "guide.md"):
+        await _text(db, ctx, path)
+    monkeypatch.setattr(tree.items_, "everything", untouched)
+    assert (await _text(db, ctx, "views/inbox.md")).startswith("# inbox")

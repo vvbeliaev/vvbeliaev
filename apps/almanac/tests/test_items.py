@@ -146,6 +146,32 @@ async def test_query_by_status(db, now):
         assert [found.id for found in await items.query(session, owner_tz=TZ, status="any")] == [item.id]
 
 
+async def test_query_finds_items_by_the_words_of_their_title_or_note(db, now):
+    call = await _add(db, kind="event", title="Созвон с Петей", at=EVENING)
+    bank = await _add(db, title="Позвонить в банк", note="спросить про карту")
+    sale = await _add(db, title="Скидка 50% на книги")
+
+    async def ids(text):
+        async with db.read() as session:
+            return {item.id for item in await items.query(session, owner_tz=TZ, text=text)}
+
+    # Каждое слово обязательно и может стоять внутри длинного: слова склоняются, ищут по основе.
+    assert await ids("СОЗВОН пет") == {call.id}
+    assert await ids("карт") == {bank.id}
+    assert await ids("созвон банк") == set()
+    # Знаки шаблона SQL — обычные буквы.
+    assert await ids("0%") == {sale.id}
+    assert await ids("_") == set()
+    # Пустой запрос ничего не отбирает.
+    assert await ids("  ") == {call.id, bank.id, sale.id}
+
+
+async def test_query_text_is_limited(db, now):
+    async with db.read() as session:
+        with pytest.raises(Refused, match="longer than 200"):
+            await items.query(session, owner_tz=TZ, text="а" * 201)
+
+
 async def test_window_needs_both_ends(db, now):
     async with db.read() as session:
         with pytest.raises(Refused, match="both"):

@@ -82,7 +82,11 @@ to `projects/`. `move` also renames: links from other pages follow.
 - `ls("pages", depth=2)` is the catalog: every page with its description.
 - `grep` matches text as written, ignoring case. Words inflect: search by the
   stem and its variants, not by one form.
-- `items` queries tasks and events: by `list`, by `page`, by a window of days.
+- `items` queries tasks and events: by `q` (words of the title or the note),
+  by `list`, by `page`, by a window of days. To change an item, find it with
+  `items` and `q`: `grep` also matches the facts the item was built from.
+- `items/events.md` lists upcoming and repeating events. Past events and
+  closed tasks are kept by month in `items/past/` and `items/done/`.
 - `views/` holds ready-made projections: `views/today.md`, `views/week.md`,
   `views/inbox.md`, `views/lint.md`.
 

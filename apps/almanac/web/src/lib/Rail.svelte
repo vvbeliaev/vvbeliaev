@@ -19,6 +19,7 @@
   );
   const lists = $derived(files.filter((entry) => entry.path.startsWith('items/lists/')));
   const closed = $derived(files.filter((entry) => entry.path.startsWith('items/done/')).reverse());
+  const past = $derived(files.filter((entry) => entry.path.startsWith('items/past/')).reverse());
   const days = $derived(files.filter((entry) => entry.path.startsWith('facts/')).reverse());
 
   let everyDay = $state(false);
@@ -71,6 +72,12 @@
       <h3>закрытые</h3>
       <ul>
         {#each closed as month}{@render link(month.path, closedMonth(month.path))}{/each}
+      </ul>
+    {/if}
+    {#if past.length}
+      <h3>прошедшие события</h3>
+      <ul>
+        {#each past as month}{@render link(month.path, closedMonth(month.path))}{/each}
       </ul>
     {/if}
   </section>

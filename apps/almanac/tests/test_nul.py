@@ -54,6 +54,7 @@ async def test_body_with_a_nul_is_refused_before_it_reaches_the_database(api, db
         ("GET", "/api/tree?path=pages%00"),
         ("GET", "/api/items?list=shopping%00"),
         ("GET", "/api/items?page=pages/people/anna.md%00"),
+        ("GET", "/api/items?q=%D0%B1%D0%B0%D0%BD%D0%BA%00"),
         ("GET", "/api/pages/history?path=pages/people/anna.md%00"),
         ("POST", "/api/facts/f_abcdefgh%00/dismiss"),  # параметр пути
         ("PATCH", "/api/items/i_abcdefgh%00"),

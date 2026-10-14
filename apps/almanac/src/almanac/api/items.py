@@ -28,6 +28,10 @@ REMIND = (
 ITEM = "Id of the item, like i_ab12cd34."
 START = "First day of the window: 2026-10-12."
 END = "Last day of the window, inclusive: 2026-10-18."
+WORDS = (
+    "Words that must all appear in the title or the note, ignoring case. A word matches inside a longer one, "
+    "so pass stems: `созвон пет` finds «Созвон с Петей»."
+)
 # Фильтр статуса шире статуса элемента: `any` снимает отбор.
 StatusFilter = Literal[*store.STATUS_FILTERS]
 
@@ -156,11 +160,14 @@ async def items(
     page: Annotated[str | None, Query(description="Only items of this page path.")] = None,
     start: Annotated[date | None, Query(alias="from", description=START)] = None,
     end: Annotated[date | None, Query(alias="to", description=END)] = None,
+    q: Annotated[str | None, Query(description=WORDS)] = None,
 ) -> ItemsOut:
     """Open items by default; `status=any` lifts the filter. A window `from`..`to` keeps
-    what falls on those days: deadlines and event moments, repeats included."""
+    what falls on those days: deadlines and event moments, repeats included. `q` finds an
+    item by the words of its title: use it to find the item you are about to change."""
     async with db.read() as session:
         rows = await store.query(
-            session, owner_tz=ctx.owner_tz, kind=kind, status=status, list_=list_, page=page, start=start, end=end
+            session, owner_tz=ctx.owner_tz, kind=kind, status=status, list_=list_, page=page, start=start, end=end,
+            text=q,
         )
     return ItemsOut(items=[item_out(row) for row in rows])
