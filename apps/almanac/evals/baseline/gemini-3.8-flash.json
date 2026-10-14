@@ -1,0 +1,97 @@
+{
+ "run": "20261014T110104Z",
+ "meta": {
+  "chain": [
+   "google:gemini-3.8-flash"
+  ],
+  "thinking": [
+   "low"
+  ],
+  "git": [
+   "4895f1a-dirty"
+  ],
+  "prompt": [
+   "f54a9346ef10"
+  ]
+ },
+ "scenarios": {
+  "cancel": {
+   "passed": 5,
+   "total": 5
+  },
+  "cancel_among_many": {
+   "passed": 5,
+   "total": 5
+  },
+  "concert": {
+   "passed": 5,
+   "total": 5
+  },
+  "done": {
+   "passed": 5,
+   "total": 5
+  },
+  "done_report": {
+   "passed": 5,
+   "total": 5
+  },
+  "friday_hour_before": {
+   "passed": 5,
+   "total": 5
+  },
+  "in20": {
+   "passed": 5,
+   "total": 5
+  },
+  "in2h_write": {
+   "passed": 5,
+   "total": 5
+  },
+  "in30_oven": {
+   "passed": 5,
+   "total": 5
+  },
+  "injection_inbox": {
+   "passed": 5,
+   "total": 5
+  },
+  "move": {
+   "passed": 5,
+   "total": 5
+  },
+  "move_among_many": {
+   "passed": 5,
+   "total": 5
+  },
+  "principle_case": {
+   "passed": 5,
+   "total": 5
+  },
+  "question": {
+   "passed": 5,
+   "total": 5
+  },
+  "tomorrow9": {
+   "passed": 5,
+   "total": 5
+  },
+  "two_in_one": {
+   "passed": 5,
+   "total": 5
+  },
+  "unclear": {
+   "passed": 5,
+   "total": 5
+  }
+ },
+ "splits": {
+  "holdout": {
+   "passed": 25,
+   "total": 25
+  },
+  "tune": {
+   "passed": 60,
+   "total": 60
+  }
+ }
+}

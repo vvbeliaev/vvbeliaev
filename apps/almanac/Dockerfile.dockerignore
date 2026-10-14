@@ -17,6 +17,8 @@
 apps/almanac/.env
 apps/almanac/.env.*
 apps/almanac/tests
+apps/almanac/evals
+apps/almanac/.bench
 apps/almanac/web/node_modules
 apps/almanac/web/dist
 apps/almanac/.run

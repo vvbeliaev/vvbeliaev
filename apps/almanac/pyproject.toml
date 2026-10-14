@@ -57,6 +57,8 @@ packages = ["src/almanac"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# `evals` — бенч собеседника рядом с пакетом, а не внутри него: в образ он не едет.
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 110
@@ -64,4 +66,4 @@ src = ["src"]
 
 [tool.ruff.lint.isort]
 # Модули вроде almanac.app появятся в следующих задачах; сортировка не должна зависеть от того, есть ли файл.
-known-first-party = ["almanac"]
+known-first-party = ["almanac", "evals"]

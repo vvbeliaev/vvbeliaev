@@ -16,6 +16,11 @@ Rules for working in this app. Repo-wide rules are in the root
   the client name `agent`, and the bot records the owner's words before calling it,
   so a model failure loses nothing. No model key — no assistant. Which model answers is
   a setting, not code: `ASSISTANT_MODEL` is a chain of `provider:model` (`llm.py`).
+- **Scenarios are the spec of the assistant's behaviour.** A change to `INSTRUCTIONS`, the guide,
+  an endpoint docstring or the model chain is a change to behaviour that tests do not see: run
+  `make bench` and compare with the baseline (`evals/README.md`). Scenarios check the outcome in the
+  database, not the wording; a failure from a real conversation enters `evals/scenarios.toml` only
+  as an invented reproduction. `evals/core/` knows no application — keep it that way.
 - **Writes go through `store/`**, inside `async with db.write()`, and leave a
   `journal` row. The API and the bot never touch tables directly.
 - **Refusals are instructions.** A `Refused` message tells the model what to
