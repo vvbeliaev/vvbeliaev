@@ -1,5 +1,7 @@
 <script lang="ts">
   import { file as fetchFile, type FileView } from './api';
+  import Board from './Board.svelte';
+  import { board, targets } from './board';
   import { fullDate, localDay, pageName } from './format';
   import Log from './Log.svelte';
   import { render } from './markdown';
@@ -27,18 +29,24 @@
   });
 
   const page = $derived(view.status === 'ready' && view.file.path.startsWith('pages/') ? frontmatter(view.file.text) : null);
+  // Доска рисуется карточками принципов, а не сплошным текстом.
+  const isBoard = $derived(view.status === 'ready' && view.file.path.startsWith('pages/boards/'));
+  const held = $derived(
+    isBoard && page ? targets(board(page.body)).filter((target) => target.startsWith('principles/')).length : 0,
+  );
 </script>
 
 {#if view.status === 'failed'}
   <p class="failed">Не удалось прочитать <code>{path}</code>: {view.message}</p>
 {:else if view.status === 'ready'}
   {#if page?.front}
-    <article>
+    <article class:wide={isBoard}>
       <header>
         <p class="path">{view.file.path}</p>
         <h1>{page.front.title}</h1>
         {#if page.front.description}<p class="lede">{page.front.description}</p>{/if}
         <dl>
+          {#if isBoard}<div><dt>принципов</dt><dd>{held}</dd></div>{/if}
           <div><dt>ревизия</dt><dd>{page.front.rev}</dd></div>
           <div><dt>обновлено</dt><dd>{fullDate(localDay(page.front.updated))}</dd></div>
           {#if page.front.aliases.length}
@@ -46,7 +54,11 @@
           {/if}
         </dl>
       </header>
-      <div class="prose">{@html render(page.body)}</div>
+      {#if isBoard}
+        <Board body={page.body} {tick} />
+      {:else}
+        <div class="prose">{@html render(page.body)}</div>
+      {/if}
       {#if view.file.items?.length}
         <section>
           <h2>Дела</h2>
@@ -73,6 +85,16 @@
 
 <style>
   article {
+    max-width: var(--measure);
+  }
+
+  article.wide {
+    max-width: calc(var(--measure) + 22rem);
+  }
+
+  article.wide header,
+  article.wide section,
+  article.wide footer {
     max-width: var(--measure);
   }
 

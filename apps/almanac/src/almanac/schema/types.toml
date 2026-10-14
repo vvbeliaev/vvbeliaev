@@ -12,3 +12,9 @@ description = "A subject the owner keeps notes on: a technology, a book, a place
 
 [types.ideas]
 description = "An idea or a plan that is not yet a commitment"
+
+[types.principles]
+description = "A principle the owner holds, drawn from their own experience: the claim, why, where it stops, its cases"
+
+[types.boards]
+description = "Principles gathered for one area, to look at and review together"

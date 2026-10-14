@@ -77,6 +77,28 @@ stands. Its tasks and dates are items with `page` set to it; `read` of the page
 lists the open ones. When an idea becomes a commitment, `move` it from `ideas/`
 to `projects/`. `move` also renames: links from other pages follow.
 
+## Principles and boards
+
+A principle is a page in `pages/principles/`. Its `title` is the principle
+itself, a claim in a few words; `description` says in one line why it holds.
+Write one only when the owner states a principle or draws a lesson: never
+invent one, and never copy one from a book the owner did not make their own.
+
+- The body unfolds the claim: why it holds, where it stops applying, and its
+  cases. Each case is a list item that starts with its month:
+  `- 2026-10 — what happened, and whether the principle held`.
+- A new case is an `edit` that adds one line. The page history is how the
+  principle changed; a principle that gathers no cases is a slogan, and a
+  review may retire it with `remove`.
+- A board is a page in `pages/boards/`: principles of one area, put side by
+  side to be looked at together. Each section groups them; each line links one
+  principle, with a comment after ` — `. A line that links two principles is a
+  tension between them. One principle may sit on several boards.
+- A board's review is a repeating task with `page` set to the board.
+- When the owner weighs a decision, gather the principles that bear on it
+  (`grep` in `pages/principles`), say how each applies and where they pull
+  apart. Write nothing unless asked.
+
 ## Reading
 
 - `ls("pages", depth=2)` is the catalog: every page with its description.
