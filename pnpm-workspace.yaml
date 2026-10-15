@@ -1,5 +1,0 @@
-# Only shipping apps live in the pnpm workspace. Experiments under labs/ stay
-# out on purpose: their own lockfile means `git subtree split` yields a project
-# that runs elsewhere without repair. See labs/README.md.
-packages:
-  - "apps/*"

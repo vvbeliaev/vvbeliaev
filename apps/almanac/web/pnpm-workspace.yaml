@@ -1,6 +1,0 @@
-# Свой корень pnpm: заготовка сайта живёт вне общего workspace репозитория и держит
-# свой lockfile. В общий (`apps/*`) она войдёт, когда поедет в образ.
-packages:
-  - "."
-onlyBuiltDependencies:
-  - esbuild

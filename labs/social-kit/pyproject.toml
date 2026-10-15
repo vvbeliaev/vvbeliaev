@@ -1,6 +1,0 @@
-[project]
-name = "social-kit"
-version = "0.1.0"
-description = "Corona Bloom social image masters: SVG generator for the channel kit"
-requires-python = ">=3.11"
-dependencies = []

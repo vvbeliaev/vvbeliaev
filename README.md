@@ -1,11 +1,9 @@
 <!--
   Profile README for github.com/vvbeliaev — rendered on the profile landing page.
-  Theme: "Corona Bloom" (see DESIGN.md) — deep cosmos, a luminous coral ember.
+  Theme: "Corona Bloom" — deep cosmos, a luminous coral ember.
 
-  Blocks between <!- - facts:… - -> markers are GENERATED from the site's own
-  config (apps/vvbeliaev/src/lib/config.ts) and the theme tokens. Edit those
-  sources, then run: node labs/profile-readme/generate.mjs
-  CI fails if they drift apart.
+  Edited by hand. The personal site (vvbeliaev.dev) and its sources moved to a
+  private monorepo on 2026-10-15; keep the facts below in line with the site.
   Banner: workspace/assets/corona-bloom-banner.svg (animated SVG, plays via <img>).
 -->
 

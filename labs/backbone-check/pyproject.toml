@@ -1,6 +1,0 @@
-[project]
-name = "backbone-check"
-version = "0.1.0"
-description = "Checks that every public claim is backed by an entry in the private backbone"
-requires-python = ">=3.11"
-dependencies = ["pyyaml>=6"]
